@@ -1,0 +1,17 @@
+{
+  "lastRun": "2025-08-07T03:11:37.715Z",
+  "runs": [
+    {
+      "timestamp": "2025-08-07T03:11:37.715Z",
+      "newTransactions": 0,
+      "newFees": 0,
+      "totalTransactions": 1267,
+      "totalFees": 0.010145444000000104,
+      "success": true,
+      "duration": 1211
+    }
+  ],
+  "totalRuns": 1,
+  "totalNewTransactions": 0,
+  "totalNewFees": 0
+}
