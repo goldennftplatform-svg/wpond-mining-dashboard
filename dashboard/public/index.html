@@ -3,186 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wPOND Mining Winners Dashboard</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>wPOND Mining Rewards Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <i class="fas fa-trophy"></i>
-                    <h1>wPOND Mining Winners</h1>
-                </div>
-                <div class="status-indicator">
-                    <span class="status-dot"></span>
-                    <span class="status-text">Live Mining</span>
+    <header>
+        <div class="header-content">
+            <h1>wPOND Mining Rewards</h1>
+            <p class="subtitle">Real-time tracking of wPOND distribution from the official mining wallet</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="summary-cards">
+            <div class="card">
+                <h3>Total wPOND Distributed</h3>
+                <p id="totalWpond">Loading...</p>
+            </div>
+            <div class="card">
+                <h3>Total Winners</h3>
+                <p id="totalWinners">Loading...</p>
+            </div>
+            <div class="card">
+                <h3>Total Claims</h3>
+                <p id="totalClaims">Loading...</p>
+            </div>
+            <div class="card">
+                <h3>Biggest Winner</h3>
+                <p id="biggestWinner">Loading...</p>
+            </div>
+        </section>
+
+        <!-- PondX Rewards Wallet Section -->
+        <section class="pondx-rewards-section">
+            <h2>🌊 PondX.com Rewards Wallet</h2>
+            <div class="pondx-card">
+                <div class="pondx-info">
+                    <h3>Website Rewards Distribution</h3>
+                    <p>Users get paid from this wallet when swapping on PondX.com</p>
+                    <div class="pondx-stats">
+                        <div class="stat">
+                            <span class="stat-label">Total wPOND</span>
+                            <span class="stat-value" id="pondxTotal">Loading...</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Claims</span>
+                            <span class="stat-value" id="pondxClaims">Loading...</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Avg per Claim</span>
+                            <span class="stat-value" id="pondxAvg">Loading...</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Wallet</span>
+                            <span class="stat-value wallet-cell" id="pondxWallet">Loading...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </header>
+        </section>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Summary Cards -->
-            <section class="summary-cards">
-                <div class="card summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3>Total wPOND Earned</h3>
-                        <p class="card-value" id="totalWpondEarned">-</p>
-                    </div>
-                </div>
+        <section class="bubble-chart-section">
+            <h2>🏆 Top Winners Bubble Chart</h2>
+            <div id="bubbleChart"></div>
+        </section>
 
-                <div class="card summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3>Active Miners</h3>
-                        <p class="card-value" id="totalParticipants">-</p>
-                    </div>
-                </div>
+        <section class="top-winners">
+            <h2>🏅 Top 10 Winners</h2>
+            <div class="winners-grid" id="winnersGrid">
+                <!-- Winners will be populated here -->
+            </div>
+        </section>
 
-                <div class="card summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3>Success Rate</h3>
-                        <p class="card-value" id="successRate">-</p>
-                    </div>
-                </div>
+        <section class="cta-card">
+            <h2>🚀 Join the wPOND Revolution</h2>
+            <p>Start mining wPOND today and join thousands of winners earning rewards</p>
+            <div class="cta-number">1,441+ Winners</div>
+            <button class="btn-large" onclick="window.open('https://pondx.com', '_blank')">Start Mining Now</button>
+        </section>
 
-                <div class="card summary-card">
-                    <div class="card-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3>Avg Reward</h3>
-                        <p class="card-value" id="averageReward">-</p>
-                    </div>
-                </div>
-            </section>
+        <section class="charts-section">
+            <div class="chart-container">
+                <h3>Daily wPOND Distribution</h3>
+                <canvas id="dailyChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>wPOND Distribution by Amount</h3>
+                <canvas id="wpondChart"></canvas>
+            </div>
+        </section>
 
-            <!-- Top Winners Section -->
-            <section class="top-winners">
-                <div class="card">
-                    <div class="card-header">
-                        <h3><i class="fas fa-crown"></i> Top wPOND Winners</h3>
-                        <div class="header-badge">🏆 Leaderboard</div>
-                    </div>
-                    <div class="card-body">
-                        <div class="winners-grid" id="topWinners">
-                            <div class="loading">Loading winners...</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+        <section class="recent-activity">
+            <h2>📈 Recent Activity</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Wallet</th>
+                            <th>wPOND Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentActivity">
+                        <!-- Recent activity will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-            <!-- Charts Section -->
-            <section class="charts-section">
-                <div class="chart-container">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3><i class="fas fa-chart-area"></i> Daily wPOND Rewards</h3>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="dailyChart"></canvas>
-                        </div>
-                    </div>
-                </div>
+        <section class="all-winners">
+            <h2>📊 All Winners</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Wallet</th>
+                            <th>wPOND Amount</th>
+                            <th>Claims</th>
+                            <th>First Claim</th>
+                            <th>Last Claim</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allWinners">
+                        <!-- All winners will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 
-                <div class="chart-container">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3><i class="fas fa-chart-pie"></i> Mining Distribution</h3>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="distributionChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Recent Activity -->
-            <section class="recent-activity">
-                <div class="card">
-                    <div class="card-header">
-                        <h3><i class="fas fa-bolt"></i> Recent Mining Activity</h3>
-                        <button class="btn btn-primary" onclick="loadMoreTransactions()">
-                            <i class="fas fa-plus"></i> Load More
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-container">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Wallet</th>
-                                        <th>wPOND Earned</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="transactionsTable">
-                                    <tr>
-                                        <td colspan="5" class="loading">Loading mining activity...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Mining Stats -->
-            <section class="mining-stats">
-                <div class="card">
-                    <div class="card-header">
-                        <h3><i class="fas fa-gem"></i> Mining Performance</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-label">Best Mining Day</div>
-                                <div class="stat-value" id="bestDay">-</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Total Volume</div>
-                                <div class="stat-value" id="totalVolume">-</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Update Runs</div>
-                                <div class="stat-value" id="updateRuns">-</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Last Updated</div>
-                                <div class="stat-value" id="lastUpdated">-</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <p>&copy; 2024 wPOND Mining Winners Dashboard | Join the winning team! 🏆</p>
-        </footer>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading winner data...</p>
+    <!-- Winner Details Modal -->
+    <div id="winnerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="winnerDetails">
+                <!-- Winner details will be populated here -->
+            </div>
         </div>
     </div>
 
