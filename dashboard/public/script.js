@@ -1079,62 +1079,12 @@ async function resolveSNS(snsDomain) {
     try {
         console.log('🔍 Resolving SNS domain:', snsDomain);
         
-        // Try Helius Name Service API first (most reliable)
-        console.log('🔄 Trying Helius Name Service...');
-        try {
-            const response = await fetch(`https://api.helius.xyz/v0/domains/lookup?api-key=e7472550-170d-4be0-ae9f-dccf30e8d5b8`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ domains: [snsDomain] })
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('🔍 Helius Name Service response:', data);
-                
-                if (data && data.length > 0 && data[0].owner) {
-                    console.log('✅ SNS resolved via Helius Name Service:', data[0].owner);
-                    return data[0].owner;
-                }
-            } else {
-                console.log('❌ Helius Name Service error:', response.status, response.statusText);
-            }
-        } catch (error) {
-            console.log('❌ Helius Name Service error:', error.message);
-        }
-        
-        // Try direct SNS resolution via Helius
-        console.log('🔄 Trying direct SNS resolution...');
-        try {
-            const response = await fetch(`https://api.helius.xyz/v0/sns/resolve?api-key=e7472550-170d-4be0-ae9f-dccf30e8d5b8`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ domain: snsDomain })
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('🔍 Direct SNS resolution response:', data);
-                
-                if (data && data.owner) {
-                    console.log('✅ SNS resolved via direct Helius SNS:', data.owner);
-                    return data.owner;
-                }
-            } else {
-                console.log('❌ Direct SNS resolution failed:', response.status);
-            }
-        } catch (error) {
-            console.log('❌ Direct SNS resolution error:', error.message);
-        }
-        
-        // Try Bonfida API as fallback
+        // Try Bonfida API first (most reliable)
         console.log('🔄 Trying Bonfida API...');
         try {
-            const response = await fetch(`https://sns-api.bonfida.com/v2/resolve/${snsDomain}`);
+            const response = await fetch(`https://sns-api.bonfida.com/v1/resolve/${snsDomain}`);
             if (response.ok) {
                 const data = await response.json();
-                console.log('🔍 Bonfida API response:', data);
-                
                 if (data && data.owner) {
                     console.log('✅ SNS resolved via Bonfida:', data.owner);
                     return data.owner;
@@ -1146,14 +1096,29 @@ async function resolveSNS(snsDomain) {
             console.log('❌ Bonfida API error:', error.message);
         }
         
+        // Try Helius API as fallback
+        console.log('🔄 Trying Helius API...');
+        try {
+            const response = await fetch(`https://api.helius.xyz/v0/domains/resolve?domain=${snsDomain}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data && data.owner) {
+                    console.log('✅ SNS resolved via Helius:', data.owner);
+                    return data.owner;
+                }
+            } else {
+                console.log('❌ Helius API failed:', response.status);
+            }
+        } catch (error) {
+            console.log('❌ Helius API error:', error.message);
+        }
+        
         // Try Solana Name Service as final fallback
         console.log('🔄 Trying Solana Name Service...');
         try {
             const response = await fetch(`https://api.solana.name/v1/resolve/${snsDomain}`);
             if (response.ok) {
                 const data = await response.json();
-                console.log('🔍 Solana Name Service response:', data);
-                
                 if (data && data.result && data.result.owner) {
                     console.log('✅ SNS resolved via Solana Name Service:', data.result.owner);
                     return data.result.owner;
