@@ -1,29 +1,26 @@
 {
-  "name": "wpond-mining-dashboard",
+  "name": "wpond-dashboard",
   "version": "1.0.0",
-  "description": "Interactive dashboard for wPOND mining rewards tracking",
+  "description": "wPOND Mining Rewards Dashboard",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js",
-    "build": "echo 'Dashboard ready to run'"
+    "dev": "node simple-server.js",
+    "sweep": "node daily-tx-sweeper.js",
+    "sweep-later": "node run-sweeper-later.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": ["solana", "wpond", "dashboard", "blockchain"],
+  "author": "wPOND Team",
+  "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "fs": "^0.0.1-security",
-    "path": "^0.12.7"
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "node-fetch": "^2.6.7"
   },
-  "keywords": [
-    "solana",
-    "wpond",
-    "mining",
-    "dashboard",
-    "blockchain"
-  ],
-  "author": "CALLinSOL",
-  "license": "MIT"
+  "engines": {
+    "node": ">=16.0.0"
+  }
 }

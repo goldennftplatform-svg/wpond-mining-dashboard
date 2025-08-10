@@ -68,3 +68,61 @@ logs
 # Temporary files
 tmp/
 temp/
+
+# Local Netlify folder
+.netlify
+
+# Data files - exclude all data and intermediate files
+*.json
+!dashboard/public/*.json
+!dashboard/package*.json
+!dashboard/railway.json
+
+# Scripts - exclude all processing scripts
+*.js
+!dashboard/public/*.js
+!dashboard/*.js
+
+# Other files
+*.html
+!dashboard/public/*.html
+!dashboard/*.html
+
+*.css
+!dashboard/public/*.css
+!dashboard/*.css
+
+*.sh
+*.bat
+*.ps1
+
+# Intermediate and batch files
+helius-intermediate-batch-*.json
+intermediate-*.json
+zero-errors-final-batch-*.json
+zero-errors-final-results.json
+helius-*.json
+dashboard-*.json
+real-*.json
+wpond-*.json
+swap-*.json
+micro-*.json
+missing-*.json
+robust-*.json
+perfect-*.json
+sample-*.json
+test-*.json
+debug-*.json
+extract-*.json
+fetch-*.json
+filter-*.json
+find-*.json
+fix-*.json
+focus-*.json
+generate-*.json
+get-*.json
+process-*.json
+restore-*.json
+retry-*.json
+update-*.json
+verify-*.json

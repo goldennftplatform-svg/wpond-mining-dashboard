@@ -1,22 +1,27 @@
 {
-  "name": "callinsol",
+  "name": "wpond-distributed-processor",
   "version": "1.0.0",
-  "description": "Solana program reading and SPL token querying tools",
-  "main": "index.js",
+  "description": "Distributed processing system for wPOND mining rewards",
+  "main": "distributed-processor.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
-    "test": "node test.js"
+    "start": "node distributed-processor.js process",
+    "process": "node distributed-processor.js process",
+    "merge": "node distributed-processor.js merge",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "solana",
+    "wpond",
+    "blockchain",
+    "distributed",
+    "processing"
+  ],
+  "author": "wPOND Team",
+  "license": "MIT",
   "dependencies": {
-    "@solana/web3.js": "^1.87.6",
-    "@solana/spl-token": "^0.3.9",
-    "axios": "^1.6.2"
+    "node-fetch": "^3.3.2"
   },
-  "devDependencies": {
-    "@types/node": "^20.10.0"
-  },
-  "keywords": ["solana", "spl", "token", "blockchain", "query"],
-  "author": "",
-  "license": "MIT"
-} 
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

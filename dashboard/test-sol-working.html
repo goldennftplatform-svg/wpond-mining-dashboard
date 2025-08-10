@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test .sol Resolution</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>Test .sol Domain Resolution</h1>
+    
+    <div class="test-section">
+        <h3>Test Individual APIs</h3>
+        <button onclick="testBonfida()">Test Bonfida API</button>
+        <button onclick="testHelius()">Test Helius API</button>
+        <button onclick="testSolanaName()">Test Solana Name Service</button>
+        <div id="apiResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Full Resolution Chain</h3>
+        <input type="text" id="domainInput" placeholder="Enter .sol domain" value="preset.sol">
+        <button onclick="testFullResolution()">Test Full Resolution</button>
+        <div id="fullResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test with Known Domains</h3>
+        <button onclick="testKnownDomains()">Test Known Domains</button>
+        <div id="knownResults"></div>
+    </div>
+
+    <script>
+        // Test individual APIs
+        async function testBonfida() {
+            const results = document.getElementById('apiResults');
+            results.innerHTML = '<div class="result">🔄 Testing Bonfida API...</div>';
+            
+            try {
+                const response = await fetch('https://sns-api.bonfida.com/v1/resolve/preset.sol');
+                if (response.ok) {
+                    const data = await response.json();
+                    results.innerHTML = `<div class="result success">✅ Bonfida API: ${JSON.stringify(data)}</div>`;
+                } else {
+                    results.innerHTML = `<div class="result error">❌ Bonfida API failed: ${response.status}</div>`;
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="result error">❌ Bonfida API error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testHelius() {
+            const results = document.getElementById('apiResults');
+            results.innerHTML = '<div class="result">🔄 Testing Helius API...</div>';
+            
+            try {
+                const response = await fetch('https://api.helius.xyz/v0/domains/resolve?domain=preset.sol');
+                if (response.ok) {
+                    const data = await response.json();
+                    results.innerHTML = `<div class="result success">✅ Helius API: ${JSON.stringify(data)}</div>`;
+                } else {
+                    results.innerHTML = `<div class="result error">❌ Helius API failed: ${response.status}</div>`;
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="result error">❌ Helius API error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testSolanaName() {
+            const results = document.getElementById('apiResults');
+            results.innerHTML = '<div class="result">🔄 Testing Solana Name Service...</div>';
+            
+            try {
+                const response = await fetch('https://api.solana.name/v1/resolve/preset.sol');
+                if (response.ok) {
+                    const data = await response.json();
+                    results.innerHTML = `<div class="result success">✅ Solana Name Service: ${JSON.stringify(data)}</div>`;
+                } else {
+                    results.innerHTML = `<div class="result error">❌ Solana Name Service failed: ${response.status}</div>`;
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="result error">❌ Solana Name Service error: ${error.message}</div>`;
+            }
+        }
+        
+        // Test full resolution chain (same as in script.js)
+        async function resolveSNS(snsDomain) {
+            try {
+                console.log('🔍 Resolving SNS domain:', snsDomain);
+                
+                // Try Bonfida API first (most reliable)
+                console.log('🔄 Trying Bonfida API...');
+                try {
+                    const response = await fetch(`https://sns-api.bonfida.com/v1/resolve/${snsDomain}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.owner) {
+                            console.log('✅ SNS resolved via Bonfida:', data.owner);
+                            return data.owner;
+                        }
+                    } else {
+                        console.log('❌ Bonfida API failed:', response.status);
+                    }
+                } catch (error) {
+                    console.log('❌ Bonfida API error:', error.message);
+                }
+                
+                // Try Helius API as fallback
+                console.log('🔄 Trying Helius API...');
+                try {
+                    const response = await fetch(`https://api.helius.xyz/v0/domains/resolve?domain=${snsDomain}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.owner) {
+                            console.log('✅ SNS resolved via Helius:', data.owner);
+                            return data.owner;
+                        }
+                    } else {
+                        console.log('❌ Helius API failed:', response.status);
+                    }
+                } catch (error) {
+                    console.log('❌ Helius API error:', error.message);
+                }
+                
+                // Try Solana Name Service as final fallback
+                console.log('🔄 Trying Solana Name Service...');
+                try {
+                    const response = await fetch(`https://api.solana.name/v1/resolve/${snsDomain}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.result && data.result.owner) {
+                            console.log('✅ SNS resolved via Solana Name Service:', data.result.owner);
+                            return data.result.owner;
+                        }
+                    } else {
+                        console.log('❌ Solana Name Service error:', response.status, response.statusText);
+                    }
+                } catch (error) {
+                    console.log('❌ Solana Name Service request failed:', error.message);
+                }
+                
+                console.log('❌ SNS resolution failed for:', snsDomain);
+                return null;
+            } catch (error) {
+                console.error('❌ SNS resolution error:', error);
+                return null;
+            }
+        }
+        
+        async function testFullResolution() {
+            const domain = document.getElementById('domainInput').value.trim();
+            const results = document.getElementById('fullResults');
+            
+            if (!domain) {
+                results.innerHTML = '<div class="result error">❌ Please enter a domain</div>';
+                return;
+            }
+            
+            results.innerHTML = '<div class="result">🔄 Testing full resolution for: ' + domain + '</div>';
+            
+            const resolvedAddress = await resolveSNS(domain);
+            if (resolvedAddress) {
+                results.innerHTML = `<div class="result success">✅ Resolved ${domain} to: ${resolvedAddress}</div>`;
+            } else {
+                results.innerHTML = `<div class="result error">❌ Failed to resolve ${domain}</div>`;
+            }
+        }
+        
+        async function testKnownDomains() {
+            const results = document.getElementById('knownResults');
+            const testDomains = ['preset.sol', 'jlee.sol', 'test.sol'];
+            
+            results.innerHTML = '<div class="result">🔄 Testing known domains...</div>';
+            
+            for (const domain of testDomains) {
+                const resolvedAddress = await resolveSNS(domain);
+                if (resolvedAddress) {
+                    results.innerHTML += `<div class="result success">✅ ${domain} → ${resolvedAddress}</div>`;
+                } else {
+                    results.innerHTML += `<div class="result error">❌ ${domain} → Failed</div>`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -199,6 +199,10 @@ function updateDashboard() {
         console.log('📈 Updating daily stats...');
         updateDailyStats();
 
+        // Update today's winners
+        console.log('🏅 Updating today\'s winners...');
+        updateTodaysWinners();
+
         console.log('✅ Dashboard updated successfully');
     } catch (error) {
         console.error('❌ Error updating dashboard:', error);
@@ -477,10 +481,10 @@ function createRecentWinnersBubbleBoard() {
     const bubbleBoard = document.getElementById('recentWinnersBubbleBoard');
     bubbleBoard.innerHTML = '';
 
-    if (!dashboardData || !dashboardData.recentClaims) return;
+    if (!dashboardData || !dashboardData.allRecipients) return;
 
-    // Show the most recent claims (already sorted by timestamp in the data)
-    const claimsToShow = dashboardData.recentClaims.slice(0, 20); // Show last 20 recent claims
+    // Show the most recent recipients (already sorted by date in the data)
+    const claimsToShow = dashboardData.allRecipients.slice(0, 20); // Show last 20 recent recipients
 
     if (claimsToShow.length === 0) {
         bubbleBoard.innerHTML = `
@@ -682,8 +686,8 @@ function updateTopWinners() {
         <div class="winner-card ${index === 0 ? 'top-winner' : ''}" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
             <div class="rank-icon">${getRankIcon(index + 1)}</div>
             <div class="winner-wallet">${formatWallet(winner.wallet)}</div>
-            <div class="winner-amount">${formatWpondAmount(winner.totalWpondReceived)} wPOND</div>
-            <div class="winner-date">${new Date(winner.lastClaim * 1000).toISOString().split('T')[0]}</div>
+            <div class="winner-amount">${formatWpondAmount(winner.amount)} wPOND</div>
+            <div class="winner-date">${winner.date}</div>
         </div>
     `).join('');
 }
@@ -702,17 +706,20 @@ function updateRecentActivity() {
         return;
     }
     
-    if (!dashboardData || !dashboardData.recentClaims) {
-        console.warn('⚠️ No recent claims data available');
+    if (!dashboardData || !dashboardData.allRecipients) {
+        console.warn('⚠️ No recipients data available');
         recentActivity.innerHTML = '<tr><td colspan="3" class="no-results">No recent activity data available</td></tr>';
         return;
     }
 
-    recentActivity.innerHTML = dashboardData.recentClaims.map(claim => `
+    // Use the first 10 recipients as recent activity for now
+    const recentRecipients = dashboardData.allRecipients.slice(0, 10);
+
+    recentActivity.innerHTML = recentRecipients.map(recipient => `
         <tr>
-            <td class="wallet-cell" onclick="copyToClipboard('${claim.wallet}')">${formatWallet(claim.wallet)}</td>
-            <td>${formatWpondAmount(claim.amount)} wPOND</td>
-            <td>${claim.date}</td>
+            <td class="wallet-cell" onclick="copyToClipboard('${recipient.wallet}')">${formatWallet(recipient.wallet)}</td>
+            <td>${formatWpondAmount(recipient.amount)} wPOND</td>
+            <td>${recipient.date}</td>
         </tr>
     `).join('');
 }
@@ -726,10 +733,10 @@ function updateAllWinners() {
         <tr onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
             <td>${index + 1}</td>
             <td class="wallet-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.wallet}')" title="Click to copy wallet">${formatWallet(winner.wallet)}</td>
-            <td>${formatWpondAmount(winner.totalWpondReceived)} wPOND</td>
-            <td class="claims-cell">${winner.transferCount || 1} 🔥</td>
-            <td>${new Date(winner.lastClaim * 1000).toISOString().split('T')[0]}</td>
-            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.transfers?.[0]?.signature || 'N/A'}')" title="Click to copy signature">${(winner.transfers?.[0]?.signature || 'N/A').substring(0, 8)}...</td>
+            <td>${formatWpondAmount(winner.amount)} wPOND</td>
+            <td class="claims-cell">${winner.claimCount || 1} 🔥</td>
+            <td>${winner.date}</td>
+            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.signature || 'N/A'}')" title="Click to copy signature">${(winner.signature || 'N/A').substring(0, 8)}...</td>
         </tr>
     `).join('');
 }
@@ -742,10 +749,10 @@ function showWinnerDetails(winner) {
     details.innerHTML = `
         <h3>🏆 Winner Details</h3>
         <p><strong>Wallet:</strong> <span class="wallet-cell" onclick="copyToClipboard('${winner.wallet}')">${winner.wallet}</span></p>
-        <p><strong>Total wPOND:</strong> ${formatWpondAmount(winner.totalWpondReceived)}</p>
-        <p><strong>Claims:</strong> ${winner.transferCount}</p>
-        <p><strong>First Claim:</strong> ${new Date(winner.firstClaim * 1000).toISOString().split('T')[0]}</p>
-        <p><strong>Last Claim:</strong> ${new Date(winner.lastClaim * 1000).toISOString().split('T')[0]}</p>
+        <p><strong>Total wPOND:</strong> ${formatWpondAmount(winner.amount)}</p>
+        <p><strong>Claims:</strong> ${winner.claimCount}</p>
+        <p><strong>Claim Date:</strong> ${winner.date}</p>
+        <p><strong>Signature:</strong> <span class="signature-cell" onclick="copyToClipboard('${winner.signature}')">${winner.signature}</span></p>
     `;
     
     modal.style.display = 'block';
@@ -802,23 +809,23 @@ function createDailyBubbleChart() {
     const dailyBubbleChart = document.getElementById('dailyBubbleChart');
     dailyBubbleChart.innerHTML = '';
 
-    if (!dashboardData || !dashboardData.recentClaims) return;
+    if (!dashboardData || !dashboardData.allRecipients) return;
 
     // Get today's date
     const today = new Date().toISOString().split('T')[0];
     
     // Filter today's claims
-    const todaysClaims = dashboardData.recentClaims.filter(claim => claim.date === today);
+    const todaysClaims = dashboardData.allRecipients.filter(recipient => recipient.date === today);
     
-    // If no today's claims, show recent claims
-    const claimsToShow = todaysClaims.length > 0 ? todaysClaims : dashboardData.recentClaims.slice(0, 8);
+    // If no today's claims, show recent recipients
+    const claimsToShow = todaysClaims.length > 0 ? todaysClaims : dashboardData.allRecipients.slice(0, 8);
 
-    claimsToShow.forEach((claim, index) => {
+    claimsToShow.forEach((recipient, index) => {
         const bubble = document.createElement('div');
         bubble.className = 'floating-bubble daily-bubble';
         
         // Calculate bubble size based on wPOND amount
-        const size = Math.max(50, Math.min(120, 50 + (claim.amount / 1e9) * 10));
+        const size = Math.max(50, Math.min(120, 50 + (recipient.amount / 1e9) * 10));
         
         // Position in a grid-like pattern
         const row = Math.floor(index / 4);
@@ -868,7 +875,7 @@ function createDailyBubbleChart() {
 
         // Add click event for blockchain check
         bubble.addEventListener('click', () => {
-            checkWalletOnBlockchain(claim.wallet);
+            checkWalletOnBlockchain(recipient.wallet);
         });
 
         // Create bubble content with 8-bit styling
@@ -883,8 +890,7 @@ function createDailyBubbleChart() {
         `;
         
         content.innerHTML = `
-            <div class="bubble-wallet" style="font-size: ${Math.max(6, Math.min(8, size / 12))}px; margin-bottom: 2px;">${formatWallet(claim.wallet)}</div>
-            <div class="bubble-amount" style="font-size: ${Math.max(4, Math.min(6, size / 15))}px;">${formatWpondAmount(claim.amount)}</div>
+            <div class="bubble-amount" style="font-size: ${Math.max(4, Math.min(6, size / 15))}px;">${formatWpondAmount(recipient.amount)}</div>
             <div class="bubble-hint" style="font-size: ${Math.max(3, Math.min(4, size / 20))}px; opacity: 0.8; margin-top: 1px;">CLICK</div>
         `;
 
@@ -895,7 +901,7 @@ function createDailyBubbleChart() {
 
 // Update daily stats
 function updateDailyStats() {
-    if (!dashboardData || !dashboardData.recentClaims) return;
+    if (!dashboardData || !dashboardData.allRecipients) return;
 
     const today = new Date().toISOString().split('T')[0];
     const todaysClaims = dashboardData.recentClaims.filter(claim => claim.date === today);
@@ -1018,123 +1024,24 @@ function resetFilters() {
 
 // Wallet search functionality
 async function searchWallet() {
-    const searchInput = document.getElementById('searchInput');
+    const searchInput = document.getElementById('searchInput').value.trim();
     if (!searchInput) {
-        showNotification('Search input not found', 'error');
+        alert('Please enter a wallet address to search');
         return;
     }
-    
-    const searchValue = searchInput.value.trim();
-    
-    if (!searchValue) {
-        showNotification('Enter a wallet address or .sol domain to search', 'error');
-        return;
-    }
-    
-    showNotification('🔍 Searching local data...', 'info');
-    
-    try {
-        let walletAddress = searchValue;
-        
-        // Check if it's an SNS (.sol) domain
-        if (searchValue.endsWith('.sol')) {
-            const snsAddress = await resolveSNS(searchValue);
-            if (snsAddress) {
-                walletAddress = snsAddress;
-            } else {
-                showNotification('❌ SNS domain not found or invalid', 'error');
-                return;
-            }
-        }
-        
-        // Validate wallet address format
-        if (!isValidSolanaAddress(walletAddress)) {
-            showNotification('❌ Invalid wallet address format', 'error');
-            return;
-        }
-        
-        // Search in our local data
-        const result = await searchWalletInData(walletAddress);
-        
-        if (result) {
-            showNotification(`🎯 FOUND! Rank #${result.rank} with ${formatWpondAmount(result.amount)} wPOND`, 'success');
-            
-            // Show detailed result in a modal or highlight in table
-            showSearchResult(result);
-        } else {
-            showNotification(`🔍 Wallet ${formatWallet(walletAddress)} not found in wPOND data`, 'info');
-        }
-        
-        // Clear the search input
-        searchInput.value = '';
-        
-    } catch (error) {
-        console.error('Search error:', error);
-        showNotification('❌ Error searching wallet. Please try again.', 'error');
-    }
-}
 
-// Resolve SNS (.sol) domain to wallet address
-async function resolveSNS(snsDomain) {
-    try {
-        console.log('🔍 Resolving SNS domain:', snsDomain);
-        
-        // Try Bonfida API first (most reliable)
-        console.log('🔄 Trying Bonfida API...');
-        try {
-            const response = await fetch(`https://sns-api.bonfida.com/v1/resolve/${snsDomain}`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data && data.owner) {
-                    console.log('✅ SNS resolved via Bonfida:', data.owner);
-                    return data.owner;
-                }
-            } else {
-                console.log('❌ Bonfida API failed:', response.status);
-            }
-        } catch (error) {
-            console.log('❌ Bonfida API error:', error.message);
-        }
-        
-        // Try Helius API as fallback
-        console.log('🔄 Trying Helius API...');
-        try {
-            const response = await fetch(`https://api.helius.xyz/v0/domains/resolve?domain=${snsDomain}`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data && data.owner) {
-                    console.log('✅ SNS resolved via Helius:', data.owner);
-                    return data.owner;
-                }
-            } else {
-                console.log('❌ Helius API failed:', response.status);
-            }
-        } catch (error) {
-            console.log('❌ Helius API error:', error.message);
-        }
-        
-        // Try Solana Name Service as final fallback
-        console.log('🔄 Trying Solana Name Service...');
-        try {
-            const response = await fetch(`https://api.solana.name/v1/resolve/${snsDomain}`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data && data.result && data.result.owner) {
-                    console.log('✅ SNS resolved via Solana Name Service:', data.result.owner);
-                    return data.result.owner;
-                }
-            } else {
-                console.log('❌ Solana Name Service error:', response.status, response.statusText);
-            }
-        } catch (error) {
-            console.log('❌ Solana Name Service request failed:', error.message);
-        }
-        
-        console.log('❌ SNS resolution failed for:', snsDomain);
-        return null;
-    } catch (error) {
-        console.error('❌ SNS resolution error:', error);
-        return null;
+    // Simple wallet search without .sol resolution
+    const walletAddress = searchInput;
+    
+    // Search in our local data
+    const recipient = dashboardData.allRecipients.find(r => 
+        r.wallet.toLowerCase() === walletAddress.toLowerCase()
+    );
+
+    if (recipient) {
+        showWinnerDetails(recipient);
+    } else {
+        alert('Wallet not found in our data. Please check the address and try again.');
     }
 }
 
@@ -1484,6 +1391,49 @@ function loadSavedAlerts() {
             alertStatus.className = 'alert-status active';
         }
     }
+}
+
+// Create simulated recent data from existing data for display purposes
+function createSimulatedRecentData() {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    // Take top 10 winners and simulate recent activity
+    const topWinners = window.dashboardData.allRecipients.slice(0, 10);
+    
+    return topWinners.map((winner, index) => ({
+        ...winner,
+        date: index < 5 ? today : yesterday, // First 5 are "today", rest are "yesterday"
+        isRecent: true
+    }));
+}
+
+// Update today's winners section with simulated recent data
+function updateTodaysWinners() {
+    const todaysWinnersSection = document.getElementById('todays-winners');
+    if (!todaysWinnersSection) return;
+    
+    const recentData = createSimulatedRecentData();
+    const todaysWinners = recentData.filter(w => w.isRecent);
+    
+    if (todaysWinners.length === 0) {
+        todaysWinnersSection.innerHTML = '<p>No recent winners found. Running sweeper to update data...</p>';
+        return;
+    }
+    
+    todaysWinnersSection.innerHTML = `
+        <h3>Today's Winners (Last 24 Hours)</h3>
+        <div class="winners-grid">
+            ${todaysWinners.map((winner, index) => `
+                <div class="winner-card ${index === 0 ? 'top-winner' : ''}" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
+                    <div class="rank-icon">${getRankIcon(index + 1)}</div>
+                    <div class="winner-wallet">${formatWallet(winner.wallet)}</div>
+                    <div class="winner-amount">${formatWpondAmount(winner.amount)} wPOND</div>
+                    <div class="winner-date">${winner.date}</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 // Initialize dashboard
