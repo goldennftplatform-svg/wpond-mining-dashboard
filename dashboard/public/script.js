@@ -3,12 +3,99 @@ let dashboardData = null;
 
 // Load dashboard data
 async function loadDashboardData() {
+    const debugStatus = document.getElementById('debugStatus');
+    
     try {
-        const response = await fetch('dashboard-data-complete.json');
-        dashboardData = await response.json();
-        updateDashboard();
+        console.log('🔍 Loading dashboard data...');
+        if (debugStatus) {
+            debugStatus.textContent = '🔍 Loading dashboard data...';
+        }
+        
+        // Try to load the data file - exactly like the working test page
+        const dataUrl = 'helius-dashboard-data.json?v=' + Date.now(); // Full data file with cache bust
+        console.log('📡 Attempting to fetch:', dataUrl);
+        
+        const response = await fetch(dataUrl);
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response headers:', response.headers);
+        if (debugStatus) {
+            debugStatus.textContent = `📡 Response status: ${response.status}`;
+        }
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Data loaded successfully:', data);
+        console.log('✅ Data keys:', Object.keys(data));
+        if (debugStatus) {
+            debugStatus.textContent = '✅ Data loaded successfully!';
+        }
+        
+        // Store the data globally
+        dashboardData = data;
+        
+        // Debug: Log the structure
+        console.log('🔍 Dashboard data structure:', {
+            hasSummary: !!data.summary,
+            hasAllRecipients: !!data.allRecipients,
+            allRecipientsLength: data.allRecipients?.length || 0,
+            sampleRecipient: data.allRecipients?.[0] || 'none'
+        });
+        
+        // Update the dashboard immediately
+        console.log('🔄 Updating dashboard...');
+        if (debugStatus) {
+            debugStatus.textContent = '🔄 Updating dashboard...';
+        }
+        
+        // Update summary stats with null checks
+        const totalClaimsEl = document.getElementById('totalClaims');
+        const totalWpondEl = document.getElementById('totalWpond');
+        const biggestWinnerEl = document.getElementById('biggestWinner');
+        const averageClaimEl = document.getElementById('averageClaim');
+        
+        console.log('🔍 HTML elements found:', {
+            totalClaims: !!totalClaimsEl,
+            totalWpond: !!totalWpondEl,
+            biggestWinner: !!biggestWinnerEl,
+            averageClaim: !!averageClaimEl
+        });
+        
+        if (totalClaimsEl) totalClaimsEl.textContent = data.summary?.totalClaims?.toLocaleString() || '0';
+        if (totalWpondEl) totalWpondEl.textContent = formatWpondAmount(data.summary?.totalWpond || 0);
+        if (biggestWinnerEl) biggestWinnerEl.textContent = formatWpondAmount(data.summary?.biggestAmount || 0);
+        if (averageClaimEl) averageClaimEl.textContent = formatWpondAmount(data.summary?.averageAmount || 0);
+        
+        // Update recent activity
+        updateRecentActivity();
+        
+        // Create bubble charts
+        createRecentWinnersBubbleBoard();
+        
+        // Update top winners
+        console.log('🏆 Updating top winners...');
+        updateTopWinners();
+        
+        // Update all winners table
+        console.log('📊 Updating all winners table...');
+        updateAllWinners();
+        
+        if (debugStatus) {
+            debugStatus.textContent = '✅ Dashboard updated successfully!';
+            debugStatus.style.background = '#2d5a2d';
+        }
+        
     } catch (error) {
-        console.error('Error loading dashboard data:', error);
+        console.error('❌ Error loading dashboard data:', error);
+        if (debugStatus) {
+            debugStatus.textContent = `❌ Error: ${error.message}`;
+            debugStatus.style.background = '#5a2d2d';
+        }
+        
+        // Fallback: Load sample data
+        console.log('🔄 Loading sample data as fallback...');
         loadSampleData();
     }
 }
@@ -62,57 +149,119 @@ function loadSampleData() {
 
 // Update dashboard with data
 function updateDashboard() {
-    if (!dashboardData) return;
-
-    // Update summary cards
-    document.getElementById('totalWpond').textContent = formatWpondAmount(dashboardData.summary.totalWpondDistributed);
-    document.getElementById('totalWinners').textContent = dashboardData.summary.totalRecipients.toLocaleString();
-    document.getElementById('totalClaims').textContent = dashboardData.summary.totalClaims.toLocaleString();
-    document.getElementById('biggestWinner').textContent = formatWpondAmount(dashboardData.summary.biggestRecipient);
-
-    // Update PondX rewards wallet section
-    if (dashboardData.pondxRewardsWallet) {
-        document.getElementById('pondxTotal').textContent = formatWpondAmount(dashboardData.pondxRewardsWallet.totalWpondReceived);
-        document.getElementById('pondxClaims').textContent = dashboardData.pondxRewardsWallet.claimCount.toLocaleString();
-        document.getElementById('pondxAvg').textContent = formatWpondAmount(dashboardData.pondxRewardsWallet.averagePerClaim);
-        document.getElementById('pondxWallet').textContent = formatWallet(dashboardData.pondxRewardsWallet.wallet);
+    if (!dashboardData) {
+        console.log('❌ No dashboard data available');
+        return;
     }
 
-    // Create bubble chart
-    createBubbleChart();
+    console.log('🔄 Updating dashboard with data:', dashboardData);
 
-    // Update top winners
-    updateTopWinners();
+    try {
+        // Update summary cards
+        const totalClaimsEl = document.getElementById('totalClaims');
+        const totalWpondEl = document.getElementById('totalWpond');
+        const biggestWinnerEl = document.getElementById('biggestWinner');
+        const averageClaimEl = document.getElementById('averageClaim');
 
-    // Update recent activity
-    updateRecentActivity();
+        console.log('📊 Updating summary cards...');
+        if (totalClaimsEl) {
+            totalClaimsEl.textContent = dashboardData.summary.totalClaims.toLocaleString();
+            console.log('✅ Updated totalClaims:', dashboardData.summary.totalClaims);
+        }
+        if (totalWpondEl) {
+            totalWpondEl.textContent = formatWpondAmount(dashboardData.summary.totalWpond);
+            console.log('✅ Updated totalWpond:', formatWpondAmount(dashboardData.summary.totalWpond));
+        }
+        if (biggestWinnerEl) {
+            biggestWinnerEl.textContent = formatWpondAmount(dashboardData.summary.biggestAmount);
+            console.log('✅ Updated biggestWinner:', formatWpondAmount(dashboardData.summary.biggestAmount));
+        }
+        if (averageClaimEl) {
+            averageClaimEl.textContent = formatWpondAmount(dashboardData.summary.averageAmount);
+            console.log('✅ Updated averageClaim:', formatWpondAmount(dashboardData.summary.averageAmount));
+        }
 
-    // Update all winners table
-    updateAllWinners();
 
-    // Create charts
-    createDailyChart();
-    createWpondChart();
+
+
+
+        // Update top winners
+        console.log('🏆 Updating top winners...');
+        updateTopWinners();
+
+        // Update all winners table
+        console.log('📋 Updating all winners table...');
+        updateAllWinners();
+
+
+
+        // Update daily stats
+        console.log('📈 Updating daily stats...');
+        updateDailyStats();
+
+        console.log('✅ Dashboard updated successfully');
+    } catch (error) {
+        console.error('❌ Error updating dashboard:', error);
+    }
 }
 
 // Format wPOND amounts
 function formatWpondAmount(amount) {
-    if (amount >= 1e12) {
-        return (amount / 1e12).toFixed(1) + 'T';
-    } else if (amount >= 1e9) {
-        return (amount / 1e9).toFixed(1) + 'B';
-    } else if (amount >= 1e6) {
-        return (amount / 1e6).toFixed(1) + 'M';
-    } else if (amount >= 1e3) {
-        return (amount / 1e3).toFixed(1) + 'K';
+    // Handle null/undefined values
+    if (amount === null || amount === undefined) {
+        return '0';
+    }
+    
+    // Convert to number if it's a string
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    
+    if (isNaN(numAmount)) {
+        return '0';
+    }
+    
+    if (numAmount >= 1e12) {
+        return (numAmount / 1e12).toFixed(1) + 'T';
+    } else if (numAmount >= 1e9) {
+        return (numAmount / 1e9).toFixed(1) + 'B';
+    } else if (numAmount >= 1e6) {
+        return (numAmount / 1e6).toFixed(1) + 'M';
+    } else if (numAmount >= 1e3) {
+        return (numAmount / 1e3).toFixed(1) + 'K';
     } else {
-        return amount.toString();
+        return numAmount.toString();
     }
 }
 
 // Format wallet addresses
 function formatWallet(wallet) {
+    if (!wallet || typeof wallet !== 'string') {
+        console.warn('⚠️ Invalid wallet address:', wallet);
+        return 'Invalid Wallet';
+    }
     return wallet.slice(0, 8) + '...' + wallet.slice(-4);
+}
+
+// Function to adjust color brightness
+function adjustColorBrightness(hex, percent) {
+    // Remove the # if present
+    hex = hex.replace('#', '');
+    
+    // Parse the hex values
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Adjust brightness
+    const adjustR = Math.max(0, Math.min(255, r + (r * percent / 100)));
+    const adjustG = Math.max(0, Math.min(255, g + (g * percent / 100)));
+    const adjustB = Math.max(0, Math.min(255, b + (b * percent / 100)));
+    
+    // Convert back to hex
+    const newR = Math.round(adjustR).toString(16).padStart(2, '0');
+    const newG = Math.round(adjustG).toString(16).padStart(2, '0');
+    const newB = Math.round(adjustB).toString(16).padStart(2, '0');
+    
+    return `#${newR}${newG}${newB}`;
 }
 
 // Create floating bubble chart
@@ -120,20 +269,20 @@ function createBubbleChart() {
     const bubbleChart = document.getElementById('bubbleChart');
     bubbleChart.innerHTML = '';
 
-    if (!dashboardData || !dashboardData.recipients) return;
+    if (!dashboardData || !dashboardData.topWinners) return;
 
-    const topWinners = dashboardData.recipients.slice(0, 10);
+    const topWinners = dashboardData.topWinners;
 
     topWinners.forEach((winner, index) => {
         const bubble = document.createElement('div');
         bubble.className = 'floating-bubble';
         
         // Calculate bubble size based on wPOND amount
-        const size = Math.max(60, Math.min(200, 60 + (winner.wpondAmount / 1e12) * 20));
+        const size = Math.max(70, Math.min(180, 70 + (winner.amount / 1e12) * 18));
         
-        // Random position
-        const left = 10 + Math.random() * 80; // 10% to 90%
-        const top = 10 + Math.random() * 80; // 10% to 90%
+        // Better balanced positioning
+        const left = 15 + Math.random() * 70; // 15% to 85%
+        const top = 15 + Math.random() * 70; // 15% to 85%
         
         // Random animation delay and duration
         const delay = Math.random() * 2;
@@ -144,9 +293,8 @@ function createBubbleChart() {
             width: ${size}px;
             height: ${size}px;
             border-radius: 50%;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(139, 92, 246, 0.8));
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: radial-gradient(circle, #ff69b4 0%, #ff1493 70%);
+            border: 3px solid #000;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -157,38 +305,45 @@ function createBubbleChart() {
             animation: bubbleFloat ${duration}s ease-in-out infinite;
             animation-delay: ${delay}s;
             z-index: 1;
-            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+            box-shadow: 4px 4px 0px #000, 8px 8px 0px rgba(255, 105, 180, 0.3);
+            font-family: 'Press Start 2P', monospace;
         `;
 
-        // Add hover effects
+        // Add hover effects with 8-bit theme
         bubble.addEventListener('mouseenter', () => {
-            bubble.style.transform = 'scale(1.1)';
-            bubble.style.boxShadow = '0 12px 40px rgba(59, 130, 246, 0.5)';
+            bubble.style.transform = 'scale(1.05) translateY(-2px)';
+            bubble.style.boxShadow = '6px 6px 0px #000, 12px 12px 0px rgba(255, 105, 180, 0.5)';
             bubble.style.zIndex = '10';
+            bubble.style.background = 'linear-gradient(135deg, #ff1493, #ff69b4)';
         });
 
         bubble.addEventListener('mouseleave', () => {
-            bubble.style.transform = 'scale(1)';
-            bubble.style.boxShadow = '0 8px 32px rgba(59, 130, 246, 0.3)';
+            bubble.style.transform = 'scale(1) translateY(0px)';
+            bubble.style.boxShadow = '4px 4px 0px #000, 8px 8px 0px rgba(255, 105, 180, 0.3)';
             bubble.style.zIndex = '1';
+            bubble.style.background = 'linear-gradient(135deg, #ff69b4, #ff1493)';
         });
 
-        // Add click event
+        // Add click event for blockchain check
         bubble.addEventListener('click', () => {
-            showWinnerDetails(winner);
+            checkWalletOnBlockchain(winner.wallet);
         });
 
-        // Create bubble content
+        // Create bubble content with 8-bit styling
         const content = document.createElement('div');
         content.className = 'bubble-content';
-        content.innerHTML = `
-            <div class="bubble-rank">#${winner.rank}</div>
-            <div class="bubble-amount">${formatWpondAmount(winner.wpondAmount)}</div>
+        content.style.cssText = `
+            text-align: center;
+            color: #000;
+            text-shadow: 1px 1px 0px #fff;
+            font-weight: bold;
+            line-height: 1.2;
         `;
-
-        // Adjust font size based on bubble size
-        const fontSize = Math.max(10, Math.min(16, size / 8));
-        content.style.fontSize = `${fontSize}px`;
+        
+        content.innerHTML = `
+            <div class="bubble-rank" style="font-size: ${Math.max(8, Math.min(12, size / 12))}px; margin-bottom: 2px;">#${winner.rank}</div>
+            <div class="bubble-amount" style="font-size: ${Math.max(6, Math.min(10, size / 15))}px;">${formatWpondAmount(winner.amount)}</div>
+        `;
 
         bubble.appendChild(content);
         bubbleChart.appendChild(bubble);
@@ -200,29 +355,335 @@ function createBubbleChart() {
         style.id = 'bubble-animations';
         style.textContent = `
             @keyframes bubbleFloat {
-                0%, 100% { transform: translateY(0px) rotate(0deg); }
-                25% { transform: translateY(-10px) rotate(2deg); }
-                50% { transform: translateY(-5px) rotate(-1deg); }
-                75% { transform: translateY(-15px) rotate(1deg); }
+                0% { 
+                    transform: translate(0px, 0px) rotate(0deg); 
+                }
+                25% { 
+                    transform: translate(15px, -10px) rotate(2deg); 
+                }
+                50% { 
+                    transform: translate(-10px, -5px) rotate(-1deg); 
+                }
+                75% { 
+                    transform: translate(8px, -15px) rotate(1deg); 
+                }
+                100% { 
+                    transform: translate(0px, 0px) rotate(0deg); 
+                }
             }
         `;
         document.head.appendChild(style);
     }
 }
 
+// Create top winners bubble board
+function createTopWinnersBubbleBoard() {
+    const bubbleBoard = document.getElementById('topWinnersBubbleBoard');
+    bubbleBoard.innerHTML = '';
+
+    if (!dashboardData || !dashboardData.topWinners) return;
+
+    const topWinners = dashboardData.topWinners;
+
+    topWinners.forEach((winner, index) => {
+        const bubble = document.createElement('div');
+        bubble.className = 'winner-bubble';
+        
+        // Calculate bubble size based on wPOND amount (35% bigger)
+        const size = Math.max(100, Math.min(250, 100 + (winner.amount / 1e12) * 25));
+        
+        // Position in a grid-like pattern with better spacing
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        const left = 8 + (col * 28); // 3 columns with better spacing
+        const top = 8 + (row * 20); // Rows with better spacing to fit in 400px height
+        
+        // Random animation delay
+        const delay = Math.random() * 2;
+
+        // Create color variation based on position (top to bottom)
+        const colorVariation = Math.min(0.3, (top / 100) * 0.3); // 0 to 0.3 variation
+        const basePink = '#ff69b4';
+        const darkerPink = '#ff1493';
+        
+        // Adjust colors based on position
+        const adjustedBasePink = adjustColorBrightness(basePink, -colorVariation * 100);
+        const adjustedDarkerPink = adjustColorBrightness(darkerPink, -colorVariation * 100);
+
+        bubble.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            background: radial-gradient(circle, ${adjustedBasePink}40 0%, ${adjustedDarkerPink}20 70%);
+            border: 2px solid ${adjustedBasePink}60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            left: ${left}%;
+            top: ${top}%;
+            animation: bubbleFloat 8s ease-in-out infinite;
+            animation-delay: ${delay}s;
+            z-index: 1;
+            box-shadow: 2px 2px 0px #000, 4px 4px 0px rgba(255, 105, 180, 0.2);
+            font-family: 'Press Start 2P', monospace;
+        `;
+
+        // Add hover effects with 8-bit theme
+        bubble.addEventListener('mouseenter', () => {
+            bubble.style.transform = 'scale(1.05) translateY(-2px)';
+            bubble.style.boxShadow = '3px 3px 0px #000, 6px 6px 0px rgba(255, 105, 180, 0.3)';
+            bubble.style.zIndex = '10';
+            bubble.style.background = `linear-gradient(135deg, ${adjustedDarkerPink}60, ${adjustedBasePink}40)`;
+        });
+
+        bubble.addEventListener('mouseleave', () => {
+            bubble.style.transform = 'scale(1) translateY(0px)';
+            bubble.style.boxShadow = '2px 2px 0px #000, 4px 4px 0px rgba(255, 105, 180, 0.2)';
+            bubble.style.zIndex = '1';
+            bubble.style.background = `radial-gradient(circle, ${adjustedBasePink}40 0%, ${adjustedDarkerPink}20 70%)`;
+        });
+
+        // Add click event for blockchain check
+        bubble.addEventListener('click', () => {
+            checkWalletOnBlockchain(winner.wallet);
+        });
+
+        // Create bubble content with 8-bit styling
+        const content = document.createElement('div');
+        content.className = 'bubble-content';
+        content.style.cssText = `
+            text-align: center;
+            color: #000;
+            text-shadow: 1px 1px 0px #fff;
+            font-weight: bold;
+            line-height: 1.2;
+        `;
+        
+        content.innerHTML = `
+            <div class="bubble-rank" style="font-size: ${Math.max(12, Math.min(16, size / 8))}px; margin-bottom: 4px;">#${winner.rank}</div>
+            <div class="bubble-amount" style="font-size: ${Math.max(10, Math.min(14, size / 10))}px;">${formatWpondAmount(winner.amount)}</div>
+        `;
+
+        bubble.appendChild(content);
+        bubbleBoard.appendChild(bubble);
+    });
+}
+
+// Create recent winners bubble board
+function createRecentWinnersBubbleBoard() {
+    const bubbleBoard = document.getElementById('recentWinnersBubbleBoard');
+    bubbleBoard.innerHTML = '';
+
+    if (!dashboardData || !dashboardData.recentClaims) return;
+
+    // Show the most recent claims (already sorted by timestamp in the data)
+    const claimsToShow = dashboardData.recentClaims.slice(0, 20); // Show last 20 recent claims
+
+    if (claimsToShow.length === 0) {
+        bubbleBoard.innerHTML = `
+            <div style="
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                color: #ff69b4;
+                font-family: 'Press Start 2P', monospace;
+                font-size: 14px;
+            ">
+                <div style="margin-bottom: 10px;">🕐</div>
+                <div>NO RECENT WINNERS</div>
+                <div style="font-size: 10px; margin-top: 10px; opacity: 0.8;">CHECK BACK LATER!</div>
+            </div>
+        `;
+        return;
+    }
+
+    // Update the section title to show actual date range
+    const sectionTitle = document.querySelector('.bubble-board-section h2');
+    if (sectionTitle) {
+        const oldestDate = claimsToShow[claimsToShow.length - 1]?.date || 'Unknown';
+        const newestDate = claimsToShow[0]?.date || 'Unknown';
+        sectionTitle.textContent = `🕐 RECENT WINNERS (${newestDate} to ${oldestDate})`;
+    }
+
+    claimsToShow.forEach((claim, index) => {
+        const bubble = document.createElement('div');
+        bubble.className = 'recent-bubble';
+        
+        // Calculate bubble size based on wPOND amount (35% bigger)
+        const size = Math.max(67, Math.min(162, 67 + (claim.amount / 1e9) * 13));
+        
+        // Position in a grid-like pattern with better spacing
+        const row = Math.floor(index / 4);
+        const col = index % 4;
+        const left = 6 + (col * 22); // 4 columns with better spacing
+        const top = 8 + (row * 18); // Rows with better spacing to fit in 400px height
+        
+        // Random animation delay
+        const delay = Math.random() * 2;
+
+        // Create color variation based on position (top to bottom) with blue hue
+        const colorVariation = Math.min(0.3, (top / 100) * 0.3); // 0 to 0.3 variation
+        const basePink = '#ff69b4';
+        const darkerPink = '#ff1493';
+        const blueHue = '#4a90e2'; // Add blue hue
+        
+        // Adjust colors based on position with blue tint
+        const adjustedBasePink = adjustColorBrightness(basePink, -colorVariation * 100);
+        const adjustedDarkerPink = adjustColorBrightness(darkerPink, -colorVariation * 100);
+        const adjustedBlue = adjustColorBrightness(blueHue, -colorVariation * 50);
+
+        bubble.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            background: radial-gradient(circle, ${adjustedBlue}40 0%, ${adjustedBasePink}30 70%);
+            border: 2px solid ${adjustedBlue}60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            left: ${left}%;
+            top: ${top}%;
+            animation: bubbleFloat 8s ease-in-out infinite;
+            animation-delay: ${delay}s;
+            z-index: 1;
+            box-shadow: 2px 2px 0px #000, 4px 4px 0px rgba(74, 144, 226, 0.2);
+            font-family: 'Press Start 2P', monospace;
+        `;
+
+        // Add hover effects with 8-bit theme
+        bubble.addEventListener('mouseenter', () => {
+            bubble.style.transform = 'scale(1.05) translateY(-2px)';
+            bubble.style.boxShadow = '3px 3px 0px #000, 6px 6px 0px rgba(74, 144, 226, 0.4)';
+            bubble.style.zIndex = '10';
+            bubble.style.background = `linear-gradient(135deg, ${adjustedBlue}60, ${adjustedBasePink}40)`;
+        });
+
+        bubble.addEventListener('mouseleave', () => {
+            bubble.style.transform = 'scale(1) translateY(0px)';
+            bubble.style.boxShadow = '2px 2px 0px #000, 4px 4px 0px rgba(74, 144, 226, 0.2)';
+            bubble.style.zIndex = '1';
+            bubble.style.background = `radial-gradient(circle, ${adjustedBlue}40 0%, ${adjustedBasePink}30 70%)`;
+        });
+
+        // Add click event for blockchain check
+        bubble.addEventListener('click', () => {
+            checkWalletOnBlockchain(claim.wallet);
+        });
+
+        // Create bubble content with 8-bit styling
+        const content = document.createElement('div');
+        content.className = 'bubble-content';
+        content.style.cssText = `
+            text-align: center;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000, -1px -1px 2px #000;
+            font-size: ${Math.max(10, Math.min(14, size / 8))}px;
+            font-weight: bold;
+            line-height: 1.2;
+            padding: 4px;
+        `;
+        
+        const isToday = claim.date === today;
+        content.innerHTML = `
+            <div style="font-size: ${Math.max(8, Math.min(12, size / 10))}px; margin-bottom: 2px;">${isToday ? '🕐' : '📅'}</div>
+            <div style="font-size: ${Math.max(8, Math.min(12, size / 10))}px;">${formatWpondAmount(claim.amount)}</div>
+            <div style="font-size: ${Math.max(6, Math.min(8, size / 15))}px; opacity: 0.9; margin-top: 2px;">${isToday ? 'TODAY' : claim.date}</div>
+        `;
+
+        bubble.appendChild(content);
+        bubbleBoard.appendChild(bubble);
+    });
+}
+
+// Function to check wallet on blockchain
+function checkWalletOnBlockchain(walletAddress) {
+    // Open Solana Explorer in new tab
+    const solanaExplorerUrl = `https://solscan.io/account/${walletAddress}`;
+    window.open(solanaExplorerUrl, '_blank');
+    
+    // Show notification
+    showNotification(`🔍 Checking wallet ${formatWallet(walletAddress)} on blockchain...`, 'info');
+}
+
+// Function to show notifications
+function showNotification(message, type = 'info') {
+    // Remove existing notification
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #ff69b4, #ff1493);
+        border: 3px solid #000;
+        color: #000;
+        padding: 15px 20px;
+        border-radius: 0;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 12px;
+        z-index: 1000;
+        box-shadow: 4px 4px 0px #000;
+        animation: notificationSlideIn 0.3s ease-out;
+        max-width: 300px;
+        text-align: center;
+    `;
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'notificationSlideOut 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 3000);
+}
+
+// Add notification animations
+if (!document.getElementById('notification-animations')) {
+    const style = document.createElement('style');
+    style.id = 'notification-animations';
+    style.textContent = `
+        @keyframes notificationSlideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes notificationSlideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 // Update top winners grid
 function updateTopWinners() {
-    const winnersGrid = document.getElementById('winnersGrid');
-    if (!dashboardData || !dashboardData.recipients) return;
+    const winnersGrid = document.getElementById('topWinnersGrid');
+    if (!dashboardData || !dashboardData.allRecipients) return;
 
-    const topWinners = dashboardData.recipients.slice(0, 10);
+    // Use allRecipients instead of topWinners, take top 10
+    const topWinners = dashboardData.allRecipients.slice(0, 10);
     
     winnersGrid.innerHTML = topWinners.map((winner, index) => `
         <div class="winner-card ${index === 0 ? 'top-winner' : ''}" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
             <div class="rank-icon">${getRankIcon(index + 1)}</div>
             <div class="winner-wallet">${formatWallet(winner.wallet)}</div>
-            <div class="winner-amount">${formatWpondAmount(winner.wpondAmount)} wPOND</div>
-            <div class="winner-claims">${winner.claimCount} claims</div>
+            <div class="winner-amount">${formatWpondAmount(winner.totalWpondReceived)} wPOND</div>
+            <div class="winner-date">${new Date(winner.lastClaim * 1000).toISOString().split('T')[0]}</div>
         </div>
     `).join('');
 }
@@ -236,12 +697,21 @@ function getRankIcon(rank) {
 // Update recent activity
 function updateRecentActivity() {
     const recentActivity = document.getElementById('recentActivity');
-    if (!dashboardData || !dashboardData.recentClaims) return;
+    if (!recentActivity) {
+        console.warn('⚠️ recentActivity element not found');
+        return;
+    }
+    
+    if (!dashboardData || !dashboardData.recentClaims) {
+        console.warn('⚠️ No recent claims data available');
+        recentActivity.innerHTML = '<tr><td colspan="3" class="no-results">No recent activity data available</td></tr>';
+        return;
+    }
 
     recentActivity.innerHTML = dashboardData.recentClaims.map(claim => `
         <tr>
             <td class="wallet-cell" onclick="copyToClipboard('${claim.wallet}')">${formatWallet(claim.wallet)}</td>
-            <td>${formatWpondAmount(claim.wpondAmount)} wPOND</td>
+            <td>${formatWpondAmount(claim.amount)} wPOND</td>
             <td>${claim.date}</td>
         </tr>
     `).join('');
@@ -249,17 +719,17 @@ function updateRecentActivity() {
 
 // Update all winners table
 function updateAllWinners() {
-    const allWinners = document.getElementById('allWinners');
-    if (!dashboardData || !dashboardData.recipients) return;
+    const winnersTableBody = document.getElementById('winnersTableBody');
+    if (!dashboardData || !dashboardData.allRecipients) return;
 
-    allWinners.innerHTML = dashboardData.recipients.map(winner => `
+    winnersTableBody.innerHTML = dashboardData.allRecipients.map((winner, index) => `
         <tr onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
-            <td>${winner.rank}</td>
-            <td class="wallet-cell" onclick="copyToClipboard('${winner.wallet}')">${formatWallet(winner.wallet)}</td>
-            <td>${formatWpondAmount(winner.wpondAmount)} wPOND</td>
-            <td>${winner.claimCount}</td>
-            <td>${winner.firstClaimDate}</td>
-            <td>${winner.lastClaimDate}</td>
+            <td>${index + 1}</td>
+            <td class="wallet-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.wallet}')" title="Click to copy wallet">${formatWallet(winner.wallet)}</td>
+            <td>${formatWpondAmount(winner.totalWpondReceived)} wPOND</td>
+            <td class="claims-cell">${winner.transferCount || 1} 🔥</td>
+            <td>${new Date(winner.lastClaim * 1000).toISOString().split('T')[0]}</td>
+            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.transfers?.[0]?.signature || 'N/A'}')" title="Click to copy signature">${(winner.transfers?.[0]?.signature || 'N/A').substring(0, 8)}...</td>
         </tr>
     `).join('');
 }
@@ -270,12 +740,12 @@ function showWinnerDetails(winner) {
     const details = document.getElementById('winnerDetails');
     
     details.innerHTML = `
-        <h3>🏆 Winner #${winner.rank}</h3>
+        <h3>🏆 Winner Details</h3>
         <p><strong>Wallet:</strong> <span class="wallet-cell" onclick="copyToClipboard('${winner.wallet}')">${winner.wallet}</span></p>
-        <p><strong>Total wPOND:</strong> ${formatWpondAmount(winner.wpondAmount)}</p>
-        <p><strong>Claims:</strong> ${winner.claimCount}</p>
-        <p><strong>First Claim:</strong> ${winner.firstClaimDate}</p>
-        <p><strong>Last Claim:</strong> ${winner.lastClaimDate}</p>
+        <p><strong>Total wPOND:</strong> ${formatWpondAmount(winner.totalWpondReceived)}</p>
+        <p><strong>Claims:</strong> ${winner.transferCount}</p>
+        <p><strong>First Claim:</strong> ${new Date(winner.firstClaim * 1000).toISOString().split('T')[0]}</p>
+        <p><strong>Last Claim:</strong> ${new Date(winner.lastClaim * 1000).toISOString().split('T')[0]}</p>
     `;
     
     modal.style.display = 'block';
@@ -307,115 +777,772 @@ function copyToClipboard(text) {
 }
 
 // Close modal
-document.querySelector('.close').addEventListener('click', () => {
-    document.getElementById('winnerModal').style.display = 'none';
-});
+const closeButton = document.querySelector('.close');
+if (closeButton) {
+    closeButton.addEventListener('click', () => {
+        const modal = document.getElementById('winnerModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
 
 window.addEventListener('click', (event) => {
     const modal = document.getElementById('winnerModal');
-    if (event.target === modal) {
+    if (event.target === modal && modal) {
         modal.style.display = 'none';
     }
 });
 
 // Create daily distribution chart
-function createDailyChart() {
-    const ctx = document.getElementById('dailyChart').getContext('2d');
-    
-    // Sample daily data - in real implementation, this would come from the API
-    const dailyData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-        datasets: [{
-            label: 'Daily wPOND Distribution',
-            data: [120, 190, 300, 500, 200, 300, 400],
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            borderWidth: 2,
-            pointBackgroundColor: '#3b82f6',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            tension: 0.4
-        }]
-    };
 
-    new Chart(ctx, {
-        type: 'line',
-        data: dailyData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#ffffff'
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#ffffff'
-                    }
-                },
-                x: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#ffffff'
-                    }
-                }
+
+// Create daily bubble chart
+function createDailyBubbleChart() {
+    const dailyBubbleChart = document.getElementById('dailyBubbleChart');
+    dailyBubbleChart.innerHTML = '';
+
+    if (!dashboardData || !dashboardData.recentClaims) return;
+
+    // Get today's date
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Filter today's claims
+    const todaysClaims = dashboardData.recentClaims.filter(claim => claim.date === today);
+    
+    // If no today's claims, show recent claims
+    const claimsToShow = todaysClaims.length > 0 ? todaysClaims : dashboardData.recentClaims.slice(0, 8);
+
+    claimsToShow.forEach((claim, index) => {
+        const bubble = document.createElement('div');
+        bubble.className = 'floating-bubble daily-bubble';
+        
+        // Calculate bubble size based on wPOND amount
+        const size = Math.max(50, Math.min(120, 50 + (claim.amount / 1e9) * 10));
+        
+        // Position in a grid-like pattern
+        const row = Math.floor(index / 4);
+        const col = index % 4;
+        const left = 5 + (col * 22.5); // 4 columns
+        const top = 10 + (row * 30); // Rows
+        
+        // Random animation delay
+        const delay = Math.random() * 3;
+
+        bubble.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 0;
+            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            border: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            left: ${left}%;
+            top: ${top}%;
+            animation: bubbleFloat 6s ease-in-out infinite;
+            animation-delay: ${delay}s;
+            z-index: 1;
+            box-shadow: 3px 3px 0px #000, 6px 6px 0px rgba(255, 105, 180, 0.3);
+            image-rendering: pixelated;
+            font-family: 'Press Start 2P', monospace;
+        `;
+
+        // Add hover effects with 8-bit theme
+        bubble.addEventListener('mouseenter', () => {
+            bubble.style.transform = 'scale(1.05) translateY(-2px)';
+            bubble.style.boxShadow = '4px 4px 0px #000, 8px 8px 0px rgba(255, 105, 180, 0.5)';
+            bubble.style.zIndex = '10';
+            bubble.style.background = 'linear-gradient(135deg, #ff1493, #ff69b4)';
+        });
+
+        bubble.addEventListener('mouseleave', () => {
+            bubble.style.transform = 'scale(1) translateY(0px)';
+            bubble.style.boxShadow = '3px 3px 0px #000, 6px 6px 0px rgba(255, 105, 180, 0.3)';
+            bubble.style.zIndex = '1';
+            bubble.style.background = 'linear-gradient(135deg, #ff69b4, #ff1493)';
+        });
+
+        // Add click event for blockchain check
+        bubble.addEventListener('click', () => {
+            checkWalletOnBlockchain(claim.wallet);
+        });
+
+        // Create bubble content with 8-bit styling
+        const content = document.createElement('div');
+        content.className = 'bubble-content';
+        content.style.cssText = `
+            text-align: center;
+            color: #000;
+            text-shadow: 1px 1px 0px #fff;
+            font-weight: bold;
+            line-height: 1.2;
+        `;
+        
+        content.innerHTML = `
+            <div class="bubble-wallet" style="font-size: ${Math.max(6, Math.min(8, size / 12))}px; margin-bottom: 2px;">${formatWallet(claim.wallet)}</div>
+            <div class="bubble-amount" style="font-size: ${Math.max(4, Math.min(6, size / 15))}px;">${formatWpondAmount(claim.amount)}</div>
+            <div class="bubble-hint" style="font-size: ${Math.max(3, Math.min(4, size / 20))}px; opacity: 0.8; margin-top: 1px;">CLICK</div>
+        `;
+
+        bubble.appendChild(content);
+        dailyBubbleChart.appendChild(bubble);
+    });
+}
+
+// Update daily stats
+function updateDailyStats() {
+    if (!dashboardData || !dashboardData.recentClaims) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const todaysClaims = dashboardData.recentClaims.filter(claim => claim.date === today);
+    
+    // Calculate today's stats
+    const todayWinners = new Set(todaysClaims.map(claim => claim.wallet)).size;
+    const todayWpond = todaysClaims.reduce((sum, claim) => sum + claim.amount, 0);
+    const todayClaims = todaysClaims.length;
+
+    // Update daily stats display with null checks
+    const todayWinnersEl = document.getElementById('todayWinners');
+    const todayWpondEl = document.getElementById('todayWpond');
+    const todayClaimsEl = document.getElementById('todayClaims');
+    
+    if (todayWinnersEl) todayWinnersEl.textContent = todayWinners;
+    if (todayWpondEl) todayWpondEl.textContent = formatWpondAmount(todayWpond);
+    if (todayClaimsEl) todayClaimsEl.textContent = todayClaims;
+}
+
+// Filter winners based on selected criteria
+function filterWinners(filterType) {
+    if (!dashboardData) return;
+
+    // Update active button
+    document.querySelectorAll('.filter-controls button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    let filteredWinners = [];
+
+    switch (filterType) {
+        case 'all':
+            filteredWinners = dashboardData.allRecipients;
+            break;
+        case 'top10':
+            filteredWinners = dashboardData.allRecipients.slice(0, 10);
+            break;
+        case 'top50':
+            filteredWinners = dashboardData.allRecipients.slice(0, 50);
+            break;
+        case 'top100':
+            filteredWinners = dashboardData.allRecipients.slice(0, 100);
+            break;
+        case 'topClaimers':
+            // Show top claimers (wallets with most claims)
+            if (dashboardData.topClaimers) {
+                filteredWinners = dashboardData.topClaimers.map(claimer => ({
+                    wallet: claimer.wallet,
+                    amount: claimer.totalAmount,
+                    claimCount: claimer.claimCount,
+                    date: claimer.lastClaimDate,
+                    signature: 'Multiple claims'
+                }));
             }
+            break;
+        case 'multiClaimers':
+            // Show wallets with multiple claims (2 or more) - deduplicate and show total amounts
+            const walletTotals = {};
+            const walletClaimCounts = {};
+            
+            dashboardData.allRecipients.forEach(winner => {
+                const wallet = winner.wallet;
+                if (!walletTotals[wallet]) {
+                    walletTotals[wallet] = 0;
+                    walletClaimCounts[wallet] = winner.claimCount || 1; // Use the actual claim count
+                }
+                walletTotals[wallet] += winner.amount;
+            });
+            
+            // Filter wallets with 2 or more claims
+            filteredWinners = Object.keys(walletTotals)
+                .filter(wallet => walletClaimCounts[wallet] >= 2)
+                .map(wallet => ({
+                    wallet: wallet,
+                    amount: walletTotals[wallet],
+                    claimCount: walletClaimCounts[wallet],
+                    date: dashboardData.allRecipients.find(w => w.wallet === wallet)?.date || 'Multiple dates',
+                    signature: 'Multiple claims'
+                }))
+                .sort((a, b) => b.amount - a.amount);
+            
+            console.log('🔍 Multi-Claimers Filter Debug:');
+            console.log(`   - Total unique wallets: ${Object.keys(walletTotals).length}`);
+            console.log(`   - Wallets with 2+ claims: ${filteredWinners.length}`);
+            console.log(`   - Sample multi-claimer:`, filteredWinners[0]);
+            break;
+        default:
+            filteredWinners = dashboardData.allRecipients;
+    }
+
+    updateFilteredWinnersTable(filteredWinners);
+}
+
+// Update filtered winners table
+function updateFilteredWinnersTable(winners) {
+    const winnersTableBody = document.getElementById('winnersTableBody');
+    
+    if (winners.length === 0) {
+        winnersTableBody.innerHTML = '<tr><td colspan="6" class="no-results">No winners found for this filter</td></tr>';
+        return;
+    }
+    
+    winnersTableBody.innerHTML = winners.map((winner, index) => `
+        <tr onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
+            <td>${index + 1}</td>
+            <td class="wallet-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.wallet}')" title="Click to copy wallet">${formatWallet(winner.wallet)}</td>
+            <td>${formatWpondAmount(winner.totalWpondReceived)} wPOND</td>
+            <td class="claims-cell">${winner.transferCount || 1} 🔥</td>
+            <td>${new Date(winner.lastClaim * 1000).toISOString().split('T')[0]}</td>
+            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.transfers?.[0]?.signature || 'N/A'}')" title="Click to copy signature">${(winner.transfers?.[0]?.signature || 'N/A').substring(0, 8)}...</td>
+        </tr>
+    `).join('');
+}
+
+// Reset all filters
+function resetFilters() {
+    document.querySelectorAll('.filter-controls button').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.filter-controls button').classList.add('active');
+    filterWinners('all');
+}
+
+// Wallet search functionality
+async function searchWallet() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) {
+        showNotification('Search input not found', 'error');
+        return;
+    }
+    
+    const searchValue = searchInput.value.trim();
+    
+    if (!searchValue) {
+        showNotification('Enter a wallet address or .sol domain to search', 'error');
+        return;
+    }
+    
+    showNotification('🔍 Searching local data...', 'info');
+    
+    try {
+        let walletAddress = searchValue;
+        
+        // Check if it's an SNS (.sol) domain
+        if (searchValue.endsWith('.sol')) {
+            const snsAddress = await resolveSNS(searchValue);
+            if (snsAddress) {
+                walletAddress = snsAddress;
+            } else {
+                showNotification('❌ SNS domain not found or invalid', 'error');
+                return;
+            }
+        }
+        
+        // Validate wallet address format
+        if (!isValidSolanaAddress(walletAddress)) {
+            showNotification('❌ Invalid wallet address format', 'error');
+            return;
+        }
+        
+        // Search in our local data
+        const result = await searchWalletInData(walletAddress);
+        
+        if (result) {
+            showNotification(`🎯 FOUND! Rank #${result.rank} with ${formatWpondAmount(result.amount)} wPOND`, 'success');
+            
+            // Show detailed result in a modal or highlight in table
+            showSearchResult(result);
+        } else {
+            showNotification(`🔍 Wallet ${formatWallet(walletAddress)} not found in wPOND data`, 'info');
+        }
+        
+        // Clear the search input
+        searchInput.value = '';
+        
+    } catch (error) {
+        console.error('Search error:', error);
+        showNotification('❌ Error searching wallet. Please try again.', 'error');
+    }
+}
+
+// Resolve SNS (.sol) domain to wallet address
+async function resolveSNS(snsDomain) {
+    try {
+        console.log('🔍 Resolving SNS domain:', snsDomain);
+        
+        // Try Helius Name Service API first (most reliable)
+        console.log('🔄 Trying Helius Name Service...');
+        try {
+            const response = await fetch(`https://api.helius.xyz/v0/domains/lookup?api-key=e7472550-170d-4be0-ae9f-dccf30e8d5b8`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ domains: [snsDomain] })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('🔍 Helius Name Service response:', data);
+                
+                if (data && data.length > 0 && data[0].owner) {
+                    console.log('✅ SNS resolved via Helius Name Service:', data[0].owner);
+                    return data[0].owner;
+                }
+            } else {
+                console.log('❌ Helius Name Service error:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.log('❌ Helius Name Service error:', error.message);
+        }
+        
+        // Try direct SNS resolution via Helius
+        console.log('🔄 Trying direct SNS resolution...');
+        try {
+            const response = await fetch(`https://api.helius.xyz/v0/sns/resolve?api-key=e7472550-170d-4be0-ae9f-dccf30e8d5b8`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ domain: snsDomain })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('🔍 Direct SNS resolution response:', data);
+                
+                if (data && data.owner) {
+                    console.log('✅ SNS resolved via direct Helius SNS:', data.owner);
+                    return data.owner;
+                }
+            } else {
+                console.log('❌ Direct SNS resolution failed:', response.status);
+            }
+        } catch (error) {
+            console.log('❌ Direct SNS resolution error:', error.message);
+        }
+        
+        // Try Bonfida API as fallback
+        console.log('🔄 Trying Bonfida API...');
+        try {
+            const response = await fetch(`https://sns-api.bonfida.com/v2/resolve/${snsDomain}`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log('🔍 Bonfida API response:', data);
+                
+                if (data && data.owner) {
+                    console.log('✅ SNS resolved via Bonfida:', data.owner);
+                    return data.owner;
+                }
+            } else {
+                console.log('❌ Bonfida API failed:', response.status);
+            }
+        } catch (error) {
+            console.log('❌ Bonfida API error:', error.message);
+        }
+        
+        // Try Solana Name Service as final fallback
+        console.log('🔄 Trying Solana Name Service...');
+        try {
+            const response = await fetch(`https://api.solana.name/v1/resolve/${snsDomain}`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log('🔍 Solana Name Service response:', data);
+                
+                if (data && data.result && data.result.owner) {
+                    console.log('✅ SNS resolved via Solana Name Service:', data.result.owner);
+                    return data.result.owner;
+                }
+            } else {
+                console.log('❌ Solana Name Service error:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.log('❌ Solana Name Service request failed:', error.message);
+        }
+        
+        console.log('❌ SNS resolution failed for:', snsDomain);
+        return null;
+    } catch (error) {
+        console.error('❌ SNS resolution error:', error);
+        return null;
+    }
+}
+
+// Validate Solana address format
+function isValidSolanaAddress(address) {
+    return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
+}
+
+// Search wallet in our data
+async function searchWalletInData(walletAddress) {
+    console.log('🔍 Searching for wallet:', walletAddress);
+    console.log('🔍 dashboardData exists:', !!dashboardData);
+    console.log('🔍 allRecipients exists:', !!dashboardData?.allRecipients);
+    console.log('🔍 Total recipients:', dashboardData?.allRecipients?.length || 0);
+    
+    if (!dashboardData || !dashboardData.allRecipients) {
+        console.log('❌ No dashboard data available');
+        return null;
+    }
+    
+    // Search in all recipients
+    const foundRecipient = dashboardData.allRecipients.find(recipient => 
+        recipient.wallet.toLowerCase() === walletAddress.toLowerCase()
+    );
+    
+    console.log('🔍 Found recipient:', !!foundRecipient);
+    if (foundRecipient) {
+        console.log('🔍 Recipient details:', foundRecipient);
+    }
+    
+    if (foundRecipient) {
+        // Calculate rank based on amount
+        const sortedRecipients = [...dashboardData.allRecipients].sort((a, b) => b.amount - a.amount);
+        const rank = sortedRecipients.findIndex(r => r.wallet === foundRecipient.wallet) + 1;
+        
+        console.log('🔍 Calculated rank:', rank);
+        
+        return {
+            ...foundRecipient,
+            rank: rank
+        };
+    }
+    
+    return null;
+}
+
+// Show search result details
+function showSearchResult(result) {
+    const modal = document.createElement('div');
+    modal.className = 'search-result-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    `;
+    
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: linear-gradient(135deg, #ff69b4, #ff1493);
+        border: 3px solid #000;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+        color: #000;
+        font-family: 'Press Start 2P', monospace;
+        max-width: 400px;
+        box-shadow: 8px 8px 0px #000;
+    `;
+    
+    content.innerHTML = `
+        <h3 style="margin-bottom: 20px; font-size: 16px;">🎯 SEARCH RESULT</h3>
+        <div style="margin-bottom: 15px;">
+            <div style="font-size: 12px; margin-bottom: 5px;">RANK</div>
+            <div style="font-size: 18px; font-weight: bold;">#${result.rank}</div>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <div style="font-size: 12px; margin-bottom: 5px;">WALLET</div>
+            <div style="font-size: 10px; word-break: break-all;">${result.wallet}</div>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <div style="font-size: 12px; margin-bottom: 5px;">TOTAL wPOND</div>
+            <div style="font-size: 16px; font-weight: bold;">${formatWpondAmount(result.amount)}</div>
+        </div>
+        <button onclick="this.parentElement.parentElement.remove()" style="
+            background: #000;
+            color: #ff69b4;
+            border: 2px solid #ff69b4;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        ">CLOSE</button>
+    `;
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
         }
     });
 }
 
-// Create wPOND distribution chart
-function createWpondChart() {
-    const ctx = document.getElementById('wpondChart').getContext('2d');
+// Set payout alert for wallet
+function setPayoutAlert() {
+    const alertInput = document.getElementById('alertInput');
     
-    // Sample distribution data
-    const distributionData = {
-        labels: ['0-1B', '1B-5B', '5B-10B', '10B+'],
-        datasets: [{
-            label: 'wPOND Distribution',
-            data: [800, 400, 200, 50],
-            backgroundColor: [
-                'rgba(59, 130, 246, 0.8)',
-                'rgba(139, 92, 246, 0.8)',
-                'rgba(6, 182, 212, 0.8)',
-                'rgba(34, 197, 94, 0.8)'
-            ],
-            borderWidth: 0,
-            hoverOffset: 4
-        }]
-    };
+    if (!alertInput) {
+        console.log('Alert input not found');
+        return;
+    }
+    
+    const alertValue = alertInput.value.trim();
+    
+    if (!alertValue) {
+        showNotification('Enter a wallet address to set alerts', 'error');
+        return;
+    }
+    
+    if (!isValidSolanaAddress(alertValue)) {
+        showNotification('❌ Invalid wallet address format', 'error');
+        return;
+    }
+    
+    // Store alert in localStorage
+    const alerts = JSON.parse(localStorage.getItem('wpondAlerts') || '[]');
+    if (!alerts.includes(alertValue)) {
+        alerts.push(alertValue);
+        localStorage.setItem('wpondAlerts', JSON.stringify(alerts));
+        
+        // Start monitoring for this wallet
+        startPayoutMonitoring(alertValue);
+        
+        showNotification(`🔔 ALERT SET! Monitoring ${formatWallet(alertValue)} for payouts!`, 'success');
+        
+        // Update alert status display
+        updateAlertStatus();
+        
+        // Clear input
+        alertInput.value = '';
+    } else {
+        showNotification('⚠️ Alert already exists for this wallet', 'warning');
+    }
+}
 
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: distributionData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#ffffff',
-                        padding: 20,
-                        usePointStyle: true
+// Update alert status display
+function updateAlertStatus() {
+    const alerts = JSON.parse(localStorage.getItem('wpondAlerts') || '[]');
+    const alertStatus = document.getElementById('alertStatus');
+    
+    if (alertStatus) {
+        if (alerts.length > 0) {
+            alertStatus.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>🔔</span>
+                    <span>Monitoring ${alerts.length} wallet(s)</span>
+                    <button onclick="clearAllAlerts()" style="
+                        background: #ff1493;
+                        color: #000;
+                        border: 1px solid #000;
+                        padding: 4px 8px;
+                        font-size: 10px;
+                        cursor: pointer;
+                        border-radius: 4px;
+                        font-family: 'Press Start 2P', monospace;
+                    ">CLEAR ALL</button>
+                </div>
+            `;
+            alertStatus.className = 'alert-status active';
+        } else {
+            alertStatus.innerHTML = 'No alerts set';
+            alertStatus.className = 'alert-status';
+        }
+    }
+}
+
+// Clear all alerts
+function clearAllAlerts() {
+    localStorage.removeItem('wpondAlerts');
+    updateAlertStatus();
+    showNotification('🗑️ All alerts cleared!', 'info');
+}
+
+// Start monitoring for payouts
+function startPayoutMonitoring(walletAddress) {
+    // Check every 15 seconds for new payouts (more aggressive for racing)
+    setInterval(async () => {
+        try {
+            const hasNewPayout = await checkForNewPayout(walletAddress);
+            if (hasNewPayout) {
+                showCashNotification(walletAddress);
+            }
+        } catch (error) {
+            console.error('Payout monitoring error:', error);
+        }
+    }, 15000); // 15 seconds for faster detection
+}
+
+// Check for new payouts using Helius API
+async function checkForNewPayout(walletAddress) {
+    try {
+        // Get the last known payout timestamp for this wallet
+        const lastCheck = localStorage.getItem(`lastPayoutCheck_${walletAddress}`);
+        const currentTime = Date.now();
+        
+        // Query Helius API for recent transactions
+        const response = await fetch(`https://api.helius.xyz/v0/addresses/${walletAddress}/transactions?api-key=e7472550-170d-4be0-ae9f-dccf30e8d5b8`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            const transactions = await response.json();
+            
+            // Look for recent wPOND token transfers to this wallet
+            const wpondToken = '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq';
+            
+            for (const tx of transactions.slice(0, 5)) { // Check last 5 transactions
+                if (tx.timestamp && (!lastCheck || tx.timestamp > parseInt(lastCheck))) {
+                    // Check if this is a wPOND transfer to our monitored wallet
+                    if (tx.tokenTransfers && tx.tokenTransfers.length > 0) {
+                        for (const transfer of tx.tokenTransfers) {
+                            if (transfer.mint === wpondToken && 
+                                transfer.toUserAccount === walletAddress &&
+                                transfer.amount > 0) {
+                                
+                                // Found a new payout!
+                                localStorage.setItem(`lastPayoutCheck_${walletAddress}`, currentTime);
+                                return true;
+                            }
+                        }
                     }
                 }
             }
         }
+        
+        return false;
+    } catch (error) {
+        console.error('Payout check error:', error);
+        return false;
+    }
+}
+
+// Show cash notification with 8-bit sound effect
+function showCashNotification(walletAddress) {
+    // Create sexy cash notification
+    const notification = document.createElement('div');
+    notification.className = 'cash-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #ff69b4, #ff1493);
+        border: 4px solid #000;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+        color: #000;
+        font-family: 'Press Start 2P', monospace;
+        z-index: 1000;
+        box-shadow: 8px 8px 0px #000, 0 0 50px rgba(255, 105, 180, 0.8);
+        animation: cashNotificationPulse 0.5s ease-in-out;
+        max-width: 400px;
+    `;
+    
+    notification.innerHTML = `
+        <div style="font-size: 24px; margin-bottom: 15px;">💰 CASH MONEY! 💰</div>
+        <div style="font-size: 14px; margin-bottom: 10px;">NEW wPOND PAYOUT DETECTED!</div>
+        <div style="font-size: 10px; margin-bottom: 15px; word-break: break-all;">Wallet: ${formatWallet(walletAddress)}</div>
+        <div style="font-size: 12px; margin-bottom: 20px;">🚀 RACE TO CLAIM YOUR COINS! 🚀</div>
+        <button onclick="this.parentElement.remove()" style="
+            background: #000;
+            color: #ff69b4;
+            border: 2px solid #ff69b4;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        ">GOT IT!</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Play 8-bit cash sound
+    playCashSound();
+    
+    // Remove notification after 10 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 10000);
+}
+
+// Play 8-bit cash sound effect
+function playCashSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Create 8-bit style cash sound
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(1600, audioContext.currentTime + 0.2);
+        oscillator.frequency.setValueAtTime(2000, audioContext.currentTime + 0.3);
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.4);
+        
+    } catch (error) {
+        console.log('Audio not supported, showing visual notification only');
+    }
+}
+
+// Load saved alerts on page load
+function loadSavedAlerts() {
+    const alerts = JSON.parse(localStorage.getItem('wpondAlerts') || '[]');
+    alerts.forEach(wallet => {
+        startPayoutMonitoring(wallet);
     });
+    
+    if (alerts.length > 0) {
+        const alertStatus = document.getElementById('alertStatus');
+        if (alertStatus) {
+            alertStatus.innerHTML = `🔔 Monitoring ${alerts.length} wallet(s) for payouts`;
+            alertStatus.className = 'alert-status active';
+        }
+    }
 }
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
+    loadSavedAlerts();
+    
+    // Add enter key support for search
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchWallet();
+            }
+        });
+    }
+    
+    // Add enter key support for alert
+    const alertInput = document.getElementById('alertInput');
+    if (alertInput) {
+        alertInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                setPayoutAlert();
+            }
+        });
+    }
 }); 

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: #ff69b4; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #2d5a2d; }
+        .error { background: #5a2d2d; }
+        .info { background: #2d2d5a; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard Data Test</h1>
+    <div id="status" class="status info">Loading...</div>
+    <div id="data"></div>
+
+    <script>
+        async function testDataLoading() {
+            const statusDiv = document.getElementById('status');
+            const dataDiv = document.getElementById('data');
+            
+            try {
+                statusDiv.textContent = 'Fetching data...';
+                statusDiv.className = 'status info';
+                
+                const response = await fetch('helius-dashboard-data.json');
+                statusDiv.textContent = `Response status: ${response.status}`;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                statusDiv.textContent = 'Data loaded successfully!';
+                statusDiv.className = 'status success';
+                
+                dataDiv.innerHTML = `
+                    <h2>Data Summary:</h2>
+                    <p>Total Claims: ${data.summary.totalClaims}</p>
+                    <p>Total wPOND: ${data.summary.totalWpond}</p>
+                    <p>Biggest Winner: ${data.summary.biggestWinner}</p>
+                    <p>Biggest Amount: ${data.summary.biggestAmount}</p>
+                    <p>Average Amount: ${data.summary.averageAmount}</p>
+                    <h3>Ecosystem Rewards:</h3>
+                    <p>Total Claims: ${data.ecosystemRewards.totalClaims}</p>
+                    <p>Total wPOND: ${data.ecosystemRewards.totalWpond}</p>
+                    <p>Top Winners Count: ${data.topWinners.length}</p>
+                    <h3>Sample Top Winner:</h3>
+                    <p>Wallet: ${data.topWinners[0].wallet}</p>
+                    <p>Amount: ${data.topWinners[0].amount}</p>
+                `;
+            } catch (error) {
+                statusDiv.textContent = `Error: ${error.message}`;
+                statusDiv.className = 'status error';
+                console.error('Error:', error);
+            }
+        }
+        
+        testDataLoading();
+    </script>
+</body>
+</html>

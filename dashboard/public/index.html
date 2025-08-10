@@ -5,134 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wPOND Mining Rewards Dashboard</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <h1>wPOND Mining Rewards</h1>
-            <p class="subtitle">Real-time tracking of wPOND distribution from the official mining wallet</p>
-        </div>
-    </header>
+    <!-- Floating bubbles background -->
+    <div class="floating-bubble"></div>
+    <div class="floating-bubble"></div>
+    <div class="floating-bubble"></div>
+    <div class="floating-bubble"></div>
+    <div class="floating-bubble"></div>
+    <div class="floating-bubble"></div>
 
-    <main>
-        <section class="summary-cards">
-            <div class="card">
-                <h3>Total wPOND Distributed</h3>
-                <p id="totalWpond">Loading...</p>
-            </div>
-            <div class="card">
-                <h3>Total Winners</h3>
-                <p id="totalWinners">Loading...</p>
-            </div>
+    <div class="container">
+        <header>
+            <h1>wPOND MINING REWARDS</h1>
+            <p class="subtitle">Big Winners Dashboard</p>
+        </header>
+
+        <!-- Debug Status -->
+        <div id="debugStatus" style="background: #2d2d5a; padding: 10px; margin: 10px 0; border-radius: 5px; color: #ff69b4;">
+            Loading dashboard data...
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
             <div class="card">
                 <h3>Total Claims</h3>
-                <p id="totalClaims">Loading...</p>
+                <div class="value" id="totalClaims">Loading...</div>
+                <div class="label">wPOND Claims Processed</div>
+            </div>
+            <div class="card">
+                <h3>Total wPOND</h3>
+                <div class="value" id="totalWpond">Loading...</div>
+                <div class="label">wPOND Distributed</div>
             </div>
             <div class="card">
                 <h3>Biggest Winner</h3>
-                <p id="biggestWinner">Loading...</p>
+                <div class="value" id="biggestWinner">Loading...</div>
+                <div class="label">Highest Single Claim</div>
             </div>
-        </section>
+            <div class="card">
+                <h3>Average Claim</h3>
+                <div class="value" id="averageClaim">Loading...</div>
+                <div class="label">Average wPOND per Claim</div>
+            </div>
+        </div>
 
-        <!-- PondX Rewards Wallet Section -->
-        <section class="pondx-rewards-section">
-            <h2>🌊 PondX.com Rewards Wallet</h2>
-            <div class="pondx-card">
-                <div class="pondx-info">
-                    <h3>Website Rewards Distribution</h3>
-                    <p>Users get paid from this wallet when swapping on PondX.com</p>
-                    <div class="pondx-stats">
-                        <div class="stat">
-                            <span class="stat-label">Total wPOND</span>
-                            <span class="stat-value" id="pondxTotal">Loading...</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Claims</span>
-                            <span class="stat-value" id="pondxClaims">Loading...</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Avg per Claim</span>
-                            <span class="stat-value" id="pondxAvg">Loading...</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Wallet</span>
-                            <span class="stat-value wallet-cell" id="pondxWallet">Loading...</span>
-                        </div>
-                    </div>
+        <!-- Top Winners Section -->
+        <div class="top-winners">
+            <h2 class="section-title">🏆 TOP wPOND WINNERS</h2>
+            <div class="winners-grid" id="topWinnersGrid">
+                <div class="loading">Loading top winners...</div>
+            </div>
+        </div>
+
+        <!-- Recent Winners Bubble Board -->
+        <div class="bubble-board-section">
+            <h2 class="section-title">🕐 RECENT WINNERS BUBBLE BOARD</h2>
+            <div class="bubble-board" id="recentWinnersBubbleBoard">
+                <div class="loading">Loading recent winners bubbles...</div>
+            </div>
+        </div>
+
+        <!-- Daily Stats Section -->
+        <div class="daily-stats">
+            <h2 class="section-title">📅 TODAY'S STATS</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Today's Winners</h3>
+                    <div class="value" id="todayWinners">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Today's wPOND</h3>
+                    <div class="value" id="todayWpond">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Today's Claims</h3>
+                    <div class="value" id="todayClaims">0</div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <section class="bubble-chart-section">
-            <h2>🏆 Top Winners Bubble Chart</h2>
-            <div id="bubbleChart"></div>
-        </section>
+        <!-- Recent Activity Section -->
+        <div class="recent-activity">
+            <h2 class="section-title">🕐 RECENT ACTIVITY</h2>
+            <table class="activity-table">
+                <thead>
+                    <tr>
+                        <th>Wallet</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="recentActivity">
+                    <tr><td colspan="3" class="loading">Loading recent activity...</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-        <section class="top-winners">
-            <h2>🏅 Top 10 Winners</h2>
-            <div class="winners-grid" id="winnersGrid">
-                <!-- Winners will be populated here -->
+        <!-- Filter Controls -->
+        <div class="filter-controls">
+            <button class="active" onclick="filterWinners('all')">All Winners</button>
+            <button onclick="filterWinners('top10')">Top 10</button>
+            <button onclick="filterWinners('top50')">Top 50</button>
+            <button onclick="filterWinners('top100')">Top 100</button>
+            <button onclick="filterWinners('topClaimers')">🔥 Top Claimers</button>
+            <button onclick="filterWinners('multiClaimers')">⚡ Multi-Claimers</button>
+            <button onclick="resetFilters()">Reset</button>
+        </div>
+
+        <!-- Search and Alert Section -->
+        <div class="search-alert-section">
+            <div class="search-alert-row">
+                <div class="search-section">
+                    <input type="text" id="searchInput" placeholder="Enter wallet address or .sol domain...">
+                    <button onclick="searchWallet()">🔍 Search</button>
+                </div>
+                <div class="alert-section">
+                    <input type="text" id="alertInput" placeholder="Enter your wallet for payout alerts...">
+                    <button onclick="setPayoutAlert()">🚨 Set Alert</button>
+                </div>
             </div>
-        </section>
+        </div>
 
-        <section class="cta-card">
-            <h2>🚀 Join the wPOND Revolution</h2>
-            <p>Start mining wPOND today and join thousands of winners earning rewards</p>
-            <div class="cta-number">1,441+ Winners</div>
-            <button class="btn-large" onclick="window.open('https://pondx.com', '_blank')">Start Mining Now</button>
-        </section>
-
-        <section class="charts-section">
-            <div class="chart-container">
-                <h3>Daily wPOND Distribution</h3>
-                <canvas id="dailyChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h3>wPOND Distribution by Amount</h3>
-                <canvas id="wpondChart"></canvas>
-            </div>
-        </section>
-
-        <section class="recent-activity">
-            <h2>📈 Recent Activity</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Wallet</th>
-                            <th>wPOND Amount</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recentActivity">
-                        <!-- Recent activity will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="all-winners">
-            <h2>📊 All Winners</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Wallet</th>
-                            <th>wPOND Amount</th>
-                            <th>Claims</th>
-                            <th>First Claim</th>
-                            <th>Last Claim</th>
-                        </tr>
-                    </thead>
-                    <tbody id="allWinners">
-                        <!-- All winners will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+        <!-- Winners Table -->
+        <div class="winners-table">
+            <h2 class="section-title">📊 ALL WINNERS TABLE</h2>
+            <table id="winnersTable">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Wallet</th>
+                        <th>wPOND Amount</th>
+                        <th>Claims</th>
+                        <th>Date</th>
+                        <th>Signature</th>
+                    </tr>
+                </thead>
+                <tbody id="winnersTableBody">
+                    <tr>
+                        <td colspan="6" class="loading">Loading winners data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <!-- Winner Details Modal -->
     <div id="winnerModal" class="modal">

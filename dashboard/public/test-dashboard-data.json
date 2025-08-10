@@ -1,0 +1,49 @@
+﻿{
+  "summary": {
+    "totalClaims": 8093,
+    "totalWpond": 2061038808350.3193,
+    "biggestWinner": "JD38n7ynKYcgPpF7k1BhXEeREu1KqptU93fVGy3S624k",
+    "biggestAmount": 2969045806.322,
+    "averageAmount": 254669320.19650555,
+    "dataQuality": "Proven - 2.3081% error rate"
+  },
+  "allRecipients": [
+    {
+      "wallet": "HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ",
+      "amount": 1000000000,
+      "date": "2025-01-15",
+      "signature": "test123",
+      "claimCount": 5
+    },
+    {
+      "wallet": "D6guzuf8uA6b5KHDUs9cdKTauq6n5PMugbVF6xKviC",
+      "amount": 2000000000,
+      "date": "2025-01-16",
+      "signature": "test456",
+      "claimCount": 3
+    },
+    {
+      "wallet": "JD38n7ynKYcgPpF7k1BhXEeREu1KqptU93fVGy3S624k",
+      "amount": 2969045806.322,
+      "date": "2025-01-17",
+      "signature": "test789",
+      "claimCount": 1
+    }
+  ],
+  "recentClaims": [
+    {
+      "wallet": "HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ",
+      "amount": 1000000000,
+      "date": "2025-01-15",
+      "signature": "test123",
+      "claimCount": 5
+    },
+    {
+      "wallet": "D6guzuf8uA6b5KHDUs9cdKTauq6n5PMugbVF6xKviC",
+      "amount": 2000000000,
+      "date": "2025-01-16",
+      "signature": "test456",
+      "claimCount": 3
+    }
+  ]
+}
