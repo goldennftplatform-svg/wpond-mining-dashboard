@@ -550,6 +550,10 @@ function createTopWinnersBubbleBoard() {
 // Create recent winners bubble board
 function createRecentWinnersBubbleBoard() {
     console.log('🔍 createRecentWinnersBubbleBoard() called');
+    
+    // Get today's date
+    const today = new Date().toISOString().split('T')[0];
+    
     const bubbleBoard = document.getElementById('recentWinnersBubbleBoard');
     console.log('🔍 Bubble board element found:', !!bubbleBoard);
     
