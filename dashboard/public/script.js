@@ -82,6 +82,10 @@ async function loadDashboardData() {
         console.log('📊 Updating all winners table...');
         updateAllWinners();
         
+        // Update today's winners
+        console.log('🏅 Updating today\'s winners...');
+        updateTodaysWinners();
+        
         if (debugStatus) {
             debugStatus.textContent = '✅ Dashboard updated successfully!';
             debugStatus.style.background = '#2d5a2d';
@@ -1412,6 +1416,12 @@ function createSimulatedRecentData() {
 function updateTodaysWinners() {
     const todaysWinnersSection = document.getElementById('todays-winners');
     if (!todaysWinnersSection) return;
+    
+    if (!dashboardData || !dashboardData.allRecipients) {
+        console.log('⚠️ No dashboard data available for today\'s winners');
+        todaysWinnersSection.innerHTML = '<p>Loading dashboard data...</p>';
+        return;
+    }
     
     const recentData = createSimulatedRecentData();
     const todaysWinners = recentData.filter(w => w.isRecent);
