@@ -4,7 +4,9 @@
     "totalWpondDistributed": 19598172794128.094,
     "totalClaims": 60884,
     "averageWpondPerClaim": 321893646.8387112,
-    "dateGenerated": "2025-08-11T21:31:19.429Z"
+    "dateGenerated": "2025-08-11T21:31:19.429Z",
+    "biggestAmount": 157520334271.46497,
+    "biggestWinnerWallet": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2"
   },
   "allRecipients": [
     {
