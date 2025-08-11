@@ -299,24 +299,57 @@
                 console.log('1️⃣ Calling updateRecentActivity...');
                 updateRecentActivity();
                 
-                console.log('2️⃣ Calling createRecentWinnersBubbleBoard...');
-                createRecentWinnersBubbleBoard();
-                
-                console.log('3️⃣ Calling updateTopWinners...');
-                updateTopWinners();
-                
-                console.log('4️⃣ Calling updateAllWinners...');
-                updateAllWinners();
-                
-                console.log('5️⃣ Calling updateTodaysWinners...');
-                updateTodaysWinners();
-                
-                console.log('✅ ALL FUNCTIONS COMPLETED SUCCESSFULLY!');
-                console.log('🎯 If this works, the issue is elsewhere in your main dashboard');
+                // Add delay to see if timing is the issue
+                setTimeout(() => {
+                    try {
+                        console.log('2️⃣ Calling createRecentWinnersBubbleBoard...');
+                        createRecentWinnersBubbleBoard();
+                        
+                        setTimeout(() => {
+                            try {
+                                console.log('3️⃣ Calling updateTopWinners...');
+                                updateTopWinners();
+                                
+                                setTimeout(() => {
+                                    try {
+                                        console.log('4️⃣ Calling updateAllWinners...');
+                                        updateAllWinners();
+                                        
+                                        setTimeout(() => {
+                                            try {
+                                                console.log('5️⃣ Calling updateTodaysWinners...');
+                                                updateTodaysWinners();
+                                                
+                                                console.log('✅ ALL FUNCTIONS COMPLETED SUCCESSFULLY!');
+                                                console.log('🎯 If this works, the issue is timing-related');
+                                                
+                                            } catch (error) {
+                                                console.error('❌ ERROR in step 5 (updateTodaysWinners):', error);
+                                                console.log('🎯 This function is the problem!');
+                                            }
+                                        }, 100);
+                                        
+                                    } catch (error) {
+                                        console.error('❌ ERROR in step 4 (updateAllWinners):', error);
+                                        console.log('🎯 This function is the problem!');
+                                    }
+                                }, 100);
+                                
+                            } catch (error) {
+                                console.error('❌ ERROR in step 3 (updateTopWinners):', error);
+                                console.log('🎯 This function is the problem!');
+                            }
+                        }, 100);
+                        
+                    } catch (error) {
+                        console.error('❌ ERROR in step 2 (createRecentWinnersBubbleBoard):', error);
+                        console.log('🎯 This function is the problem!');
+                    }
+                }, 100);
                 
             } catch (error) {
-                console.error('❌ ERROR IN SEQUENCE TEST:', error);
-                console.log('🎯 This reveals the exact issue!');
+                console.error('❌ ERROR in step 1 (updateRecentActivity):', error);
+                console.log('🎯 This function is the problem!');
             }
         }
         
