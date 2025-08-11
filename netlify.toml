@@ -5,6 +5,18 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Allow direct access to static files
+[[redirects]]
+  from = "/debug.html"
+  to = "/debug.html"
+  status = 200
+
+[[redirects]]
+  from = "/*.json"
+  to = "/:splat"
+  status = 200
+
+# Handle SPA routing for everything else
 [[redirects]]
   from = "/*"
   to = "/index.html"
