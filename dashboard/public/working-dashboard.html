@@ -129,9 +129,40 @@
                 topWinnersGrid.innerHTML = html;
                 console.log('✅ Top winners updated successfully');
                 
+                // Now test the next function
+                console.log('🔄 Now testing updateAllWinners function...');
+                updateAllWinners();
+                
             } catch (error) {
                 console.error('❌ Error in updateTopWinners:', error);
                 topWinnersGrid.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // All winners function (Testing this next)
+        function updateAllWinners() {
+            console.log('📊 updateAllWinners() called');
+            
+            try {
+                if (!dashboardData || !dashboardData.allRecipients) {
+                    console.log('⚠️ No dashboard data available for all winners');
+                    return;
+                }
+                
+                console.log('📊 Processing all', dashboardData.allRecipients.length, 'recipients');
+                
+                // Just log the first few to see if this function works
+                const sampleWinners = dashboardData.allRecipients.slice(0, 5);
+                console.log('📊 Sample winners:', sampleWinners.map(w => ({
+                    wallet: w.wallet,
+                    amount: w.amount,
+                    claimCount: w.claimCount
+                })));
+                
+                console.log('✅ updateAllWinners completed successfully');
+                
+            } catch (error) {
+                console.error('❌ Error in updateAllWinners:', error);
             }
         }
         
