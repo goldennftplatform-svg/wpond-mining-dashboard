@@ -229,147 +229,143 @@
     </div>
 
     <script>
-        // Embedded wPOND mining data (processed from your JSON)
-        const wpondData = {
-            summary: {
-                totalWpondDistributed: 125847.32,
-                totalWinners: 85,
-                averageWpondPerWinner: 1480.56,
-                successRate: 94.2
-            },
-            topWinners: [
-                {
-                    rank: 1,
-                    wallet: "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-                    totalWpondEarned: 15420.85,
-                    transferCount: 12,
-                    averageWpondPerTransfer: 1285.07,
-                    biggestReward: 2847.32
-                },
-                {
-                    rank: 2,
-                    wallet: "BZg5eLPKJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-                    totalWpondEarned: 12850.42,
-                    transferCount: 8,
-                    averageWpondPerTransfer: 1606.30,
-                    biggestReward: 3256.78
-                },
-                {
-                    rank: 3,
-                    wallet: "CZg6fMQKJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-                    totalWpondEarned: 11230.15,
-                    transferCount: 15,
-                    averageWpondPerTransfer: 748.68,
-                    biggestReward: 1987.45
-                },
-                {
-                    rank: 4,
-                    wallet: "DZg7gNRKJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-                    totalWpondEarned: 9875.63,
-                    transferCount: 6,
-                    averageWpondPerTransfer: 1645.94,
-                    biggestReward: 2876.12
-                },
-                {
-                    rank: 5,
-                    wallet: "EZg8hOSKJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-                    totalWpondEarned: 8654.28,
-                    transferCount: 11,
-                    averageWpondPerTransfer: 786.75,
-                    biggestReward: 1654.33
+        // Load real wPOND mining data from your processed blockchain data
+        let wpondData = null;
+        
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('test-dashboard-data.json');
+                wpondData = await response.json();
+                updateDashboard();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                document.body.innerHTML = '<div style="text-align: center; padding: 50px; color: #ffd700;"><h1>⚠️ Error Loading Data</h1><p>Could not load test-dashboard-data.json</p><p>Make sure the data file exists and is accessible</p></div>';
+            }
+        }
+
+        function updateDashboard() {
+            if (!wpondData) return;
+            
+            // Update summary stats with real data
+            const totalWpondFormatted = (wpondData.summary.totalWpond / 1e9).toFixed(2);
+            const avgAmountFormatted = (wpondData.summary.averageAmount / 1e9).toFixed(2);
+            const biggestAmountFormatted = (wpondData.summary.biggestAmount / 1e9).toFixed(2);
+            
+            document.getElementById('totalWpond').textContent = totalWpondFormatted + 'B';
+            document.getElementById('totalWinners').textContent = wpondData.summary.totalRecipients.toLocaleString();
+            document.getElementById('avgPerWinner').textContent = avgAmountFormatted + 'B';
+            document.getElementById('successRate').textContent = '100%'; // All processed claims are successful
+            
+            // Populate winners table with real data
+            const winnersTable = document.getElementById('winnersTable');
+            const topWinners = wpondData.allRecipients.slice(0, 20); // Show top 20
+            
+            winnersTable.innerHTML = topWinners.map((winner, index) => `
+                <tr>
+                    <td class="rank-${index + 1}">#${index + 1}</td>
+                    <td><span class="wallet-address">${winner.wallet}</span></td>
+                    <td>${(winner.amount / 1e9).toFixed(2)}B wPOND</td>
+                    <td>${winner.claimCount}</td>
+                    <td>${(winner.amount / winner.claimCount / 1e9).toFixed(2)}B wPOND</td>
+                    <td>${(winner.amount / 1e9).toFixed(2)}B wPOND</td>
+                </tr>
+            `).join('');
+            
+            // Create daily distribution chart (grouped by date)
+            const dailyData = groupDataByDate(wpondData.allRecipients);
+            createDailyChart(dailyData);
+            
+            // Create winner distribution chart
+            createWinnerChart(topWinners);
+        }
+        
+        function groupDataByDate(recipients) {
+            const dailyStats = {};
+            recipients.forEach(recipient => {
+                const date = recipient.date;
+                if (!dailyStats[date]) {
+                    dailyStats[date] = { wpondRewards: 0, winners: 0 };
                 }
-            ],
-            dailyStats: [
-                { date: "2025-08-01", wpondRewards: 12500, winners: 15 },
-                { date: "2025-08-02", wpondRewards: 13800, winners: 18 },
-                { date: "2025-08-03", wpondRewards: 15200, winners: 22 },
-                { date: "2025-08-04", wpondRewards: 16800, winners: 25 },
-                { date: "2025-08-05", wpondRewards: 18400, winners: 28 },
-                { date: "2025-08-06", wpondRewards: 20100, winners: 32 },
-                { date: "2025-08-07", wpondRewards: 21800, winners: 35 }
-            ]
-        };
-
-        // Update summary stats
-        document.getElementById('totalWpond').textContent = wpondData.summary.totalWpondDistributed.toLocaleString();
-        document.getElementById('totalWinners').textContent = wpondData.summary.totalWinners;
-        document.getElementById('avgPerWinner').textContent = wpondData.summary.averageWpondPerWinner.toLocaleString();
-        document.getElementById('successRate').textContent = wpondData.summary.successRate + '%';
-
-        // Populate winners table
-        const winnersTable = document.getElementById('winnersTable');
-        winnersTable.innerHTML = wpondData.topWinners.map(winner => `
-            <tr>
-                <td class="rank-${winner.rank}">#${winner.rank}</td>
-                <td><span class="wallet-address">${winner.wallet}</span></td>
-                <td>${winner.totalWpondEarned.toLocaleString()} wPOND</td>
-                <td>${winner.transferCount}</td>
-                <td>${winner.averageWpondPerTransfer.toLocaleString()} wPOND</td>
-                <td>${winner.biggestReward.toLocaleString()} wPOND</td>
-            </tr>
-        `).join('');
-
-        // Create daily distribution chart
-        const dailyCtx = document.getElementById('dailyChart').getContext('2d');
-        new Chart(dailyCtx, {
-            type: 'line',
-            data: {
-                labels: wpondData.dailyStats.map(d => d.date),
-                datasets: [{
-                    label: 'wPOND Distributed',
-                    data: wpondData.dailyStats.map(d => d.wpondRewards),
-                    borderColor: '#ffd700',
-                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        labels: { color: '#fff' }
-                    }
+                dailyStats[date].wpondRewards += recipient.amount;
+                dailyStats[date].winners += 1;
+            });
+            
+            return Object.entries(dailyStats)
+                .map(([date, stats]) => ({
+                    date,
+                    wpondRewards: stats.wpondRewards / 1e9, // Convert to billions
+                    winners: stats.winners
+                }))
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                .slice(-30); // Last 30 days
+        }
+        
+        function createDailyChart(dailyData) {
+            const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+            new Chart(dailyCtx, {
+                type: 'line',
+                data: {
+                    labels: dailyData.map(d => d.date),
+                    datasets: [{
+                        label: 'wPOND Distributed (Billions)',
+                        data: dailyData.map(d => d.wpondRewards),
+                        borderColor: '#ffd700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
                 },
-                scales: {
-                    y: {
-                        ticks: { color: '#fff' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        }
                     },
-                    x: {
-                        ticks: { color: '#fff' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    scales: {
+                        y: {
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
                     }
                 }
-            }
-        });
-
-        // Create winner distribution chart
-        const winnerCtx = document.getElementById('winnerChart').getContext('2d');
-        new Chart(winnerCtx, {
-            type: 'doughnut',
-            data: {
-                labels: wpondData.topWinners.map(w => `Rank #${w.rank}`),
-                datasets: [{
-                    data: wpondData.topWinners.map(w => w.totalWpondEarned),
-                    backgroundColor: [
-                        '#ffd700',
-                        '#c0c0c0',
-                        '#cd7f32',
-                        '#4CAF50',
-                        '#2196F3'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        labels: { color: '#fff' }
+            });
+        }
+        
+        function createWinnerChart(topWinners) {
+            const winnerCtx = document.getElementById('winnerChart').getContext('2d');
+            new Chart(winnerCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: topWinners.slice(0, 10).map((w, i) => `Rank #${i + 1}`),
+                    datasets: [{
+                        data: topWinners.slice(0, 10).map(w => w.amount / 1e9),
+                        backgroundColor: [
+                            '#ffd700', '#c0c0c0', '#cd7f32', '#4CAF50', '#2196F3',
+                            '#9C27B0', '#FF5722', '#795548', '#607D8B', '#E91E63'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
+        
+        // Load data when page loads
+        loadDashboardData();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboardData, 30000);
     </script>
 </body>
 </html>

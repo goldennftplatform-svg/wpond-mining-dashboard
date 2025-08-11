@@ -12,7 +12,7 @@ async function loadDashboardData() {
         }
         
         // Try to load the data file - exactly like the working test page
-        const dataUrl = 'helius-dashboard-data.json?v=' + Date.now(); // Full data file with cache bust
+        const dataUrl = 'helius-dashboard-data.json?v=' + Date.now(); // Real data file with cache bust
         console.log('📡 Attempting to fetch:', dataUrl);
         
         const response = await fetch(dataUrl);

@@ -1,18 +1,20 @@
 const fs = require('fs');
-const path = require('path');
 
-// Configuration
+console.log('🚀 DAILY wPOND SWEEPER - USING WORKING APPROACH\n');
+
+// Configuration - EXACTLY like the working script
 const CONFIG = {
+    HELIUS_ENDPOINTS: [
+        'https://mainnet.helius-rpc.com/?api-key=e7472550-170d-4be0-ae9f-dccf30e8d5b8',
+        'https://api.helius.xyz/v0/transactions/?api-key=e7472550-170d-4be0-ae9f-dccf30e8d5b8'
+    ],
+    WPOND_MINT: '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq',
     PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT',
-    HELIUS_API_KEY: 'e7472550-170d-4be0-ae9f-dccf30e8d5b8',
-    HOURS_BACK: 168, // Look back 1 week to find more transactions
-    OUTPUT_FILE: 'new-transactions.json',
-    LOG_FILE: 'sweeper-log.json',
+    BATCH_SIZE: 10,
+    MAX_RETRIES: 20,
+    DELAY_BETWEEN_BATCHES: 1500,
+    SAVE_INTERVAL: 100,
     DASHBOARD_DATA_FILE: 'public/helius-dashboard-data.json',
-    MAX_RETRIES: 5,
-    BASE_DELAY: 1000,
-    MAX_DELAY: 30000,
-    WPOND_MINT: 'Ea5SjE2Y6yvCeW5dYTx7qMNqGuyN3TfRcj8dDaIoMsfG', // wPOND token mint address
     // Exclude bank and sister wallets from mining rewards
     EXCLUDED_WALLETS: [
         'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT', // opt (payout wallet)
@@ -20,172 +22,124 @@ const CONFIG = {
     ]
 };
 
-// Track processed transactions to avoid duplicates
-let processedSignatures = new Set();
-let logData = {
-    lastRun: null,
-    totalProcessed: 0,
-    newTransactions: 0,
-    errors: []
-};
-
-// Load existing processed signatures if available
-function loadProcessedSignatures() {
-    try {
-        if (fs.existsSync('processed-signatures.json')) {
-            const data = JSON.parse(fs.readFileSync('processed-signatures.json', 'utf8'));
-            processedSignatures = new Set(data.signatures || []);
-            console.log(`📚 Loaded ${processedSignatures.size} previously processed signatures`);
-        }
-    } catch (error) {
-        console.log('⚠️ Could not load processed signatures, starting fresh');
-    }
-}
-
-// Save processed signatures
-function saveProcessedSignatures() {
-    try {
-        const data = {
-            signatures: Array.from(processedSignatures),
-            lastUpdated: new Date().toISOString()
-        };
-        fs.writeFileSync('processed-signatures.json', JSON.stringify(data, null, 2));
-        console.log('💾 Saved processed signatures');
-    } catch (error) {
-        console.error('❌ Error saving processed signatures:', error.message);
-    }
-}
-
-// Load log data
-function loadLogData() {
-    try {
-        if (fs.existsSync(CONFIG.LOG_FILE)) {
-            logData = JSON.parse(fs.readFileSync(CONFIG.LOG_FILE, 'utf8'));
-        }
-    } catch (error) {
-        console.log('⚠️ Could not load log data, starting fresh');
-    }
-}
-
-// Save log data
-function saveLogData() {
-    try {
-        logData.lastRun = new Date().toISOString();
-        fs.writeFileSync(CONFIG.LOG_FILE, JSON.stringify(logData, null, 2));
-    } catch (error) {
-        console.error('❌ Error saving log data:', error.message);
-    }
-}
-
 // Load existing dashboard data
-function loadDashboardData() {
+let existingDashboardData = null;
+if (fs.existsSync(CONFIG.DASHBOARD_DATA_FILE)) {
     try {
-        if (fs.existsSync(CONFIG.DASHBOARD_DATA_FILE)) {
-            const data = JSON.parse(fs.readFileSync(CONFIG.DASHBOARD_DATA_FILE, 'utf8'));
-            console.log(`📊 Loaded existing dashboard data with ${data.allRecipients?.length || 0} recipients`);
-            return data;
-        }
+        existingDashboardData = JSON.parse(fs.readFileSync(CONFIG.DASHBOARD_DATA_FILE, 'utf8'));
+        console.log(`📊 Loaded existing dashboard data with ${existingDashboardData.allRecipients?.length || 0} recipients`);
     } catch (error) {
         console.log('⚠️ Could not load existing dashboard data:', error.message);
     }
-    return null;
 }
 
-// Save updated dashboard data
-function saveDashboardData(data) {
+// Get recent signatures from payout wallet
+async function getRecentSignatures() {
+    console.log('🔍 Getting existing signatures to process...');
+    
     try {
-        fs.writeFileSync(CONFIG.DASHBOARD_DATA_FILE, JSON.stringify(data, null, 2));
-        console.log(`💾 Saved updated dashboard data with ${data.allRecipients?.length || 0} recipients`);
-    } catch (error) {
-        console.error('❌ Error saving dashboard data:', error.message);
-        throw error;
-    }
-}
-
-// Calculate timestamp for X hours ago
-function getTimestampHoursAgo(hours) {
-    const now = new Date();
-    const hoursAgo = new Date(now.getTime() - (hours * 60 * 60 * 1000));
-    return hoursAgo.toISOString();
-}
-
-// Sleep function for delays
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// Fetch transactions from Helius API with retry logic
-async function fetchRecentTransactions() {
-    const timestamp = getTimestampHoursAgo(CONFIG.HOURS_BACK);
-    console.log(`🔍 Fetching transactions since: ${timestamp}`);
-    
-    // Use the mainnet.helius-rpc.com endpoint which is more reliable
-    const url = `https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`;
-    
-    for (let attempt = 1; attempt <= CONFIG.MAX_RETRIES; attempt++) {
-        try {
-            console.log(`🔄 Attempt ${attempt}/${CONFIG.MAX_RETRIES}...`);
+        // Instead of fetching NEW signatures, use the existing ones like the working script
+        // Check if we have all-signatures.json
+        if (fs.existsSync('../all-signatures.json')) {
+            const allSignaturesData = JSON.parse(fs.readFileSync('../all-signatures.json', 'utf8'));
+            const allSignatures = Array.isArray(allSignaturesData) ? allSignaturesData : allSignaturesData.signatures || [];
             
-            const response = await fetch(url, {
+            console.log(`📊 Found ${allSignatures.length} existing signatures to process`);
+            
+            // Filter to recent ones (last 24 hours worth)
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+            const recentSignatures = allSignatures.slice(-100); // Take last 100 signatures
+            
+            console.log(`🕐 Processing last ${recentSignatures.length} signatures`);
+            return recentSignatures;
+        } else {
+            // Fallback: get a few recent signatures from API
+            console.log('⚠️ No all-signatures.json found, fetching recent signatures...');
+            
+            const endpoint = CONFIG.HELIUS_ENDPOINTS[0];
+            const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     jsonrpc: '2.0',
                     id: 1,
                     method: 'getSignaturesForAddress',
                     params: [
                         CONFIG.PAYOUT_WALLET,
-                        {
-                            limit: 1000,
-                            before: undefined
-                        }
+                        { limit: 50 } // Reduced limit to avoid rate limits
                     ]
                 })
             });
             
-            if (response.status === 429) {
-                // Rate limited - calculate delay with exponential backoff
-                const delay = Math.min(
-                    CONFIG.BASE_DELAY * Math.pow(2, attempt - 1),
-                    CONFIG.MAX_DELAY
-                );
-                
-                console.log(`⏳ Rate limited (429). Waiting ${delay/1000}s before retry...`);
-                await sleep(delay);
-                continue;
-            }
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             const data = await response.json();
-            console.log(`📊 Found ${data.result?.length || 0} total transactions`);
-            return data.result || [];
             
-        } catch (error) {
-            if (attempt === CONFIG.MAX_RETRIES) {
-                console.error('❌ Error fetching transactions after all retries:', error.message);
-                logData.errors.push({
-                    timestamp: new Date().toISOString(),
-                    error: error.message
-                });
-                return [];
+            if (data.error) throw new Error(`Helius error: ${data.error.message}`);
+            
+            const signatures = data.result || [];
+            console.log(`📊 Found ${signatures.length} recent signatures`);
+            return signatures;
+        }
+        
+    } catch (error) {
+        console.error('❌ Error getting signatures:', error.message);
+        return [];
+    }
+}
+
+// Ultra-reliable fetch function - EXACTLY like working script
+async function fetchTransactionZeroErrors(signature, maxRetries = CONFIG.MAX_RETRIES) {
+    const strategies = [
+        // Strategy 1: Helius POST
+        async () => {
+            const endpoint = CONFIG.HELIUS_ENDPOINTS[Math.floor(Math.random() * CONFIG.HELIUS_ENDPOINTS.length)];
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    id: 'my-id',
+                    method: 'getTransaction',
+                    params: [signature, { encoding: 'json', maxSupportedTransactionVersion: 0 }]
+                })
+            });
+            
+            if (!response.ok) throw new Error(`Helius POST failed: ${response.status}`);
+            const data = await response.json();
+            if (data.error) throw new Error(`Helius error: ${data.error.message}`);
+            return data.result;
+        },
+        
+        // Strategy 2: Helius GET
+        async () => {
+            const endpoint = CONFIG.HELIUS_ENDPOINTS[Math.floor(Math.random() * CONFIG.HELIUS_ENDPOINTS.length)];
+            const response = await fetch(`${endpoint.replace('/?', '/v0/transactions/?')}&signature=${signature}`);
+            
+            if (!response.ok) throw new Error(`Helius GET failed: ${response.status}`);
+            const data = await response.json();
+            return data;
+        }
+    ];
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        for (let strategyIndex = 0; strategyIndex < strategies.length; strategyIndex++) {
+            try {
+                const result = await strategies[strategyIndex]();
+                if (result) return result;
+            } catch (error) {
+                if (attempt === maxRetries && strategyIndex === strategies.length - 1) {
+                    throw error;
+                }
+                // Exponential backoff
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 300));
             }
-            
-            // For non-429 errors, wait a bit before retrying
-            const delay = CONFIG.BASE_DELAY * attempt;
-            console.log(`⚠️ Attempt ${attempt} failed: ${error.message}. Waiting ${delay/1000}s before retry...`);
-            await sleep(delay);
         }
     }
     
-    return [];
+    throw new Error(`All strategies failed after ${maxRetries} attempts`);
 }
 
-// Process wPOND transaction (same logic as working script)
+// Process wPOND transaction - EXACTLY like working script
 function processWpondTransaction(transaction) {
     try {
         if (!transaction || !transaction.meta || !transaction.transaction) return null;
@@ -236,106 +190,55 @@ function processWpondTransaction(transaction) {
     }
 }
 
-// Process transactions and extract wPOND transfers
-async function processTransactions(transactions) {
-    if (!Array.isArray(transactions)) {
-        console.log('⚠️ No transactions to process');
-        return [];
-    }
-
-    const newTransactions = [];
-    let processedCount = 0;
-
-    for (const tx of transactions) {
-        if (processedSignatures.has(tx.signature)) {
-            continue; // Skip already processed
-        }
-
-        processedCount++;
-
+// Process batch of signatures - EXACTLY like working script
+async function processBatch(signatures, batchNumber) {
+    console.log(`🔄 Processing batch ${batchNumber}: ${signatures.length} signatures`);
+    
+    const batchClaims = [];
+    const batchErrors = [];
+    
+    for (let i = 0; i < signatures.length; i++) {
+        const signature = signatures[i];
+        const progress = i + 1;
+        
         try {
-            // Fetch full transaction details using getTransaction (same as working script)
-            const endpoint = `https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`;
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: 'getTransaction',
-                    params: [tx.signature, { encoding: 'json', maxSupportedTransactionVersion: 0 }]
-                })
-            });
-
-            if (!response.ok) {
-                console.log(`⚠️ Failed to fetch transaction ${tx.signature.substring(0, 8)}...: ${response.status}`);
-                continue;
-            }
-
-            const data = await response.json();
-            if (data.error) {
-                console.log(`⚠️ Transaction error for ${tx.signature.substring(0, 8)}...: ${data.error.message}`);
-                continue;
-            }
-
-            const transaction = data.result;
-            if (!transaction || !transaction.meta || !transaction.transaction) {
-                continue;
-            }
-
-            // Process wPOND transaction (same logic as working script)
+            console.log(`  [${progress}/${signatures.length}] ${signature.substring(0, 8)}...`);
+            
+            const transaction = await fetchTransactionZeroErrors(signature);
             const claims = processWpondTransaction(transaction);
+            
             if (claims && claims.length > 0) {
                 claims.forEach(claim => {
-                    const newTx = {
-                        signature: tx.signature,
-                        timestamp: tx.blockTime || Date.now() / 1000,
-                        date: new Date((tx.blockTime || Date.now() / 1000) * 1000).toISOString().split('T')[0],
-                        wallet: claim.wallet,
-                        amount: claim.amount,
-                        type: 'wPOND Transfer'
-                    };
-                    
-                    newTransactions.push(newTx);
-                    console.log(`🎯 New wPOND transfer: ${claim.wallet} received ${claim.amount} wPOND`);
+                    batchClaims.push({
+                        recipient: claim.wallet,
+                        wpondAmount: claim.amount,
+                        date: new Date().toISOString().split('T')[0],
+                        signature: signature,
+                        timestamp: Math.floor(Date.now() / 1000)
+                    });
                 });
             }
-
-            // Mark as processed
-            processedSignatures.add(tx.signature);
-
-            // Small delay to avoid rate limiting
-            await sleep(100);
-
+            
+            // Small delay between requests
+            if (i < signatures.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
         } catch (error) {
-            console.log(`⚠️ Error processing transaction ${tx.signature.substring(0, 8)}...: ${error.message}`);
-            continue;
+            console.log(`  ❌ Error processing ${signature.substring(0, 8)}...: ${error.message}`);
+            batchErrors.push({
+                signature: signature,
+                error: error.message,
+                timestamp: new Date().toISOString()
+            });
         }
     }
     
-    logData.totalProcessed += processedCount;
-    logData.newTransactions += newTransactions.length;
-    
-    console.log(`✅ Processed ${processedCount} transactions, found ${newTransactions.length} new wPOND transfers`);
-    
-    return newTransactions;
+    return { claims: batchClaims, errors: batchErrors };
 }
 
-// Clean up existing data to remove excluded wallets
-function cleanupExcludedWallets(recipients) {
-    const originalCount = recipients.length;
-    const filteredRecipients = recipients.filter(r => !CONFIG.EXCLUDED_WALLETS.includes(r.wallet));
-    const removedCount = originalCount - filteredRecipients.length;
-    
-    if (removedCount > 0) {
-        console.log(`🧹 Cleaned up ${removedCount} excluded wallets from existing data`);
-    }
-    
-    return filteredRecipients;
-}
-
-// Merge new transactions with existing dashboard data
-function mergeWithDashboardData(newTransactions, existingData) {
+// Merge new claims with existing dashboard data
+function mergeWithDashboardData(newClaims, existingData) {
     if (!existingData) {
         existingData = {
             summary: {
@@ -349,141 +252,136 @@ function mergeWithDashboardData(newTransactions, existingData) {
             allRecipients: []
         };
     }
-
-    // Clean up any existing excluded wallets
-    let updatedRecipients = cleanupExcludedWallets(existingData.allRecipients || []);
     
-    newTransactions.forEach(tx => {
-        // Check if recipient already exists
-        const existingIndex = updatedRecipients.findIndex(r => r.wallet === tx.wallet);
-        
-        if (existingIndex >= 0) {
-            // Update existing recipient
-            const existing = updatedRecipients[existingIndex];
-            existing.amount += tx.amount;
-            existing.claimCount = (existing.claimCount || 0) + 1;
-            existing.date = tx.date; // Update to most recent date
-            existing.signature = tx.signature; // Update to most recent signature
-        } else {
-            // Add new recipient
-            updatedRecipients.push({
-                wallet: tx.wallet,
-                amount: tx.amount,
-                claimCount: 1,
-                date: tx.date,
-                signature: tx.signature
+    // Convert existing data to claims format for easier merging
+    const existingClaims = existingData.allRecipients.map(r => ({
+        recipient: r.wallet,
+        wpondAmount: r.amount,
+        date: r.date,
+        signature: r.signature,
+        timestamp: r.timestamp || 0
+    }));
+    
+    // Merge new claims with existing
+    const allClaims = [...existingClaims, ...newClaims];
+    
+    // Group by recipient
+    const recipientMap = new Map();
+    
+    allClaims.forEach(claim => {
+        if (!recipientMap.has(claim.recipient)) {
+            recipientMap.set(claim.recipient, {
+                wallet: claim.recipient,
+                amount: 0,
+                claimCount: 0,
+                date: claim.date,
+                signature: claim.signature,
+                timestamp: claim.timestamp
             });
         }
+        
+        const recipient = recipientMap.get(claim.recipient);
+        recipient.amount += claim.wpondAmount;
+        recipient.claimCount += 1;
+        
+        // Keep the most recent date
+        if (claim.timestamp > recipient.timestamp) {
+            recipient.date = claim.date;
+            recipient.signature = claim.signature;
+            recipient.timestamp = claim.timestamp;
+        }
     });
-
-    // Sort by amount (highest first)
-    updatedRecipients.sort((a, b) => b.amount - a.amount);
-
+    
+    // Convert to array and sort by amount
+    const allRecipients = Array.from(recipientMap.values())
+        .sort((a, b) => b.amount - a.amount);
+    
     // Update summary
-    const totalWpond = updatedRecipients.reduce((sum, r) => sum + r.amount, 0);
-    const totalClaims = updatedRecipients.reduce((sum, r) => sum + r.claimCount, 0);
-    const biggestWinner = updatedRecipients[0]?.wallet || '';
-    const biggestAmount = updatedRecipients[0]?.amount || 0;
+    const totalWpond = allRecipients.reduce((sum, r) => sum + r.amount, 0);
+    const totalClaims = allRecipients.reduce((sum, r) => sum + r.claimCount, 0);
+    const biggestWinner = allRecipients[0]?.wallet || '';
+    const biggestAmount = allRecipients[0]?.amount || 0;
     const averageAmount = totalClaims > 0 ? totalWpond / totalClaims : 0;
-
+    
     return {
         summary: {
             totalClaims,
             totalWpond,
-            totalRecipients: updatedRecipients.length,
+            totalRecipients: allRecipients.length,
             biggestWinner,
             biggestAmount,
             averageAmount
         },
-        allRecipients: updatedRecipients
+        allRecipients: allRecipients
     };
 }
 
-// Save new transactions
-function saveNewTransactions(transactions) {
-    if (transactions.length === 0) {
-        console.log('📝 No new transactions to save');
-        return;
-    }
-    
+// Save updated dashboard data
+function saveDashboardData(data) {
     try {
-        const outputData = {
-            timestamp: new Date().toISOString(),
-            hoursBack: CONFIG.HOURS_BACK,
-            totalFound: transactions.length,
-            transactions: transactions
-        };
-        
-        fs.writeFileSync(CONFIG.OUTPUT_FILE, JSON.stringify(outputData, null, 2));
-        console.log(`💾 Saved ${transactions.length} new transactions to ${CONFIG.OUTPUT_FILE}`);
+        fs.writeFileSync(CONFIG.DASHBOARD_DATA_FILE, JSON.stringify(data, null, 2));
+        console.log(`💾 Saved updated dashboard data with ${data.allRecipients.length} recipients`);
     } catch (error) {
-        console.error('❌ Error saving transactions:', error.message);
-        logData.errors.push({
-            timestamp: new Date().toISOString(),
-            error: `Save error: ${error.message}`
-        });
+        console.error('❌ Error saving dashboard data:', error.message);
+        throw error;
     }
 }
 
-// Main execution function
+// Main sweeper function
 async function runDailySweeper() {
-    console.log('🚀 Starting Daily TX Sweeper...');
+    console.log('🚀 Starting Daily wPOND Sweeper...');
     console.log(`🎯 Target: ${CONFIG.PAYOUT_WALLET}`);
-    console.log(`⏰ Looking back: ${CONFIG.HOURS_BACK} hours`);
-    
-    // Load existing data
-    loadProcessedSignatures();
-    loadLogData();
-    const existingDashboardData = loadDashboardData();
+    console.log(`⏰ Looking for transactions in last 24 hours`);
     
     try {
-        // Fetch recent transactions
-        const transactions = await fetchRecentTransactions();
+        // Get recent signatures
+        const recentSignatures = await getRecentSignatures();
         
-        if (transactions.length === 0) {
-            console.log('⚠️ No transactions found or API error occurred');
+        if (recentSignatures.length === 0) {
+            console.log('⚠️ No recent signatures found');
             return;
         }
         
-        // Process and extract new wPOND transfers
-        const newTransactions = await processTransactions(transactions);
+        // Process in batches
+        const allClaims = [];
+        const allErrors = [];
         
-        if (newTransactions.length > 0) {
-            // Merge with existing dashboard data
-            const updatedDashboardData = mergeWithDashboardData(newTransactions, existingDashboardData);
+        for (let i = 0; i < recentSignatures.length; i += CONFIG.BATCH_SIZE) {
+            const batch = recentSignatures.slice(i, i + CONFIG.BATCH_SIZE);
+            const batchNumber = Math.floor(i / CONFIG.BATCH_SIZE) + 1;
             
-            // Save updated dashboard data
-            saveDashboardData(updatedDashboardData);
+            const result = await processBatch(batch, batchNumber);
+            allClaims.push(...result.claims);
+            allErrors.push(...result.errors);
             
-            // Save new transactions log
-            saveNewTransactions(newTransactions);
+            // Save intermediate results
+            if (batchNumber % 5 === 0) {
+                const updatedData = mergeWithDashboardData(allClaims, existingDashboardData);
+                saveDashboardData(updatedData);
+                console.log(`💾 Intermediate save: ${allClaims.length} claims processed`);
+            }
+            
+            // Delay between batches
+            if (i + CONFIG.BATCH_SIZE < recentSignatures.length) {
+                await new Promise(resolve => setTimeout(resolve, CONFIG.DELAY_BETWEEN_BATCHES));
+            }
         }
         
-        // Save processing state
-        saveProcessedSignatures();
-        saveLogData();
+        // Final save
+        const finalData = mergeWithDashboardData(allClaims, existingDashboardData);
+        saveDashboardData(finalData);
         
-        console.log('🎉 Daily TX Sweeper completed successfully!');
-        console.log(`📊 Summary: ${logData.totalProcessed} total processed, ${logData.newTransactions} new wPOND transfers`);
+        console.log('🎉 Daily wPOND Sweeper completed successfully!');
+        console.log(`📊 Summary: ${allClaims.length} new claims, ${allErrors.length} errors`);
+        console.log(`📊 Total: ${finalData.summary.totalClaims} claims, ${(finalData.summary.totalWpond / 1e9).toFixed(2)}B wPOND`);
         
     } catch (error) {
         console.error('❌ Fatal error in daily sweeper:', error.message);
-        logData.errors.push({
-            timestamp: new Date().toISOString(),
-            error: `Fatal error: ${error.message}`
-        });
-        saveLogData();
     }
 }
 
 // Run if called directly
 if (require.main === module) {
-    // Check if API key is configured
-    if (CONFIG.HELIUS_API_KEY === 'YOUR_HELIUS_API_KEY_HERE') {
-        console.error('❌ Please configure your Helius API key in the CONFIG object');
-        process.exit(1);
-    }
-    
     runDailySweeper().catch(console.error);
 }
 
