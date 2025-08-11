@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Working Dashboard - Step by Step</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .card { background: #2d2d2d; padding: 20px; margin: 10px; border-radius: 10px; }
+        .value { font-size: 24px; color: #ffd700; font-weight: bold; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #2d5a2d; color: #fff; }
+        .error { background: #5a2d2d; color: #fff; }
+        .loading { background: #2d2d5a; color: #fff; }
+        .winners-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin: 20px 0; }
+        .winner-card { background: #3d3d3d; padding: 15px; border-radius: 8px; border-left: 4px solid #ffd700; }
+        .winner-wallet { font-family: monospace; color: #ffd700; margin: 5px 0; }
+        .winner-amount { font-size: 18px; color: #fff; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Working Dashboard - Step by Step</h1>
+    
+    <div id="status" class="status loading">Loading...</div>
+    
+    <!-- Basic Stats (This part works) -->
+    <h2>✅ Basic Stats (Working)</h2>
+    <div class="card">
+        <h3>Total Claims</h3>
+        <div class="value" id="totalClaims">Loading...</div>
+    </div>
+    
+    <div class="card">
+        <h3>Total wPOND</h3>
+        <div class="value" id="totalWpond">Loading...</div>
+    </div>
+    
+    <div class="card">
+        <h3>Biggest Winner</h3>
+        <div class="value" id="biggestWinner">Loading...</div>
+    </div>
+    
+    <div class="card">
+        <h3>Average Claim</h3>
+        <div class="value" id="averageClaim">Loading...</div>
+    </div>
+    
+    <!-- Top Winners (Testing this function) -->
+    <h2>🏆 Top Winners (Testing)</h2>
+    <div id="topWinnersGrid" class="winners-grid">
+        <div class="loading">Loading top winners...</div>
+    </div>
+    
+    <script>
+        let dashboardData = null;
+        
+        // Basic data loading (This works)
+        async function loadBasicData() {
+            const status = document.getElementById('status');
+            try {
+                status.textContent = 'Fetching data...';
+                status.className = 'status loading';
+                
+                const response = await fetch('helius-dashboard-data.json');
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Data loaded:', data);
+                console.log('Data keys:', Object.keys(data));
+                
+                // Store data globally
+                dashboardData = data;
+                
+                // Update basic stats (This works)
+                document.getElementById('totalClaims').textContent = data.summary?.totalClaims?.toLocaleString() || '0';
+                document.getElementById('totalWpond').textContent = (data.summary?.totalWpond || 0).toLocaleString() + ' wPOND';
+                document.getElementById('biggestWinner').textContent = (data.summary?.biggestAmount || 0).toLocaleString() + ' wPOND';
+                document.getElementById('averageClaim').textContent = (data.summary?.averageAmount || 0).toLocaleString() + ' wPOND';
+                
+                status.textContent = '✅ Basic data loaded successfully!';
+                status.className = 'status success';
+                
+                // Now try to load top winners (This is what we're testing)
+                console.log('🔄 Now testing top winners function...');
+                updateTopWinners();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                status.textContent = '❌ Error: ' + error.message;
+                status.className = 'status error';
+            }
+        }
+        
+        // Top winners function (This is what we're testing)
+        function updateTopWinners() {
+            console.log('🏆 updateTopWinners() called');
+            const topWinnersGrid = document.getElementById('topWinnersGrid');
+            
+            if (!dashboardData || !dashboardData.allRecipients) {
+                console.log('⚠️ No dashboard data available for top winners');
+                topWinnersGrid.innerHTML = '<p>No data available</p>';
+                return;
+            }
+            
+            try {
+                console.log('📊 Processing', dashboardData.allRecipients.length, 'recipients');
+                
+                // Get top 10 winners
+                const topWinners = dashboardData.allRecipients.slice(0, 10);
+                console.log('🏆 Top 10 winners:', topWinners.length);
+                
+                let html = '';
+                topWinners.forEach((winner, index) => {
+                    const rank = index + 1;
+                    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                    
+                    html += `
+                        <div class="winner-card">
+                            <div style="font-size: 24px; margin-bottom: 10px;">${rankIcon}</div>
+                            <div class="winner-wallet">${winner.wallet}</div>
+                            <div class="winner-amount">${(winner.amount || 0).toLocaleString()} wPOND</div>
+                            <div style="color: #ccc; font-size: 12px;">Claim #${winner.claimCount || 1}</div>
+                        </div>
+                    `;
+                });
+                
+                topWinnersGrid.innerHTML = html;
+                console.log('✅ Top winners updated successfully');
+                
+            } catch (error) {
+                console.error('❌ Error in updateTopWinners:', error);
+                topWinnersGrid.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', loadBasicData);
+    </script>
+</body>
+</html>
