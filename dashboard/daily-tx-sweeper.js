@@ -254,17 +254,20 @@ function mergeWithDashboardData(newClaims, existingData) {
         };
     }
     
-    // Convert existing data to claims format for easier merging
-    const existingClaims = existingData.allRecipients.map(r => ({
-        recipient: r.wallet,
-        wpondAmount: r.amount,
-        date: r.date,
-        signature: r.signature,
-        timestamp: r.timestamp || 0
-    }));
+    // Convert existing data to claims format for easier merging, excluding blocked wallets
+    const existingClaims = existingData.allRecipients
+        .filter(r => !CONFIG.EXCLUDED_WALLETS.includes(r.wallet))
+        .map(r => ({
+            recipient: r.wallet,
+            wpondAmount: r.amount,
+            date: r.date,
+            signature: r.signature,
+            timestamp: r.timestamp || 0
+        }));
     
-    // Merge new claims with existing
-    const allClaims = [...existingClaims, ...newClaims];
+    // Merge new claims with existing, excluding blocked wallets from new claims too
+    const filteredNewClaims = newClaims.filter(claim => !CONFIG.EXCLUDED_WALLETS.includes(claim.recipient));
+    const allClaims = [...existingClaims, ...filteredNewClaims];
     
     // Group by recipient
     const recipientMap = new Map();
