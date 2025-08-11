@@ -1,185 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Debug</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: #ff69b4; }
-        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
-        .success { background: #2d5a2d; }
-        .error { background: #5a2d2d; }
-        .info { background: #2d2d5a; }
-        .debug { background: #5a5a2d; }
-        button { background: #ff69b4; color: #000; border: none; padding: 10px 20px; margin: 10px; cursor: pointer; }
-    </style>
 </head>
 <body>
     <h1>Dashboard Debug</h1>
-    <div id="status" class="status info">Ready to debug...</div>
-    <div id="data"></div>
-    <button onclick="testMainDashboard()">Test Main Dashboard Logic</button>
-    <button onclick="testDataFile()">Test Data File</button>
-    <button onclick="testElements()">Test DOM Elements</button>
-
+    <div id="debugStatus">Loading...</div>
+    <div id="dataOutput"></div>
+    
     <script>
-        async function testMainDashboard() {
-            const statusDiv = document.getElementById('status');
-            const dataDiv = document.getElementById('data');
-            
-            statusDiv.textContent = 'Testing main dashboard logic...';
-            statusDiv.className = 'status debug';
+        async function testDataLoading() {
+            const debugStatus = document.getElementById('debugStatus');
+            const dataOutput = document.getElementById('dataOutput');
             
             try {
-                // Step 1: Load data
-                statusDiv.textContent = 'Step 1: Loading data...';
-                const response = await fetch('helius-dashboard-data.json');
+                debugStatus.textContent = 'Testing data loading...';
+                
+                // Test 1: Check if we can access the data file
+                const dataUrl = 'helius-dashboard-data.json?v=' + Date.now();
+                console.log('Testing URL:', dataUrl);
+                
+                const response = await fetch(dataUrl);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const data = await response.json();
-                statusDiv.textContent = 'Step 2: Data loaded, testing elements...';
+                console.log('Data loaded successfully:', data);
+                console.log('Data keys:', Object.keys(data));
                 
-                // Step 2: Test if elements exist
-                const elements = [
-                    'totalClaims', 'totalWpond', 'biggestWinner', 'averageClaim',
-                    'ecosystemClaims', 'ecosystemWpond', 'ecosystemBiggest', 'ecosystemWallet'
-                ];
+                debugStatus.textContent = '✅ Data loaded successfully!';
+                debugStatus.style.background = '#2d5a2d';
+                debugStatus.style.color = 'white';
+                debugStatus.style.padding = '10px';
+                debugStatus.style.borderRadius = '5px';
                 
-                const missingElements = [];
-                elements.forEach(id => {
-                    if (!document.getElementById(id)) {
-                        missingElements.push(id);
-                    }
-                });
-                
-                if (missingElements.length > 0) {
-                    throw new Error(`Missing elements: ${missingElements.join(', ')}`);
-                }
-                
-                // Step 3: Test updating elements
-                statusDiv.textContent = 'Step 3: Updating elements...';
-                
-                // Test formatWpondAmount function
-                function formatWpondAmount(amount) {
-                    if (amount >= 1e12) {
-                        return (amount / 1e12).toFixed(1) + 'T';
-                    } else if (amount >= 1e9) {
-                        return (amount / 1e9).toFixed(1) + 'B';
-                    } else if (amount >= 1e6) {
-                        return (amount / 1e6).toFixed(1) + 'M';
-                    } else if (amount >= 1e3) {
-                        return (amount / 1e3).toFixed(1) + 'K';
-                    } else {
-                        return amount.toString();
-                    }
-                }
-                
-                function formatWallet(wallet) {
-                    return wallet.slice(0, 8) + '...' + wallet.slice(-4);
-                }
-                
-                // Update summary cards
-                document.getElementById('totalClaims').textContent = data.summary.totalClaims.toLocaleString();
-                document.getElementById('totalWpond').textContent = formatWpondAmount(data.summary.totalWpond);
-                document.getElementById('biggestWinner').textContent = formatWpondAmount(data.summary.biggestAmount);
-                document.getElementById('averageClaim').textContent = formatWpondAmount(data.summary.averageAmount);
-                
-                // Update ecosystem rewards
-                document.getElementById('ecosystemClaims').textContent = data.ecosystemRewards.totalClaims.toLocaleString();
-                document.getElementById('ecosystemWpond').textContent = formatWpondAmount(data.ecosystemRewards.totalWpond);
-                document.getElementById('ecosystemBiggest').textContent = formatWpondAmount(data.ecosystemRewards.biggestClaim);
-                document.getElementById('ecosystemWallet').textContent = formatWallet(data.ecosystemRewards.wallet);
-                
-                statusDiv.textContent = '✅ Main dashboard logic works!';
-                statusDiv.className = 'status success';
-                
-                dataDiv.innerHTML = `
-                    <h2>Dashboard Elements Updated:</h2>
-                    <p>Total Claims: ${data.summary.totalClaims.toLocaleString()}</p>
-                    <p>Total wPOND: ${formatWpondAmount(data.summary.totalWpond)}</p>
-                    <p>Biggest Winner: ${formatWpondAmount(data.summary.biggestAmount)}</p>
-                    <p>Average Claim: ${formatWpondAmount(data.summary.averageAmount)}</p>
-                    <h3>Ecosystem Rewards:</h3>
-                    <p>Total Claims: ${data.ecosystemRewards.totalClaims.toLocaleString()}</p>
-                    <p>Total wPOND: ${formatWpondAmount(data.ecosystemRewards.totalWpond)}</p>
+                // Display some data
+                dataOutput.innerHTML = `
+                    <h2>Data Summary:</h2>
+                    <p><strong>Total Claims:</strong> ${data.summary?.totalClaims || 'N/A'}</p>
+                    <p><strong>Total wPOND:</strong> ${data.summary?.totalWpond || 'N/A'}</p>
+                    <p><strong>Total Recipients:</strong> ${data.allRecipients?.length || 'N/A'}</p>
+                    <p><strong>Sample Recipient:</strong> ${data.allRecipients?.[0]?.wallet || 'N/A'}</p>
                 `;
                 
             } catch (error) {
-                statusDiv.textContent = `❌ Error: ${error.message}`;
-                statusDiv.className = 'status error';
-                console.error('Error:', error);
-            }
-        }
-        
-        async function testDataFile() {
-            const statusDiv = document.getElementById('status');
-            const dataDiv = document.getElementById('data');
-            
-            try {
-                statusDiv.textContent = 'Testing data file...';
-                statusDiv.className = 'status debug';
+                console.error('Error loading data:', error);
+                debugStatus.textContent = `❌ Error: ${error.message}`;
+                debugStatus.style.background = '#5a2d2d';
+                debugStatus.style.color = 'white';
+                debugStatus.style.padding = '10px';
+                debugStatus.style.borderRadius = '5px';
                 
-                const response = await fetch('helius-dashboard-data.json');
-                statusDiv.textContent = `Response status: ${response.status}`;
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                statusDiv.textContent = '✅ Data file loaded successfully!';
-                statusDiv.className = 'status success';
-                
-                dataDiv.innerHTML = `
-                    <h2>Data File Structure:</h2>
-                    <p>Keys: ${Object.keys(data).join(', ')}</p>
-                    <p>Summary exists: ${!!data.summary}</p>
-                    <p>Ecosystem exists: ${!!data.ecosystemRewards}</p>
-                    <p>Top winners count: ${data.topWinners ? data.topWinners.length : 'NO TOP WINNERS'}</p>
-                    <h3>Summary Data:</h3>
-                    <p>Total Claims: ${data.summary.totalClaims}</p>
-                    <p>Total wPOND: ${data.summary.totalWpond}</p>
-                    <p>Biggest Amount: ${data.summary.biggestAmount}</p>
+                dataOutput.innerHTML = `
+                    <h2>Error Details:</h2>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Stack:</strong> ${error.stack}</p>
                 `;
-                
-            } catch (error) {
-                statusDiv.textContent = `❌ Error: ${error.message}`;
-                statusDiv.className = 'status error';
-                console.error('Error:', error);
             }
         }
         
-        async function testElements() {
-            const statusDiv = document.getElementById('status');
-            const dataDiv = document.getElementById('data');
-            
-            statusDiv.textContent = 'Testing DOM elements...';
-            statusDiv.className = 'status debug';
-            
-            const elements = [
-                'totalClaims', 'totalWpond', 'biggestWinner', 'averageClaim',
-                'ecosystemClaims', 'ecosystemWpond', 'ecosystemBiggest', 'ecosystemWallet'
-            ];
-            
-            const results = [];
-            elements.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    results.push(`✅ ${id}: Found`);
-                } else {
-                    results.push(`❌ ${id}: Missing`);
-                }
-            });
-            
-            statusDiv.textContent = 'DOM element test complete';
-            statusDiv.className = 'status info';
-            
-            dataDiv.innerHTML = `
-                <h2>DOM Element Test Results:</h2>
-                ${results.map(r => `<p>${r}</p>`).join('')}
-            `;
-        }
+        // Run the test when page loads
+        document.addEventListener('DOMContentLoaded', testDataLoading);
     </script>
 </body>
 </html>

@@ -4,7 +4,7 @@ const path = require('path');
 // Configuration
 const CONFIG = {
     PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT',
-    HELIUS_API_KEY: '873850e4-1ff9-46c0-a669-3a48589516b2',
+    HELIUS_API_KEY: 'e7472550-170d-4be0-ae9f-dccf30e8d5b8',
     HOURS_BACK: 168, // Look back 1 week to find more transactions
     OUTPUT_FILE: 'new-transactions.json',
     LOG_FILE: 'sweeper-log.json',
@@ -12,6 +12,7 @@ const CONFIG = {
     MAX_RETRIES: 5,
     BASE_DELAY: 1000,
     MAX_DELAY: 30000,
+    WPOND_MINT: 'Ea5SjE2Y6yvCeW5dYTx7qMNqGuyN3TfRcj8dDaIoMsfG', // wPOND token mint address
     // Exclude bank and sister wallets from mining rewards
     EXCLUDED_WALLETS: [
         'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT', // opt (payout wallet)
@@ -184,8 +185,59 @@ async function fetchRecentTransactions() {
     return [];
 }
 
+// Process wPOND transaction (same logic as working script)
+function processWpondTransaction(transaction) {
+    try {
+        if (!transaction || !transaction.meta || !transaction.transaction) return null;
+        
+        const { meta, transaction: tx } = transaction;
+        
+        // Check if this is a token transfer
+        if (!meta.postTokenBalances || !meta.preTokenBalances) return null;
+        
+        const claims = [];
+        
+        // Process token balance changes
+        for (let i = 0; i < meta.postTokenBalances.length; i++) {
+            const postBalance = meta.postTokenBalances[i];
+            const preBalance = meta.preTokenBalances.find(b => b.accountIndex === postBalance.accountIndex);
+            
+            if (!postBalance || !preBalance) continue;
+            
+            // Check if this is wPOND token
+            if (postBalance.mint !== CONFIG.WPOND_MINT) continue;
+            
+            const preAmount = preBalance.uiTokenAmount?.uiAmount || 0;
+            const postAmount = postBalance.uiTokenAmount?.uiAmount || 0;
+            const change = postAmount - preAmount;
+            
+            // Only process positive changes (receiving wPOND)
+            if (change <= 0) continue;
+            
+            // Get account info
+            const accountIndex = postBalance.accountIndex;
+            const account = tx.message.accountKeys[accountIndex];
+            
+            if (!account) continue;
+            
+            // Skip if this is the payout wallet or excluded wallets
+            if (CONFIG.EXCLUDED_WALLETS.includes(account)) continue;
+            
+            claims.push({
+                wallet: account,
+                amount: change
+            });
+        }
+        
+        return claims;
+    } catch (error) {
+        console.log('⚠️ Error processing wPOND transaction:', error.message);
+        return null;
+    }
+}
+
 // Process transactions and extract wPOND transfers
-function processTransactions(transactions) {
+async function processTransactions(transactions) {
     if (!Array.isArray(transactions)) {
         console.log('⚠️ No transactions to process');
         return [];
@@ -194,30 +246,72 @@ function processTransactions(transactions) {
     const newTransactions = [];
     let processedCount = 0;
 
-    transactions.forEach(tx => {
+    for (const tx of transactions) {
         if (processedSignatures.has(tx.signature)) {
-            return; // Skip already processed
+            continue; // Skip already processed
         }
 
         processedCount++;
 
-        // For now, we'll create a placeholder entry that can be enriched later
-        // The RPC method only gives us signatures, not full transaction details
-        const newTx = {
-            signature: tx.signature,
-            timestamp: tx.blockTime || Date.now() / 1000,
-            date: new Date((tx.blockTime || Date.now() / 1000) * 1000).toISOString().split('T')[0],
-            wallet: 'TBD', // Will be filled when we fetch full transaction details
-            amount: 0, // Will be filled when we fetch full transaction details
-            type: 'wPOND Transfer (Pending Details)'
-        };
-        
-        newTransactions.push(newTx);
-        console.log(`🎯 New transaction signature: ${tx.signature.substring(0, 8)}...`);
-        
-        // Mark as processed
-        processedSignatures.add(tx.signature);
-    });
+        try {
+            // Fetch full transaction details using getTransaction (same as working script)
+            const endpoint = `https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`;
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'getTransaction',
+                    params: [tx.signature, { encoding: 'json', maxSupportedTransactionVersion: 0 }]
+                })
+            });
+
+            if (!response.ok) {
+                console.log(`⚠️ Failed to fetch transaction ${tx.signature.substring(0, 8)}...: ${response.status}`);
+                continue;
+            }
+
+            const data = await response.json();
+            if (data.error) {
+                console.log(`⚠️ Transaction error for ${tx.signature.substring(0, 8)}...: ${data.error.message}`);
+                continue;
+            }
+
+            const transaction = data.result;
+            if (!transaction || !transaction.meta || !transaction.transaction) {
+                continue;
+            }
+
+            // Process wPOND transaction (same logic as working script)
+            const claims = processWpondTransaction(transaction);
+            if (claims && claims.length > 0) {
+                claims.forEach(claim => {
+                    const newTx = {
+                        signature: tx.signature,
+                        timestamp: tx.blockTime || Date.now() / 1000,
+                        date: new Date((tx.blockTime || Date.now() / 1000) * 1000).toISOString().split('T')[0],
+                        wallet: claim.wallet,
+                        amount: claim.amount,
+                        type: 'wPOND Transfer'
+                    };
+                    
+                    newTransactions.push(newTx);
+                    console.log(`🎯 New wPOND transfer: ${claim.wallet} received ${claim.amount} wPOND`);
+                });
+            }
+
+            // Mark as processed
+            processedSignatures.add(tx.signature);
+
+            // Small delay to avoid rate limiting
+            await sleep(100);
+
+        } catch (error) {
+            console.log(`⚠️ Error processing transaction ${tx.signature.substring(0, 8)}...: ${error.message}`);
+            continue;
+        }
+    }
     
     logData.totalProcessed += processedCount;
     logData.newTransactions += newTransactions.length;
@@ -352,7 +446,7 @@ async function runDailySweeper() {
         }
         
         // Process and extract new wPOND transfers
-        const newTransactions = processTransactions(transactions);
+        const newTransactions = await processTransactions(transactions);
         
         if (newTransactions.length > 0) {
             // Merge with existing dashboard data
