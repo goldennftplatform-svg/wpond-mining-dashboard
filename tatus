@@ -1,0 +1,3 @@
+[33m3f9aeba[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m Fix dashboard data loading - restore helius-dashboard-data.json integration for Netlify deployment
+[33mf7ce0a0[m Update dashboard with real blockchain data from get-all-data-zero-errors-final.js - Replace fake placeholder data with 11,806 real claims, 23.76T wPOND, 7,689 recipients - Real dates, amounts, and wallet addresses from blockchain - Exclude opt and iWWL wallets as requested
+[33mdda66ca[m Fix dashboard data display issue - remove window. prefix from dashboardData access

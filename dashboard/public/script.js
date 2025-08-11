@@ -12,10 +12,10 @@ async function loadDashboardData() {
         }
         
         // Try to load the data file - exactly like the working test page
-const dataUrl = 'helius-dashboard-data.json?v=' + Date.now() + '&t=' + Math.random(); // Real data file with aggressive cache bust
-console.log('📡 Attempting to fetch:', dataUrl);
-console.log('🌐 Full URL:', window.location.origin + '/' + dataUrl);
-console.log('🚀 FORCE REBUILD - Netlify deployment test');
+        const dataUrl = 'test-dashboard-data.json?v=' + Date.now() + '&t=' + Math.random(); // Testing with smaller file first
+        console.log('📡 Attempting to fetch:', dataUrl);
+        console.log('🌐 Full URL:', window.location.origin + '/' + dataUrl);
+        console.log('🚀 TESTING WITH SMALLER FILE - Netlify deployment test');
         
         const response = await fetch(dataUrl);
         console.log('📡 Response status:', response.status);
