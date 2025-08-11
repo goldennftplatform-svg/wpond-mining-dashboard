@@ -236,8 +236,52 @@
                 console.log('📊 Sample recent activity:', sampleActivity);
                 console.log('✅ updateRecentActivity completed successfully');
                 
+                // Now test the final function
+                console.log('🔄 Now testing createRecentWinnersBubbleBoard function...');
+                createRecentWinnersBubbleBoard();
+                
             } catch (error) {
                 console.error('❌ Error in updateRecentActivity:', error);
+            }
+        }
+        
+        // Bubble board function (This is likely the culprit!)
+        function createRecentWinnersBubbleBoard() {
+            console.log('🫧 createRecentWinnersBubbleBoard() called');
+            
+            try {
+                if (!dashboardData || !dashboardData.allRecipients) {
+                    console.log('⚠️ No dashboard data available for bubble board');
+                    return;
+                }
+                
+                console.log('📊 Creating bubble board visualization...');
+                
+                // Get top 20 winners for the bubble board
+                const topWinners = dashboardData.allRecipients.slice(0, 20);
+                console.log('🏆 Top 20 winners for bubble board:', topWinners.length);
+                
+                // Calculate bubble sizes based on amounts
+                const maxAmount = Math.max(...topWinners.map(w => w.amount || 0));
+                console.log('💰 Max amount for scaling:', maxAmount);
+                
+                // Create bubble data
+                const bubbleData = topWinners.map((winner, index) => {
+                    const size = Math.max(20, (winner.amount / maxAmount) * 100);
+                    return {
+                        wallet: winner.wallet,
+                        amount: winner.amount,
+                        size: size,
+                        rank: index + 1
+                    };
+                });
+                
+                console.log('🫧 Bubble data created:', bubbleData.length, 'bubbles');
+                console.log('📊 Sample bubble:', bubbleData[0]);
+                console.log('✅ createRecentWinnersBubbleBoard completed successfully');
+                
+            } catch (error) {
+                console.error('❌ Error in createRecentWinnersBubbleBoard:', error);
             }
         }
         
