@@ -201,8 +201,43 @@
                 console.log('📊 Simulated recent data created:', recentData.length, 'entries');
                 console.log('✅ updateTodaysWinners completed successfully');
                 
+                // Now test the next function
+                console.log('🔄 Now testing updateRecentActivity function...');
+                updateRecentActivity();
+                
             } catch (error) {
                 console.error('❌ Error in updateTodaysWinners:', error);
+            }
+        }
+        
+        // Recent activity function (Testing this next)
+        function updateRecentActivity() {
+            console.log('🕐 updateRecentActivity() called');
+            
+            try {
+                if (!dashboardData || !dashboardData.allRecipients) {
+                    console.log('⚠️ No dashboard data available for recent activity');
+                    return;
+                }
+                
+                console.log('📊 Processing recent activity...');
+                
+                // Get the most recent winners (first 5 in the array)
+                const recentWinners = dashboardData.allRecipients.slice(0, 5);
+                console.log('🕐 Recent winners found:', recentWinners.length);
+                
+                // Log some sample data
+                const sampleActivity = recentWinners.map(w => ({
+                    wallet: w.wallet?.substring(0, 8) + '...',
+                    amount: w.amount,
+                    date: w.date || 'unknown'
+                }));
+                
+                console.log('📊 Sample recent activity:', sampleActivity);
+                console.log('✅ updateRecentActivity completed successfully');
+                
+            } catch (error) {
+                console.error('❌ Error in updateRecentActivity:', error);
             }
         }
         
