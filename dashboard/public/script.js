@@ -1403,7 +1403,7 @@ function createSimulatedRecentData() {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
     // Take top 10 winners and simulate recent activity
-    const topWinners = window.dashboardData.allRecipients.slice(0, 10);
+    const topWinners = dashboardData.allRecipients.slice(0, 10);
     
     return topWinners.map((winner, index) => ({
         ...winner,

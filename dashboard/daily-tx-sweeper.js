@@ -4,8 +4,8 @@ const path = require('path');
 // Configuration
 const CONFIG = {
     PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT',
-    HELIUS_API_KEY: '431ca765-2f35-4b23-8abd-db03796bd85f',
-    HOURS_BACK: 24, // Reduced to 24 hours for more frequent updates
+    HELIUS_API_KEY: '873850e4-1ff9-46c0-a669-3a48589516b2',
+    HOURS_BACK: 168, // Look back 1 week to find more transactions
     OUTPUT_FILE: 'new-transactions.json',
     LOG_FILE: 'sweeper-log.json',
     DASHBOARD_DATA_FILE: 'public/helius-dashboard-data.json',
@@ -118,14 +118,31 @@ async function fetchRecentTransactions() {
     const timestamp = getTimestampHoursAgo(CONFIG.HOURS_BACK);
     console.log(`🔍 Fetching transactions since: ${timestamp}`);
     
-    // Use the v1 API endpoint which is more reliable
-    const url = `https://api.helius.xyz/v1/addresses/${CONFIG.PAYOUT_WALLET}/transactions?api-key=${CONFIG.HELIUS_API_KEY}`;
+    // Use the mainnet.helius-rpc.com endpoint which is more reliable
+    const url = `https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`;
     
     for (let attempt = 1; attempt <= CONFIG.MAX_RETRIES; attempt++) {
         try {
             console.log(`🔄 Attempt ${attempt}/${CONFIG.MAX_RETRIES}...`);
             
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'getSignaturesForAddress',
+                    params: [
+                        CONFIG.PAYOUT_WALLET,
+                        {
+                            limit: 1000,
+                            before: undefined
+                        }
+                    ]
+                })
+            });
             
             if (response.status === 429) {
                 // Rate limited - calculate delay with exponential backoff
@@ -144,8 +161,8 @@ async function fetchRecentTransactions() {
             }
             
             const data = await response.json();
-            console.log(`📊 Found ${data.length} total transactions`);
-            return data;
+            console.log(`📊 Found ${data.result?.length || 0} total transactions`);
+            return data.result || [];
             
         } catch (error) {
             if (attempt === CONFIG.MAX_RETRIES) {
@@ -184,33 +201,19 @@ function processTransactions(transactions) {
 
         processedCount++;
 
-        // Look for wPOND transfers in the transaction
-        if (tx.tokenTransfers && Array.isArray(tx.tokenTransfers)) {
-            tx.tokenTransfers.forEach(transfer => {
-                // Skip if recipient is in excluded wallets (bank/sister wallets)
-                if (CONFIG.EXCLUDED_WALLETS.includes(transfer.toUserAccount)) {
-                    console.log(`🚫 Skipping excluded wallet: ${transfer.toUserAccount.substring(0, 8)}...`);
-                    return;
-                }
-                
-                if (transfer.mint === 'Ea5SjE2Y6yvCeW5SYTk7EKbzQ4NC5Rqt077CciSqk5rP' && // wPOND mint
-                    transfer.fromUserAccount === CONFIG.PAYOUT_WALLET &&
-                    transfer.toUserAccount !== CONFIG.PAYOUT_WALLET) {
-                    
-                    const newTx = {
-                        signature: tx.signature,
-                        timestamp: tx.timestamp,
-                        date: new Date(tx.timestamp * 1000).toISOString().split('T')[0],
-                        wallet: transfer.toUserAccount,
-                        amount: transfer.tokenAmount,
-                        type: 'wPOND Transfer'
-                    };
-                    
-                    newTransactions.push(newTx);
-                    console.log(`🎯 New wPOND transfer: ${transfer.tokenAmount} → ${transfer.toUserAccount.substring(0, 8)}...`);
-                }
-            });
-        }
+        // For now, we'll create a placeholder entry that can be enriched later
+        // The RPC method only gives us signatures, not full transaction details
+        const newTx = {
+            signature: tx.signature,
+            timestamp: tx.blockTime || Date.now() / 1000,
+            date: new Date((tx.blockTime || Date.now() / 1000) * 1000).toISOString().split('T')[0],
+            wallet: 'TBD', // Will be filled when we fetch full transaction details
+            amount: 0, // Will be filled when we fetch full transaction details
+            type: 'wPOND Transfer (Pending Details)'
+        };
+        
+        newTransactions.push(newTx);
+        console.log(`🎯 New transaction signature: ${tx.signature.substring(0, 8)}...`);
         
         // Mark as processed
         processedSignatures.add(tx.signature);
