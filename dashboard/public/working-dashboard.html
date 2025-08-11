@@ -280,8 +280,43 @@
                 console.log('📊 Sample bubble:', bubbleData[0]);
                 console.log('✅ createRecentWinnersBubbleBoard completed successfully');
                 
+                // Now test ALL functions in sequence like the main dashboard
+                console.log('🔄 Now testing ALL functions in sequence like main dashboard...');
+                testAllFunctionsInSequence();
+                
             } catch (error) {
                 console.error('❌ Error in createRecentWinnersBubbleBoard:', error);
+            }
+        }
+        
+        // Test all functions in sequence (like main dashboard)
+        function testAllFunctionsInSequence() {
+            console.log('🚀 TESTING ALL FUNCTIONS IN SEQUENCE');
+            console.log('=====================================');
+            
+            try {
+                // This is the exact sequence from your main dashboard
+                console.log('1️⃣ Calling updateRecentActivity...');
+                updateRecentActivity();
+                
+                console.log('2️⃣ Calling createRecentWinnersBubbleBoard...');
+                createRecentWinnersBubbleBoard();
+                
+                console.log('3️⃣ Calling updateTopWinners...');
+                updateTopWinners();
+                
+                console.log('4️⃣ Calling updateAllWinners...');
+                updateAllWinners();
+                
+                console.log('5️⃣ Calling updateTodaysWinners...');
+                updateTodaysWinners();
+                
+                console.log('✅ ALL FUNCTIONS COMPLETED SUCCESSFULLY!');
+                console.log('🎯 If this works, the issue is elsewhere in your main dashboard');
+                
+            } catch (error) {
+                console.error('❌ ERROR IN SEQUENCE TEST:', error);
+                console.log('🎯 This reveals the exact issue!');
             }
         }
         
