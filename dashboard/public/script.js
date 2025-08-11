@@ -77,31 +77,40 @@ async function loadDashboardData() {
         setTimeout(() => {
             try {
                 console.log('1️⃣ Updating recent activity...');
+                console.log('📊 Data available:', !!dashboardData, 'Recipients:', dashboardData?.allRecipients?.length);
                 updateRecentActivity();
+                console.log('✅ Recent activity updated');
                 
                 // Step 2: Create bubble board
                 setTimeout(() => {
                     try {
                         console.log('2️⃣ Creating bubble board...');
+                        console.log('🔍 Bubble board element:', !!document.getElementById('recentWinnersBubbleBoard'));
                         createRecentWinnersBubbleBoard();
+                        console.log('✅ Bubble board created');
                         
                         // Step 3: Update top winners
                         setTimeout(() => {
                             try {
                                 console.log('3️⃣ Updating top winners...');
+                                console.log('🔍 Top winners element:', !!document.getElementById('topWinnersGrid'));
                                 updateTopWinners();
+                                console.log('✅ Top winners updated');
                                 
                                 // Step 4: Update all winners
                                 setTimeout(() => {
                                     try {
                                         console.log('4️⃣ Updating all winners...');
+                                        console.log('🔍 All winners element:', !!document.getElementById('winnersTableBody'));
                                         updateAllWinners();
+                                        console.log('✅ All winners updated');
                                         
                                         // Step 5: Update today's winners
                                         setTimeout(() => {
                                             try {
                                                 console.log('5️⃣ Updating today\'s winners...');
                                                 updateTodaysWinners();
+                                                console.log('✅ Today\'s winners updated');
                                                 
                                                 console.log('✅ All dashboard updates completed successfully!');
                                                 if (debugStatus) {
@@ -540,15 +549,47 @@ function createTopWinnersBubbleBoard() {
 
 // Create recent winners bubble board
 function createRecentWinnersBubbleBoard() {
+    console.log('🔍 createRecentWinnersBubbleBoard() called');
     const bubbleBoard = document.getElementById('recentWinnersBubbleBoard');
+    console.log('🔍 Bubble board element found:', !!bubbleBoard);
+    
+    if (!bubbleBoard) {
+        console.error('❌ Bubble board element not found!');
+        return;
+    }
+    
     bubbleBoard.innerHTML = '';
+    console.log('🔍 Dashboard data available:', !!dashboardData);
+    console.log('🔍 All recipients available:', !!dashboardData?.allRecipients);
+    console.log('🔍 Recipients count:', dashboardData?.allRecipients?.length || 0);
 
-    if (!dashboardData || !dashboardData.allRecipients) return;
+    if (!dashboardData || !dashboardData.allRecipients) {
+        console.warn('⚠️ No dashboard data or recipients available');
+        bubbleBoard.innerHTML = `
+            <div style="
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                color: #ff69b4;
+                font-family: 'Press Start 2P', monospace;
+                font-size: 14px;
+            ">
+                <div style="margin-bottom: 10px;">⚠️</div>
+                <div>NO DATA AVAILABLE</div>
+                <div style="font-size: 10px; margin-top: 10px; opacity: 0.8;">CHECK CONSOLE FOR ERRORS</div>
+            </div>
+        `;
+        return;
+    }
 
     // Show the most recent recipients (already sorted by date in the data)
     const claimsToShow = dashboardData.allRecipients.slice(0, 20); // Show last 20 recent recipients
+    console.log('🔍 Claims to show:', claimsToShow.length);
 
     if (claimsToShow.length === 0) {
+        console.warn('⚠️ No claims to show');
         bubbleBoard.innerHTML = `
             <div style="
                 position: absolute;
@@ -738,11 +779,28 @@ if (!document.getElementById('notification-animations')) {
 
 // Update top winners grid
 function updateTopWinners() {
+    console.log('🔍 updateTopWinners() called');
     const winnersGrid = document.getElementById('topWinnersGrid');
-    if (!dashboardData || !dashboardData.allRecipients) return;
+    console.log('🔍 Top winners grid element found:', !!winnersGrid);
+    
+    if (!winnersGrid) {
+        console.error('❌ Top winners grid element not found!');
+        return;
+    }
+    
+    console.log('🔍 Dashboard data available:', !!dashboardData);
+    console.log('🔍 All recipients available:', !!dashboardData?.allRecipients);
+    console.log('🔍 Recipients count:', dashboardData?.allRecipients?.length || 0);
+    
+    if (!dashboardData || !dashboardData.allRecipients) {
+        console.warn('⚠️ No dashboard data or recipients available for top winners');
+        winnersGrid.innerHTML = '<div class="loading">No data available</div>';
+        return;
+    }
 
     // Use allRecipients instead of topWinners, take top 10
     const topWinners = dashboardData.allRecipients.slice(0, 10);
+    console.log('🔍 Top 10 winners found:', topWinners.length);
     
     winnersGrid.innerHTML = topWinners.map((winner, index) => `
         <div class="winner-card ${index === 0 ? 'top-winner' : ''}" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
@@ -752,6 +810,8 @@ function updateTopWinners() {
             <div class="winner-date">${winner.date}</div>
         </div>
     `).join('');
+    
+    console.log('✅ Top winners updated successfully');
 }
 
 // Get rank icon
