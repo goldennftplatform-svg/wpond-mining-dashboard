@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Dashboard Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .card { background: #2d2d2d; padding: 20px; margin: 10px; border-radius: 10px; }
+        .value { font-size: 24px; color: #ffd700; font-weight: bold; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #2d5a2d; color: #fff; }
+        .error { background: #5a2d2d; color: #fff; }
+        .loading { background: #2d2d5a; color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>Simple Dashboard Test</h1>
+    
+    <div id="status" class="status loading">Loading...</div>
+    
+    <div class="card">
+        <h3>Total Claims</h3>
+        <div class="value" id="totalClaims">Loading...</div>
+    </div>
+    
+    <div class="card">
+        <h3>Total wPOND</h3>
+        <div class="value" id="totalWpond">Loading...</div>
+    </div>
+    
+    <div class="card">
+        <h3>Biggest Winner</h3>
+        <div class="value" id="biggestWinner">Loading...</div>
+    </div>
+    
+    <div class="card">
+        <h3>Average Claim</h3>
+        <div class="value" id="averageClaim">Loading...</div>
+    </div>
+    
+    <script>
+        async function loadData() {
+            const status = document.getElementById('status');
+            try {
+                status.textContent = 'Fetching data...';
+                status.className = 'status loading';
+                
+                const response = await fetch('helius-dashboard-data.json');
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Data loaded:', data);
+                console.log('Data keys:', Object.keys(data));
+                
+                // Update the display
+                document.getElementById('totalClaims').textContent = data.summary?.totalClaims?.toLocaleString() || '0';
+                document.getElementById('totalWpond').textContent = (data.summary?.totalWpond || 0).toLocaleString() + ' wPOND';
+                document.getElementById('biggestWinner').textContent = (data.summary?.biggestAmount || 0).toLocaleString() + ' wPOND';
+                document.getElementById('averageClaim').textContent = (data.summary?.averageAmount || 0).toLocaleString() + ' wPOND';
+                
+                status.textContent = '✅ Data loaded successfully!';
+                status.className = 'status success';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                status.textContent = '❌ Error: ' + error.message;
+                status.className = 'status error';
+            }
+        }
+        
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
