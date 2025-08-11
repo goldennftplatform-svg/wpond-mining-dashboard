@@ -5,8 +5,8 @@ console.log('🚀 DAILY wPOND SWEEPER - USING WORKING APPROACH\n');
 // Configuration - EXACTLY like the working script
 const CONFIG = {
     HELIUS_ENDPOINTS: [
-        'https://mainnet.helius-rpc.com/?api-key=e7472550-170d-4be0-ae9f-dccf30e8d5b8',
-        'https://api.helius.xyz/v0/transactions/?api-key=e7472550-170d-4be0-ae9f-dccf30e8d5b8'
+        'https://mainnet.helius-rpc.com/?api-key=873850e4-1ff9-46c0-a669-3a48589516d2',
+        'https://api.helius.xyz/v0/transactions/?api-key=873850e4-1ff9-46c0-a669-3a48589516d2'
     ],
     WPOND_MINT: '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq',
     PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT',
@@ -18,7 +18,8 @@ const CONFIG = {
     // Exclude bank and sister wallets from mining rewards
     EXCLUDED_WALLETS: [
         'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT', // opt (payout wallet)
-        '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL'  // iWWL (sister wallet)
+        '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL', // iWWL (sister wallet)
+        '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt'  // another house wallet
     ]
 };
 

@@ -1,6 +1,19 @@
 // Dashboard functionality
 let dashboardData = null;
 
+// Exclude specific wallets from display (same as daily-tx-sweeper.js)
+const EXCLUDED_WALLETS = [
+    'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT', // opt (payout wallet)
+    '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL', // iWWL (sister wallet)
+    '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt'  // another house wallet
+];
+
+// Helper function to filter out excluded wallets
+function filterExcludedWallets(recipients) {
+    if (!recipients || !Array.isArray(recipients)) return [];
+    return recipients.filter(recipient => !EXCLUDED_WALLETS.includes(recipient.wallet));
+}
+
 // Load dashboard data
 async function loadDashboardData() {
     const debugStatus = document.getElementById('debugStatus');
@@ -589,7 +602,8 @@ function createRecentWinnersBubbleBoard() {
     }
 
     // Show the most recent recipients (already sorted by date in the data)
-    const claimsToShow = dashboardData.allRecipients.slice(0, 20); // Show last 20 recent recipients
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    const claimsToShow = allRecipients.slice(0, 20); // Show last 20 recent recipients
     console.log('🔍 Claims to show:', claimsToShow.length);
 
     if (claimsToShow.length === 0) {
@@ -803,7 +817,8 @@ function updateTopWinners() {
     }
 
     // Use allRecipients instead of topWinners, take top 10
-    const topWinners = dashboardData.allRecipients.slice(0, 10);
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    const topWinners = allRecipients.slice(0, 10);
     console.log('🔍 Top 10 winners found:', topWinners.length);
     
     winnersGrid.innerHTML = topWinners.map((winner, index) => `
@@ -839,7 +854,8 @@ function updateRecentActivity() {
     }
 
     // Use the first 10 recipients as recent activity for now
-    const recentRecipients = dashboardData.allRecipients.slice(0, 10);
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    const recentRecipients = allRecipients.slice(0, 10);
 
     recentActivity.innerHTML = recentRecipients.map(recipient => `
         <tr>
@@ -855,7 +871,8 @@ function updateAllWinners() {
     const winnersTableBody = document.getElementById('winnersTableBody');
     if (!dashboardData || !dashboardData.allRecipients) return;
 
-    winnersTableBody.innerHTML = dashboardData.allRecipients.map((winner, index) => `
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    winnersTableBody.innerHTML = allRecipients.map((winner, index) => `
         <tr onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
             <td>${index + 1}</td>
             <td class="wallet-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.wallet}')" title="Click to copy wallet">${formatWallet(winner.wallet)}</td>
@@ -941,10 +958,11 @@ function createDailyBubbleChart() {
     const today = new Date().toISOString().split('T')[0];
     
     // Filter today's claims
-    const todaysClaims = dashboardData.allRecipients.filter(recipient => recipient.date === today);
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    const todaysClaims = allRecipients.filter(recipient => recipient.date === today);
     
     // If no today's claims, show recent recipients
-    const claimsToShow = todaysClaims.length > 0 ? todaysClaims : dashboardData.allRecipients.slice(0, 8);
+    const claimsToShow = todaysClaims.length > 0 ? todaysClaims : allRecipients.slice(0, 8);
 
     claimsToShow.forEach((recipient, index) => {
         const bubble = document.createElement('div');
@@ -1133,10 +1151,10 @@ function updateFilteredWinnersTable(winners) {
         <tr onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
             <td>${index + 1}</td>
             <td class="wallet-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.wallet}')" title="Click to copy wallet">${formatWallet(winner.wallet)}</td>
-            <td>${formatWpondAmount(winner.totalWpondReceived)} wPOND</td>
-            <td class="claims-cell">${winner.transferCount || 1} 🔥</td>
-            <td>${new Date(winner.lastClaim * 1000).toISOString().split('T')[0]}</td>
-            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.transfers?.[0]?.signature || 'N/A'}')" title="Click to copy signature">${(winner.transfers?.[0]?.signature || 'N/A').substring(0, 8)}...</td>
+            <td>${formatWpondAmount(winner.amount)} wPOND</td>
+            <td class="claims-cell">${winner.claimCount || 1} 🔥</td>
+            <td>${winner.date}</td>
+            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.signature || 'N/A'}')" title="Click to copy signature">${(winner.signature || 'N/A').substring(0, 8)}...</td>
         </tr>
     `).join('');
 }
@@ -1525,7 +1543,8 @@ function createSimulatedRecentData() {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
     // Take top 10 winners and simulate recent activity
-    const topWinners = dashboardData.allRecipients.slice(0, 10);
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    const topWinners = allRecipients.slice(0, 10);
     
     return topWinners.map((winner, index) => ({
         ...winner,
