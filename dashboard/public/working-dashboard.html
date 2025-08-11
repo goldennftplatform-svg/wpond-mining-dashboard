@@ -161,8 +161,48 @@
                 
                 console.log('✅ updateAllWinners completed successfully');
                 
+                // Now test the next function
+                console.log('🔄 Now testing updateTodaysWinners function...');
+                updateTodaysWinners();
+                
             } catch (error) {
                 console.error('❌ Error in updateAllWinners:', error);
+            }
+        }
+        
+        // Today's winners function (Testing this next - likely the problem!)
+        function updateTodaysWinners() {
+            console.log('🏅 updateTodaysWinners() called');
+            
+            try {
+                if (!dashboardData || !dashboardData.allRecipients) {
+                    console.log('⚠️ No dashboard data available for today\'s winners');
+                    return;
+                }
+                
+                console.log('📊 Creating simulated recent data...');
+                
+                // This is the complex part that might be breaking
+                const today = new Date().toISOString().split('T')[0];
+                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                
+                console.log('📅 Today:', today, 'Yesterday:', yesterday);
+                
+                // Take top 10 winners and simulate recent activity
+                const topWinners = dashboardData.allRecipients.slice(0, 10);
+                console.log('🏆 Top 10 winners for simulation:', topWinners.length);
+                
+                const recentData = topWinners.map((winner, index) => ({
+                    ...winner,
+                    date: index < 5 ? today : yesterday, // First 5 are "today", rest are "yesterday"
+                    isRecent: true
+                }));
+                
+                console.log('📊 Simulated recent data created:', recentData.length, 'entries');
+                console.log('✅ updateTodaysWinners completed successfully');
+                
+            } catch (error) {
+                console.error('❌ Error in updateTodaysWinners:', error);
             }
         }
         
