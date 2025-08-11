@@ -70,28 +70,84 @@ async function loadDashboardData() {
         if (biggestWinnerEl) biggestWinnerEl.textContent = formatWpondAmount(data.summary?.biggestAmount || 0);
         if (averageClaimEl) averageClaimEl.textContent = formatWpondAmount(data.summary?.averageAmount || 0);
         
-        // Update recent activity
-        updateRecentActivity();
+        // Update dashboard functions with proper delays to prevent conflicts
+        console.log('🔄 Starting dashboard updates with delays...');
         
-        // Create bubble charts
-        createRecentWinnersBubbleBoard();
-        
-        // Update top winners
-        console.log('🏆 Updating top winners...');
-        updateTopWinners();
-        
-        // Update all winners table
-        console.log('📊 Updating all winners table...');
-        updateAllWinners();
-        
-        // Update today's winners
-        console.log('🏅 Updating today\'s winners...');
-        updateTodaysWinners();
-        
-        if (debugStatus) {
-            debugStatus.textContent = '✅ Dashboard updated successfully!';
-            debugStatus.style.background = '#2d5a2d';
-        }
+        // Step 1: Update recent activity
+        setTimeout(() => {
+            try {
+                console.log('1️⃣ Updating recent activity...');
+                updateRecentActivity();
+                
+                // Step 2: Create bubble board
+                setTimeout(() => {
+                    try {
+                        console.log('2️⃣ Creating bubble board...');
+                        createRecentWinnersBubbleBoard();
+                        
+                        // Step 3: Update top winners
+                        setTimeout(() => {
+                            try {
+                                console.log('3️⃣ Updating top winners...');
+                                updateTopWinners();
+                                
+                                // Step 4: Update all winners
+                                setTimeout(() => {
+                                    try {
+                                        console.log('4️⃣ Updating all winners...');
+                                        updateAllWinners();
+                                        
+                                        // Step 5: Update today's winners
+                                        setTimeout(() => {
+                                            try {
+                                                console.log('5️⃣ Updating today\'s winners...');
+                                                updateTodaysWinners();
+                                                
+                                                console.log('✅ All dashboard updates completed successfully!');
+                                                if (debugStatus) {
+                                                    debugStatus.textContent = '✅ Dashboard updated successfully!';
+                                                    debugStatus.style.background = '#2d5a2d';
+                                                }
+                                                
+                                            } catch (error) {
+                                                console.error('❌ Error updating today\'s winners:', error);
+                                                if (debugStatus) {
+                                                    debugStatus.textContent = '⚠️ Partial update - today\'s winners failed';
+                                                }
+                                            }
+                                        }, 100);
+                                        
+                                    } catch (error) {
+                                        console.error('❌ Error updating all winners:', error);
+                                        if (debugStatus) {
+                                            debugStatus.textContent = '⚠️ Partial update - all winners failed';
+                                        }
+                                    }
+                                }, 100);
+                                
+                            } catch (error) {
+                                console.error('❌ Error updating top winners:', error);
+                                if (debugStatus) {
+                                    debugStatus.textContent = '⚠️ Partial update - top winners failed';
+                                }
+                            }
+                        }, 100);
+                        
+                    } catch (error) {
+                        console.error('❌ Error creating bubble board:', error);
+                        if (debugStatus) {
+                            debugStatus.textContent = '⚠️ Partial update - bubble board failed';
+                        }
+                    }
+                }, 100);
+                
+            } catch (error) {
+                console.error('❌ Error updating recent activity:', error);
+                if (debugStatus) {
+                    debugStatus.textContent = '⚠️ Partial update - recent activity failed';
+                }
+            }
+        }, 100);
         
     } catch (error) {
         console.error('❌ Error loading dashboard data:', error);
