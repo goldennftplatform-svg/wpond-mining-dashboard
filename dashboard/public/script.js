@@ -1,4 +1,7 @@
 // Dashboard functionality
+console.log('🚨 EMERGENCY CACHE-BUST VERSION LOADED! Timestamp:', new Date().toISOString());
+console.log('🔧 This should be the NEW version with banned wallets excluded!');
+
 let dashboardData = null;
 
 // Exclude specific wallets from display (ALL suspicious wallets identified)
