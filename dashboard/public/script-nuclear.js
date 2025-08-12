@@ -1325,7 +1325,7 @@ async function searchWallet() {
         return;
     }
 
-    // Simple wallet search without .sol resolution
+    // Simple wallet search
     const walletAddress = searchInput;
     
     // Search in our local data
