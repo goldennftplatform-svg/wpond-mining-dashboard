@@ -22,43 +22,17 @@ const allSignatures = Array.isArray(allSignaturesData) ? allSignaturesData : all
 
 console.log(`📋 Total signatures to process: ${allSignatures.length}\n`);
 
-// Load existing results if any
+// FRESH START: No existing data to avoid contamination
 let existingClaims = [];
 let existingErrors = [];
 let processedCount = 0;
 
-// Try to load from complete-wpond-data.json first (our main data source)
-if (fs.existsSync('complete-wpond-data.json')) {
-    try {
-        const completeData = JSON.parse(fs.readFileSync('complete-wpond-data.json', 'utf8'));
-        if (completeData.recipients && completeData.recipients.length > 0) {
-            // Convert existing data to claims format
-            existingClaims = completeData.recipients.map(recipient => ({
-                recipient: recipient.wallet,
-                wpondAmount: recipient.wpondAmount,
-                date: recipient.lastClaimDate,
-                signature: recipient.lastSignature || 'from-complete-data',
-                timestamp: new Date(recipient.lastClaimDate).getTime() / 1000
-            }));
-            processedCount = completeData.totalClaims || 67771; // We know we have 67,771
-            console.log(`📊 Resuming from complete-wpond-data.json: ${processedCount} processed, ${existingClaims.length} claims`);
-        }
-    } catch (error) {
-        console.log('⚠️ Error loading complete-wpond-data.json, trying zero-errors-final-results.json...');
-    }
-}
+console.log('🧹 FRESH START: Processing all signatures from scratch to avoid data contamination');
+console.log('🚫 Excluded wallets will be filtered out from the beginning');
+console.log('🔧 Micro-transactions will be created for all large amounts');
 
-// Fallback to zero-errors-final-results.json if needed
-if (processedCount === 0 && fs.existsSync('zero-errors-final-results.json')) {
-    const existingData = JSON.parse(fs.readFileSync('zero-errors-final-results.json', 'utf8'));
-    existingClaims = existingData.claims || [];
-    existingErrors = existingData.errors || [];
-    processedCount = existingData.totalProcessed || 0;
-    console.log(`📊 Resuming from zero-errors-final-results.json: ${processedCount} processed, ${existingClaims.length} claims, ${existingErrors.length} errors`);
-}
-
-const remainingSignatures = allSignatures.slice(processedCount);
-console.log(`🔄 Remaining signatures: ${remainingSignatures.length}\n`);
+const remainingSignatures = allSignatures; // Process ALL signatures from scratch
+console.log(`🔄 Processing ALL signatures from scratch: ${remainingSignatures.length}\n`);
 
 // Ultra-reliable fetch function
 async function fetchTransactionZeroErrors(signature, maxRetries = CONFIG.MAX_RETRIES) {
