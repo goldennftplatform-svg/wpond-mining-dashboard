@@ -214,9 +214,9 @@ async function loadDashboardData() {
             debugStatus.style.background = '#5a2d2d';
         }
         
-        // Fallback: Load sample data
-        console.log('🔄 Loading sample data as fallback...');
-        loadSampleData();
+        // Fallback: Load sample data - DISABLED TO PREVENT BANNED WALLETS
+        console.log('🔄 Sample data fallback DISABLED to prevent banned wallets from showing');
+        // loadSampleData(); // DISABLED - contains banned wallets
     }
 }
 
