@@ -10,10 +10,11 @@ const CONFIG = {
     ],
     WPOND_MINT: '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq',
     PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT',
-    BATCH_SIZE: 10,
-    MAX_RETRIES: 20,
-    DELAY_BETWEEN_BATCHES: 1500,
-    SAVE_INTERVAL: 100
+    BATCH_SIZE: 50, // Increased from 10 to 50
+    MAX_RETRIES: 10, // Reduced from 20 to 10
+    DELAY_BETWEEN_BATCHES: 200, // Reduced from 1500ms to 200ms
+    SAVE_INTERVAL: 100,
+    PARALLEL_REQUESTS: 5 // New: Process 5 signatures in parallel
 };
 
 // Load all signatures
@@ -91,8 +92,8 @@ async function fetchTransactionZeroErrors(signature, maxRetries = CONFIG.MAX_RET
                 if (attempt === maxRetries && strategyIndex === strategies.length - 1) {
                     throw error;
                 }
-                // Exponential backoff
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 300));
+                // Faster backoff for speed
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
             }
         }
     }
@@ -218,71 +219,88 @@ function processWpondTransaction(transaction) {
     }
 }
 
-// Process batch
+// Process batch with parallel processing
 async function processBatch(signatures, batchNumber) {
     const batchClaims = [];
     const batchErrors = [];
     
     console.log(`🔄 Processing batch ${batchNumber}: ${signatures.length} signatures`);
     
-    for (let i = 0; i < signatures.length; i++) {
-        const signature = signatures[i];
-        const globalIndex = processedCount + (batchNumber * CONFIG.BATCH_SIZE) + i;
-        
-        try {
-            console.log(`  [${globalIndex + 1}/${allSignatures.length}] ${signature.substring(0, 8)}...`);
+    // Process signatures in parallel chunks
+    for (let i = 0; i < signatures.length; i += CONFIG.PARALLEL_REQUESTS) {
+        const chunk = signatures.slice(i, i + CONFIG.PARALLEL_REQUESTS);
+        const chunkPromises = chunk.map(async (signature, chunkIndex) => {
+            const globalIndex = processedCount + (batchNumber * CONFIG.BATCH_SIZE) + i + chunkIndex;
             
-            const transaction = await fetchTransactionZeroErrors(signature);
-            const claims = processWpondTransaction(transaction);
-            
-            if (claims && claims.length > 0) {
-                batchClaims.push(...claims);
-                console.log(`    ✅ Found ${claims.length} claims`);
-            } else {
-                console.log(`    ⚠️  No wPOND claims found`);
+            try {
+                console.log(`  [${globalIndex + 1}/${allSignatures.length}] ${signature.substring(0, 8)}...`);
+                
+                const transaction = await fetchTransactionZeroErrors(signature);
+                const claims = processWpondTransaction(transaction);
+                
+                if (claims && claims.length > 0) {
+                    console.log(`    ✅ Found ${claims.length} claims`);
+                    return { success: true, claims, error: null };
+                } else {
+                    console.log(`    ⚠️  No wPOND claims found`);
+                    return { success: true, claims: [], error: null };
+                }
+                
+            } catch (error) {
+                console.log(`    ❌ Error: ${error.message}`);
+                return { success: false, claims: [], error: error.message, signature };
             }
-            
-        } catch (error) {
-            batchErrors.push({ signature, error: error.message });
-            console.log(`    ❌ Error: ${error.message}`);
-        }
+        });
         
-        // Small delay between requests
-        if (i < signatures.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+        // Wait for all parallel requests to complete
+        const chunkResults = await Promise.all(chunkPromises);
+        
+        // Process results
+        chunkResults.forEach(result => {
+            if (result.success) {
+                batchClaims.push(...result.claims);
+            } else {
+                batchErrors.push({ signature: result.signature, error: result.error });
+            }
+        });
+        
+        // Minimal delay between chunks to avoid rate limiting
+        if (i + CONFIG.PARALLEL_REQUESTS < signatures.length) {
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
     }
     
     return { claims: batchClaims, errors: batchErrors };
 }
 
-// Save intermediate results
+// Save intermediate results (MINIMAL - no massive files)
 function saveIntermediateResults(claims, errors, batchNumber, totalProcessed) {
+    // Only save minimal summary data - NO massive JSON files
     const intermediateData = {
         timestamp: new Date().toISOString(),
         batchNumber,
         claimsCount: claims.length,
         errorCount: errors.length,
         totalProcessed,
-        errorRate: totalProcessed > 0 ? ((errors.length / totalProcessed) * 100).toFixed(2) + '%' : '0.00%',
-        claims,
-        errors
+        errorRate: totalProcessed > 0 ? ((errors.length / totalProcessed) * 100).toFixed(2) + '%' : '0.00%'
     };
     
+    // Save minimal batch summary (tiny file)
     fs.writeFileSync(`zero-errors-final-batch-${batchNumber}.json`, JSON.stringify(intermediateData, null, 2));
     
-    // Also save cumulative results
+    // Save cumulative results without full claims data
     const cumulativeData = {
         timestamp: new Date().toISOString(),
         totalProcessed,
         totalClaims: claims.length,
         totalErrors: errors.length,
-        errorRate: totalProcessed > 0 ? ((errors.length / totalProcessed) * 100).toFixed(2) + '%' : '0.00%',
-        claims,
-        errors
+        errorRate: totalProcessed > 0 ? ((errors.length / totalProcessed) * 100).toFixed(2) + '%' : '0.00%'
     };
     
     fs.writeFileSync('zero-errors-final-results.json', JSON.stringify(cumulativeData, null, 2));
+    
+    // NO MORE MASSIVE CHUNK FILES - just keep data in memory
+    console.log(`💾 Saved minimal batch ${batchNumber} summary (${intermediateData.claimsCount} claims, ${intermediateData.errorCount} errors)`);
 }
 
 // NEW: Create proper dashboard data with micro-transactions

@@ -22,8 +22,7 @@ const CONFIG = {
         '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt',  // another house wallet
         'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2',  // suspected liquidity bot
         '2aC1XMPKr9yj9RdK6fPrGZ9QhC6b3zbn5aKfZQnUrWeP', // suspicious huge amount
-        'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ'  // suspicious payout pattern
-    ]
+            ]
 };
 
 // Load existing dashboard data
