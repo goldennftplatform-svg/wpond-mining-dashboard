@@ -42,6 +42,15 @@ function filterExcludedWallets(recipients) {
     console.log('🔍 Filtering wallets - Total before filter:', recipients.length);
     console.log('🚫 Excluded wallets:', EXCLUDED_WALLETS);
     
+    // DEBUG: Check if any banned wallets exist in the data
+    const bannedFound = EXCLUDED_WALLETS.filter(bannedWallet => 
+        recipients.some(recipient => recipient.wallet === bannedWallet)
+    );
+    console.log('🚫 Banned wallets found in data:', bannedFound);
+    
+    // DEBUG: Check first few recipients to see wallet format
+    console.log('🔍 First 3 recipients:', recipients.slice(0, 3).map(r => r.wallet));
+    
     const filtered = recipients.filter(recipient => !EXCLUDED_WALLETS.includes(recipient.wallet));
     
     console.log('✅ Wallets after filter:', filtered.length);
