@@ -220,51 +220,10 @@ async function loadDashboardData() {
     }
 }
 
-// Load sample data for development
+// Load sample data for development - COMPLETELY REMOVED TO PREVENT BANNED WALLETS
 function loadSampleData() {
-    dashboardData = {
-        summary: {
-            totalWpondDistributed: 591987620000000000,
-            totalRecipients: 1441,
-            totalClaims: 2703,
-            biggestRecipient: 5445500000000000
-        },
-        recipients: [
-            {
-                rank: 1,
-                wallet: "AxphxzMM4LuVD8krpjCGg6dENU4QwidAUzpJcrAc18ei",
-                wpondAmount: 5445500000000000,
-                claimCount: 5,
-                firstClaimDate: "2024-12-26",
-                lastClaimDate: "2025-03-20"
-            },
-            {
-                rank: 2,
-                wallet: "7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok",
-                wpondAmount: 5255500000000000,
-                claimCount: 5,
-                firstClaimDate: "2024-11-21",
-                lastClaimDate: "2024-12-26"
-            }
-        ],
-        recentClaims: [
-            {
-                wallet: "AxphxzMM4LuVD8krpjCGg6dENU4QwidAUzpJcrAc18ei",
-                wpondAmount: 1089100000000000,
-                date: "2025-03-20"
-            }
-        ],
-        pondxRewardsWallet: {
-            wallet: "1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL",
-            totalWpondReceived: 595606397765000000,
-            claimCount: 608,
-            firstClaimDate: "2024-10-29",
-            lastClaimDate: "2025-07-20",
-            averagePerClaim: 979616443691447,
-            description: "PondX.com Website Rewards Wallet - Users get paid from this wallet when swapping on PondX.com"
-        }
-    };
-    updateDashboard();
+    console.log('🚫 Sample data function DISABLED - contains banned wallets');
+    // Function completely disabled to prevent banned wallets from loading
 }
 
 // Update dashboard with data
