@@ -35,31 +35,96 @@ const EXCLUDED_WALLETS = [
     '3ywio6QgKQKL5Mtte1eVCZskSpHMvCoP29C8cA3JV1Ca'  // single huge tx
 ];
 
-// Helper function to filter out excluded wallets
+// Helper function to filter out excluded wallets - ENHANCED VERSION
 function filterExcludedWallets(recipients) {
-    if (!recipients || !Array.isArray(recipients)) return [];
+    if (!recipients || !Array.isArray(recipients)) {
+        console.warn('⚠️ filterExcludedWallets: Invalid recipients data');
+        return [];
+    }
     
     console.log('🔍 Filtering wallets - Total before filter:', recipients.length);
-    console.log('🚫 Excluded wallets:', EXCLUDED_WALLETS);
+    console.log('🚫 Excluded wallets count:', EXCLUDED_WALLETS.length);
     
     // DEBUG: Check if any banned wallets exist in the data
     const bannedFound = EXCLUDED_WALLETS.filter(bannedWallet => 
         recipients.some(recipient => recipient.wallet === bannedWallet)
     );
-    console.log('🚫 Banned wallets found in data:', bannedFound);
+    
+    if (bannedFound.length > 0) {
+        console.log('🚫 Banned wallets found in data:', bannedFound);
+        console.log('🚫 Banned wallets found count:', bannedFound.length);
+    } else {
+        console.log('✅ No banned wallets found in data');
+    }
     
     // DEBUG: Check first few recipients to see wallet format
     console.log('🔍 First 3 recipients:', recipients.slice(0, 3).map(r => r.wallet));
     
-    const filtered = recipients.filter(recipient => !EXCLUDED_WALLETS.includes(recipient.wallet));
+    const filtered = recipients.filter(recipient => {
+        if (!recipient || !recipient.wallet) {
+            console.warn('⚠️ Invalid recipient found:', recipient);
+            return false;
+        }
+        return !EXCLUDED_WALLETS.includes(recipient.wallet);
+    });
     
     console.log('✅ Wallets after filter:', filtered.length);
     console.log('🚫 Wallets excluded:', recipients.length - filtered.length);
     
+    // Verify filtering worked
+    const stillBanned = filtered.some(r => EXCLUDED_WALLETS.includes(r.wallet));
+    if (stillBanned) {
+        console.error('❌ FILTERING FAILED - banned wallets still present!');
+    } else {
+        console.log('✅ Filtering successful - no banned wallets remain');
+    }
+    
     return filtered;
 }
 
-// Load dashboard data
+// VERIFICATION FUNCTION: Check if any excluded wallets are still visible
+function verifyExcludedWalletsFiltered() {
+    console.log('🔍 VERIFYING EXCLUDED WALLETS ARE FILTERED OUT...');
+    
+    if (!dashboardData || !dashboardData.allRecipients) {
+        console.log('⚠️ No dashboard data to verify');
+        return;
+    }
+    
+    // Check if any excluded wallets are in the current data
+    const excludedFound = EXCLUDED_WALLETS.filter(excludedWallet => 
+        dashboardData.allRecipients.some(recipient => recipient.wallet === excludedWallet)
+    );
+    
+    if (excludedFound.length > 0) {
+        console.error('🚨 EXCLUDED WALLETS STILL IN DATA:', excludedFound);
+        console.error('🚨 This means the data file still contains banned wallets!');
+    } else {
+        console.log('✅ No excluded wallets found in raw data - filtering not needed');
+    }
+    
+    // Check if any excluded wallets are in the filtered data
+    const filteredRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    const stillVisible = EXCLUDED_WALLETS.filter(excludedWallet => 
+        filteredRecipients.some(recipient => recipient.wallet === excludedWallet)
+    );
+    
+    if (stillVisible.length > 0) {
+        console.error('🚨 EXCLUDED WALLETS STILL VISIBLE AFTER FILTERING:', stillVisible);
+        console.error('🚨 This means the filtering function is broken!');
+    } else {
+        console.log('✅ All excluded wallets successfully filtered out');
+    }
+    
+    return {
+        excludedInData: excludedFound.length,
+        excludedAfterFilter: stillVisible.length,
+        totalRecipients: dashboardData.allRecipients.length,
+        filteredRecipients: filteredRecipients.length
+    };
+}
+
+// ENHANCED data loading with better error handling
 async function loadDashboardData() {
     const debugStatus = document.getElementById('debugStatus');
     
@@ -67,30 +132,49 @@ async function loadDashboardData() {
         console.log('🔍 Loading dashboard data...');
         if (debugStatus) {
             debugStatus.textContent = '🔍 Loading dashboard data...';
+            debugStatus.style.background = '#2d2d5a';
         }
         
-        // Try to load the data file - exactly like the working test page
-        const dataUrl = 'helius-dashboard-data-fresh.json?v=' + Date.now() + '&t=' + Math.random() + '&emergency=' + new Date().getTime(); // Fresh data file with cache bust
-        console.log('📡 Attempting to fetch:', dataUrl);
-        console.log('🌐 Full URL:', window.location.origin + '/' + dataUrl);
-        console.log('🚀 LOADING REAL DATA - Netlify deployment test');
+        // Try to load the data file with multiple fallbacks
+        let dataUrl = 'helius-dashboard-data-fresh.json';
+        let response = null;
         
-        const response = await fetch(dataUrl);
-        console.log('📡 Response status:', response.status);
-        console.log('📡 Response headers:', response.headers);
-        if (debugStatus) {
-            debugStatus.textContent = `📡 Response status: ${response.status}`;
+        // Try multiple data sources
+        const dataSources = [
+            'helius-dashboard-data-fresh.json',
+            'helius-dashboard-data.json',
+            'dashboard-data-complete.json'
+        ];
+        
+        for (const source of dataSources) {
+            try {
+                const testUrl = source + '?v=' + Date.now() + '&t=' + Math.random() + '&emergency=' + new Date().getTime();
+                console.log('📡 Attempting to fetch:', testUrl);
+                
+                response = await fetch(testUrl);
+                if (response.ok) {
+                    dataUrl = source;
+                    console.log('✅ Successfully loaded from:', source);
+                    break;
+                }
+            } catch (error) {
+                console.log('⚠️ Failed to load from:', source, error.message);
+                continue;
+            }
         }
         
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        if (!response || !response.ok) {
+            throw new Error(`Failed to load data from any source. Last status: ${response?.status}`);
         }
         
         const data = await response.json();
-        console.log('✅ Data loaded successfully:', data);
+        console.log('✅ Data loaded successfully from:', dataUrl);
         console.log('✅ Data keys:', Object.keys(data));
+        console.log('✅ Data summary:', data.summary);
+        
         if (debugStatus) {
-            debugStatus.textContent = '✅ Data loaded successfully!';
+            debugStatus.textContent = `✅ Data loaded from ${dataUrl}!`;
+            debugStatus.style.background = '#2d5a2d';
         }
         
         // Store the data globally
@@ -108,6 +192,7 @@ async function loadDashboardData() {
         console.log('🔄 Updating dashboard...');
         if (debugStatus) {
             debugStatus.textContent = '🔄 Updating dashboard...';
+            debugStatus.style.background = '#2d2d5a';
         }
         
         // Update summary stats with null checks
@@ -170,16 +255,49 @@ async function loadDashboardData() {
                                                 updateTodaysWinners();
                                                 console.log('✅ Today\'s winners updated');
                                                 
-                                                console.log('✅ All dashboard updates completed successfully!');
-                                                if (debugStatus) {
-                                                    debugStatus.textContent = '✅ Dashboard updated successfully!';
-                                                    debugStatus.style.background = '#2d5a2d';
-                                                }
+                                                                                                        // Step 6: Update daily stats
+                                                        setTimeout(() => {
+                                                            try {
+                                                                console.log('6️⃣ Updating daily stats...');
+                                                                updateDailyStats();
+                                                                console.log('✅ Daily stats updated');
+                                                                
+                                                                // Step 7: Verify excluded wallets are filtered
+                                                                setTimeout(() => {
+                                                                    try {
+                                                                        console.log('7️⃣ Verifying excluded wallets are filtered...');
+                                                                        const verification = verifyExcludedWalletsFiltered();
+                                                                        console.log('✅ Verification completed:', verification);
+                                                                        
+                                                                        console.log('✅ All dashboard updates completed successfully!');
+                                                                        if (debugStatus) {
+                                                                            debugStatus.textContent = '✅ Dashboard updated successfully!';
+                                                                            debugStatus.style.background = '#2d5a2d';
+                                                                        }
+                                                                        
+                                                                    } catch (error) {
+                                                                        console.error('❌ Error during verification:', error);
+                                                                        if (debugStatus) {
+                                                                            debugStatus.textContent = '⚠️ Partial update - verification failed';
+                                                                            debugStatus.style.background = '#5a2d2d';
+                                                                        }
+                                                                    }
+                                                                }, 100);
+                                                                
+                                                            } catch (error) {
+                                                                console.error('❌ Error updating daily stats:', error);
+                                                                if (debugStatus) {
+                                                                    debugStatus.textContent = '⚠️ Partial update - daily stats failed';
+                                                                    debugStatus.style.background = '#5a2d2d';
+                                                                }
+                                                            }
+                                                        }, 100);
                                                 
                                             } catch (error) {
                                                 console.error('❌ Error updating today\'s winners:', error);
                                                 if (debugStatus) {
                                                     debugStatus.textContent = '⚠️ Partial update - today\'s winners failed';
+                                                    debugStatus.style.background = '#5a2d2d';
                                                 }
                                             }
                                         }, 100);
@@ -188,6 +306,7 @@ async function loadDashboardData() {
                                         console.error('❌ Error updating all winners:', error);
                                         if (debugStatus) {
                                             debugStatus.textContent = '⚠️ Partial update - all winners failed';
+                                            debugStatus.style.background = '#5a2d2d';
                                         }
                                     }
                                 }, 100);
@@ -196,6 +315,7 @@ async function loadDashboardData() {
                                 console.error('❌ Error updating top winners:', error);
                                 if (debugStatus) {
                                     debugStatus.textContent = '⚠️ Partial update - top winners failed';
+                                    debugStatus.style.background = '#5a2d2d';
                                 }
                             }
                         }, 100);
@@ -204,6 +324,7 @@ async function loadDashboardData() {
                         console.error('❌ Error creating bubble board:', error);
                         if (debugStatus) {
                             debugStatus.textContent = '⚠️ Partial update - bubble board failed';
+                            debugStatus.style.background = '#5a2d2d';
                         }
                     }
                 }, 100);
@@ -212,20 +333,17 @@ async function loadDashboardData() {
                 console.error('❌ Error updating recent activity:', error);
                 if (debugStatus) {
                     debugStatus.textContent = '⚠️ Partial update - recent activity failed';
+                    debugStatus.style.background = '#5a2d2d';
                 }
             }
         }, 100);
         
     } catch (error) {
-        console.error('❌ Error loading dashboard data:', error);
+        console.error('❌ Fatal error loading dashboard data:', error);
         if (debugStatus) {
-            debugStatus.textContent = `❌ Error: ${error.message}`;
+            debugStatus.textContent = '❌ Error: ' + error.message;
             debugStatus.style.background = '#5a2d2d';
         }
-        
-        // Fallback: Load sample data - DISABLED TO PREVENT BANNED WALLETS
-        console.log('🔄 Sample data fallback DISABLED to prevent banned wallets from showing');
-        // loadSampleData(); // DISABLED - contains banned wallets
     }
 }
 
@@ -1047,17 +1165,30 @@ function createDailyBubbleChart() {
     });
 }
 
-// Update daily stats
+// Update daily stats - ENHANCED with excluded wallet filtering
 function updateDailyStats() {
     if (!dashboardData || !dashboardData.allRecipients) return;
 
     const today = new Date().toISOString().split('T')[0];
-    const todaysClaims = dashboardData.recentClaims.filter(claim => claim.date === today);
+    
+    // Filter out excluded wallets from all recipients first
+    const filteredRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    
+    // Get today's claims from filtered recipients
+    const todaysClaims = filteredRecipients.filter(recipient => recipient.date === today);
     
     // Calculate today's stats
     const todayWinners = new Set(todaysClaims.map(claim => claim.wallet)).size;
     const todayWpond = todaysClaims.reduce((sum, claim) => sum + claim.amount, 0);
     const todayClaims = todaysClaims.length;
+
+    console.log('📊 Daily stats calculated:', {
+        today: today,
+        totalRecipients: filteredRecipients.length,
+        todaysClaims: todaysClaims.length,
+        todayWinners: todayWinners,
+        todayWpond: todayWpond
+    });
 
     // Update daily stats display with null checks
     const todayWinnersEl = document.getElementById('todayWinners');
@@ -1069,7 +1200,7 @@ function updateDailyStats() {
     if (todayClaimsEl) todayClaimsEl.textContent = todayClaims;
 }
 
-// Filter winners based on selected criteria
+// Filter winners based on selected criteria - ENHANCED with excluded wallet filtering
 function filterWinners(filterType) {
     if (!dashboardData) return;
 
@@ -1081,21 +1212,21 @@ function filterWinners(filterType) {
 
     switch (filterType) {
         case 'all':
-            filteredWinners = dashboardData.allRecipients;
+            filteredWinners = filterExcludedWallets(dashboardData.allRecipients);
             break;
         case 'top10':
-            filteredWinners = dashboardData.allRecipients.slice(0, 10);
+            filteredWinners = filterExcludedWallets(dashboardData.allRecipients).slice(0, 10);
             break;
         case 'top50':
-            filteredWinners = dashboardData.allRecipients.slice(0, 50);
+            filteredWinners = filterExcludedWallets(dashboardData.allRecipients).slice(0, 50);
             break;
         case 'top100':
-            filteredWinners = dashboardData.allRecipients.slice(0, 100);
+            filteredWinners = filterExcludedWallets(dashboardData.allRecipients).slice(0, 100);
             break;
         case 'topClaimers':
             // Show top claimers (wallets with most claims)
             if (dashboardData.topClaimers) {
-                filteredWinners = dashboardData.topClaimers.map(claimer => ({
+                filteredWinners = filterExcludedWallets(dashboardData.topClaimers).map(claimer => ({
                     wallet: claimer.wallet,
                     amount: claimer.totalAmount,
                     claimCount: claimer.claimCount,
@@ -1106,10 +1237,11 @@ function filterWinners(filterType) {
             break;
         case 'multiClaimers':
             // Show wallets with multiple claims (2 or more) - deduplicate and show total amounts
+            const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
             const walletTotals = {};
             const walletClaimCounts = {};
             
-            dashboardData.allRecipients.forEach(winner => {
+            allRecipients.forEach(winner => {
                 const wallet = winner.wallet;
                 if (!walletTotals[wallet]) {
                     walletTotals[wallet] = 0;
@@ -1125,7 +1257,7 @@ function filterWinners(filterType) {
                     wallet: wallet,
                     amount: walletTotals[wallet],
                     claimCount: walletClaimCounts[wallet],
-                    date: dashboardData.allRecipients.find(w => w.wallet === wallet)?.date || 'Multiple dates',
+                    date: allRecipients.find(w => w.wallet === wallet)?.date || 'Multiple dates',
                     signature: 'Multiple claims'
                 }))
                 .sort((a, b) => b.amount - a.amount);
@@ -1136,9 +1268,10 @@ function filterWinners(filterType) {
             console.log(`   - Sample multi-claimer:`, filteredWinners[0]);
             break;
         default:
-            filteredWinners = dashboardData.allRecipients;
+            filteredWinners = filterExcludedWallets(dashboardData.allRecipients);
     }
 
+    console.log(`🔍 Filter '${filterType}' applied - showing ${filteredWinners.length} winners`);
     updateFilteredWinnersTable(filteredWinners);
 }
 
@@ -1615,4 +1748,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
+    // Add global functions for debugging
+    window.verifyFiltering = verifyExcludedWalletsFiltered;
+    window.reloadDashboard = loadDashboardData;
+    window.showExcludedWallets = () => console.log('🚫 Excluded wallets:', EXCLUDED_WALLETS);
+    
+    console.log('🔧 Global debug functions available:');
+    console.log('  - verifyFiltering() - Check if excluded wallets are filtered');
+    console.log('  - reloadDashboard() - Reload dashboard data');
+    console.log('  - showExcludedWallets() - Show list of excluded wallets');
 }); 
