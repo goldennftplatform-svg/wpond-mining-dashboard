@@ -20,7 +20,16 @@ const EXCLUDED_WALLETS = [
 // Helper function to filter out excluded wallets
 function filterExcludedWallets(recipients) {
     if (!recipients || !Array.isArray(recipients)) return [];
-    return recipients.filter(recipient => !EXCLUDED_WALLETS.includes(recipient.wallet));
+    
+    console.log('🔍 Filtering wallets - Total before filter:', recipients.length);
+    console.log('🚫 Excluded wallets:', EXCLUDED_WALLETS);
+    
+    const filtered = recipients.filter(recipient => !EXCLUDED_WALLETS.includes(recipient.wallet));
+    
+    console.log('✅ Wallets after filter:', filtered.length);
+    console.log('🚫 Wallets excluded:', recipients.length - filtered.length);
+    
+    return filtered;
 }
 
 // Load dashboard data
