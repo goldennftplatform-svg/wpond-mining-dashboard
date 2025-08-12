@@ -79,9 +79,9 @@ async function loadDashboardData() {
         });
         
         if (totalClaimsEl) totalClaimsEl.textContent = data.summary?.totalClaims?.toLocaleString() || '0';
-        if (totalWpondEl) totalWpondEl.textContent = formatWpondAmount(data.summary?.totalWpondDistributed || 0);
+        if (totalWpondEl) totalWpondEl.textContent = formatWpondAmount(data.summary?.totalWpond || 0);
         if (biggestWinnerEl) biggestWinnerEl.textContent = formatWpondAmount(data.summary?.biggestAmount || 0);
-        if (averageClaimEl) averageClaimEl.textContent = formatWpondAmount(data.summary?.averageWpondPerClaim || 0);
+        if (averageClaimEl) averageClaimEl.textContent = formatWpondAmount(data.summary?.averageAmount || 0);
         
         // Update dashboard functions with proper delays to prevent conflicts
         console.log('🔄 Starting dashboard updates with delays...');
