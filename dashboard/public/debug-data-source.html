@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Data Source</title>
+</head>
+<body>
+    <h1>Debug Data Source</h1>
+    <div id="output"></div>
+    
+    <script>
+        async function debugDataSources() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Testing data sources...</p>';
+            
+            // Test 1: Try to load the fresh data file
+            try {
+                const freshDataUrl = 'helius-dashboard-data-fresh.json?v=' + Date.now();
+                console.log('Testing fresh data file:', freshDataUrl);
+                
+                const response = await fetch(freshDataUrl);
+                const data = await response.json();
+                
+                output.innerHTML += `
+                    <h2>✅ Fresh Data File Loaded:</h2>
+                    <p><strong>Total Recipients:</strong> ${data.allRecipients?.length || 'N/A'}</p>
+                    <p><strong>Biggest Winner:</strong> ${data.summary?.biggestWinner || 'N/A'}</p>
+                    <p><strong>Biggest Amount:</strong> ${data.summary?.biggestAmount || 'N/A'}</p>
+                `;
+                
+                // Check for banned wallets
+                const bannedWallets = [
+                    '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok',
+                    'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2'
+                ];
+                
+                const bannedFound = bannedWallets.filter(wallet => 
+                    data.allRecipients?.some(recipient => recipient.wallet === wallet)
+                );
+                
+                output.innerHTML += `
+                    <p><strong>Banned Wallets in Fresh Data:</strong> ${bannedFound.length}</p>
+                    ${bannedFound.length > 0 ? `<p><strong>Found:</strong> ${bannedFound.join(', ')}</p>` : '<p>✅ No banned wallets in fresh data!</p>'}
+                `;
+                
+            } catch (error) {
+                output.innerHTML += `
+                    <h2>❌ Fresh Data File Failed:</h2>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+            
+            // Test 2: Try to load the original data file
+            try {
+                const originalDataUrl = 'helius-dashboard-data.json?v=' + Date.now();
+                console.log('Testing original data file:', originalDataUrl);
+                
+                const response = await fetch(originalDataUrl);
+                const data = await response.json();
+                
+                output.innerHTML += `
+                    <h2>✅ Original Data File Loaded:</h2>
+                    <p><strong>Total Recipients:</strong> ${data.allRecipients?.length || 'N/A'}</p>
+                    <p><strong>Biggest Winner:</strong> ${data.summary?.biggestWinner || 'N/A'}</p>
+                    <p><strong>Biggest Amount:</strong> ${data.summary?.biggestAmount || 'N/A'}</p>
+                `;
+                
+                // Check for banned wallets
+                const bannedWallets = [
+                    '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok',
+                    'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2'
+                ];
+                
+                const bannedFound = bannedWallets.filter(wallet => 
+                    data.allRecipients?.some(recipient => recipient.wallet === wallet)
+                );
+                
+                output.innerHTML += `
+                    <p><strong>Banned Wallets in Original Data:</strong> ${bannedFound.length}</p>
+                    ${bannedFound.length > 0 ? `<p><strong>Found:</strong> ${bannedFound.join(', ')}</p>` : '<p>✅ No banned wallets in original data!</p>'}
+                `;
+                
+            } catch (error) {
+                output.innerHTML += `
+                    <h2>❌ Original Data File Failed:</h2>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+        
+        debugDataSources();
+    </script>
+</body>
+</html>
