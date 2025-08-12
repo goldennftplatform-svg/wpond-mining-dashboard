@@ -5,8 +5,8 @@ console.log('🎯 FINAL MISSION: GET ALL wPOND DATA WITH ZERO ERRORS\n');
 // Configuration
 const CONFIG = {
     HELIUS_ENDPOINTS: [
-        'https://mainnet.helius-rpc.com/?api-key=873850e4-1ff9-46c0-a669-3a48589516d2',
-        'https://api.helius.xyz/v0/transactions/?api-key=873850e4-1ff9-46c0-a669-3a48589516d2'
+        'https://mainnet.helius-rpc.com/?api-key=e65494f7-8afe-4be6-a2ae-63cb8e18c44b',
+        'https://api.helius.xyz/v0/transactions/?api-key=e65494f7-8afe-4be6-a2ae-63cb8e18c44b'
     ],
     WPOND_MINT: '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq',
     PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT',
@@ -23,17 +23,38 @@ const allSignatures = Array.isArray(allSignaturesData) ? allSignaturesData : all
 
 console.log(`📋 Total signatures to process: ${allSignatures.length}\n`);
 
-// FRESH START: No existing data to avoid contamination
+// SMART RESUME: Load existing progress or start fresh
 let existingClaims = [];
 let existingErrors = [];
 let processedCount = 0;
 
-console.log('🧹 FRESH START: Processing all signatures from scratch to avoid data contamination');
-console.log('🚫 Excluded wallets will be filtered out from the beginning');
-console.log('🔧 Micro-transactions will be created for all large amounts');
+// Try to load existing progress
+try {
+    if (fs.existsSync('zero-errors-final-results.json')) {
+        const existingResults = JSON.parse(fs.readFileSync('zero-errors-final-results.json', 'utf8'));
+        processedCount = existingResults.totalProcessed || 0;
+        console.log(`🔄 RESUMING from previous progress: ${processedCount} signatures already processed`);
+        
+        // Load existing claims from batch files
+        const batchFiles = fs.readdirSync('.').filter(f => f.startsWith('zero-errors-final-batch-') && f.endsWith('.json'));
+        for (const file of batchFiles) {
+            try {
+                const batchData = JSON.parse(fs.readFileSync(file, 'utf8'));
+                if (batchData.claims) {
+                    existingClaims.push(...batchData.claims);
+                }
+            } catch (e) {
+                // Skip corrupted batch files
+            }
+        }
+        console.log(`📊 Loaded ${existingClaims.length} existing claims`);
+    }
+} catch (e) {
+    console.log('🆕 Starting fresh - no existing progress found');
+}
 
-const remainingSignatures = allSignatures; // Process ALL signatures from scratch
-console.log(`🔄 Processing ALL signatures from scratch: ${remainingSignatures.length}\n`);
+const remainingSignatures = allSignatures.slice(processedCount);
+console.log(`🔄 Processing ${remainingSignatures.length} remaining signatures (${processedCount} already done)\n`);
 
 // Ultra-reliable fetch function
 async function fetchTransactionZeroErrors(signature, maxRetries = CONFIG.MAX_RETRIES) {
@@ -68,16 +89,12 @@ async function fetchTransactionZeroErrors(signature, maxRetries = CONFIG.MAX_RET
             return data;
         },
         
-        // Strategy 3: Solscan
+        // Strategy 3: Helius alternative endpoint
         async () => {
-            const response = await fetch(`https://api.solscan.io/transaction?tx=${signature}`, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    'Accept': 'application/json'
-                }
-            });
+            const endpoint = 'https://api.helius.xyz/v0/transactions/?api-key=e65494f7-8afe-4be6-a2ae-63cb8e18c44b';
+            const response = await fetch(`${endpoint}&signature=${signature}`);
             
-            if (!response.ok) throw new Error(`Solscan failed: ${response.status}`);
+            if (!response.ok) throw new Error(`Helius alt failed: ${response.status}`);
             const data = await response.json();
             return data;
         }
