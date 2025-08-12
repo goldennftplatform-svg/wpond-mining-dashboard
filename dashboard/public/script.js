@@ -1,11 +1,20 @@
 // Dashboard functionality
 let dashboardData = null;
 
-// Exclude specific wallets from display (same as daily-tx-sweeper.js)
+// Exclude specific wallets from display (ALL suspicious wallets identified)
 const EXCLUDED_WALLETS = [
     'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT', // opt (payout wallet)
     '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL', // iWWL (sister wallet)
-    '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt'  // another house wallet
+    '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt', // another house wallet
+    'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2', // suspected liquidity bot
+    '9z9H5dA6AejJ1LpXbyENhXog3jfpjVFdDEFbuymHjFSL', // single huge tx
+    'Fk6PvoxW9LcjSg9ix7EJAnrAViHmqoKonX15WDau2NYv', // single huge tx
+    '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok', // single huge tx
+    'JLAhz46kzixKZsnyGAovKVGT577qetPPCqJQZBhJiEe', // single huge tx
+    'Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82', // single huge tx
+    'G5YGpBWvwFo2Ah1HXmCrmMMMPrnmvsaNs7TwW3win4Qw', // single huge tx
+    'CYaXLzjVneHu2tXNN5KtyiithTeiyEZFdniu8nk4wNGi', // single huge tx
+    '3ywio6QgKQKL5Mtte1eVCZskSpHMvCoP29C8cA3JV1Ca'  // single huge tx
 ];
 
 // Helper function to filter out excluded wallets
