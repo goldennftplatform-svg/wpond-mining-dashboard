@@ -137,12 +137,13 @@ async function loadDashboardData() {
             debugStatus.style.background = '#2d2d5a';
         }
         
-        // Try to load the data file with multiple fallbacks
-        let dataUrl = 'helius-dashboard-data-fresh.json';
+        // Try to load the data file with multiple fallbacks - PRIORITIZE NEW MICRO-TX DATA
+        let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-        // Try multiple data sources
+        // Try multiple data sources - NEW MICRO-TX DATA FIRST
         const dataSources = [
+            'helius-dashboard-data-micro-tx.json', // NEW: Clean micro-transaction data
             'helius-dashboard-data-fresh.json',
             'helius-dashboard-data.json',
             'dashboard-data-complete.json'
@@ -175,8 +176,19 @@ async function loadDashboardData() {
         console.log('✅ Data summary:', data.summary);
         
         if (debugStatus) {
-            debugStatus.textContent = `✅ Data loaded from ${dataUrl}!`;
-            debugStatus.style.background = '#2d5a2d';
+            if (dataUrl === 'helius-dashboard-data-micro-tx.json') {
+                debugStatus.innerHTML = `
+                    <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
+                        🚨 PREMO MICRO-TX DATA LOADED! 🚨<br>
+                        Clean data with individual micro-transactions<br>
+                        Excluded wallets filtered out<br>
+                        Timestamp: ${new Date().toISOString()}
+                    </div>
+                `;
+            } else {
+                debugStatus.textContent = `✅ Data loaded from ${dataUrl}!`;
+                debugStatus.style.background = '#2d5a2d';
+            }
         }
         
         // Store the data globally
@@ -1760,4 +1772,23 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('  - verifyFiltering() - Check if excluded wallets are filtered');
     console.log('  - reloadDashboard() - Reload dashboard data');
     console.log('  - showExcludedWallets() - Show list of excluded wallets');
-}); 
+    
+    // AUTO-REFRESH: Check for new micro-tx data every 30 seconds
+    console.log('🔄 Auto-refresh enabled: Checking for new micro-tx data every 30 seconds');
+    setInterval(() => {
+        checkForNewMicroTxData();
+    }, 30000);
+});
+
+// AUTO-REFRESH: Check if new micro-tx data is available
+async function checkForNewMicroTxData() {
+    try {
+        const response = await fetch('helius-dashboard-data-micro-tx.json?v=' + Date.now());
+        if (response.ok) {
+            console.log('🆕 New micro-tx data detected! Auto-refreshing dashboard...');
+            loadDashboardData();
+        }
+    } catch (error) {
+        // File not ready yet, continue waiting
+    }
+} 
