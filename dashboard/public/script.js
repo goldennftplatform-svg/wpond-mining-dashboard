@@ -2,6 +2,21 @@
 console.log('🚨 EMERGENCY CACHE-BUST VERSION LOADED! Timestamp:', new Date().toISOString());
 console.log('🔧 This should be the NEW version with banned wallets excluded!');
 
+// NUCLEAR OPTION: Add visual indicator to prove script is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const debugStatus = document.getElementById('debugStatus');
+    if (debugStatus) {
+        debugStatus.innerHTML = `
+            <div style="background: #ff0000; color: white; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center;">
+                🚨 NUCLEAR OPTION LOADED! 🚨<br>
+                Fresh Data File: helius-dashboard-data-fresh.json<br>
+                Timestamp: ${new Date().toISOString()}<br>
+                This is the NEW script with banned wallets excluded!
+            </div>
+        `;
+    }
+});
+
 let dashboardData = null;
 
 // Exclude specific wallets from display (ALL suspicious wallets identified)
