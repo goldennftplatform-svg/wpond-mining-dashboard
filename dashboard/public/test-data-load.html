@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Load Test</title>
+</head>
+<body>
+    <h1>Data Load Test</h1>
+    <div id="output"></div>
+    
+    <script>
+        const EXCLUDED_WALLETS = [
+            'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT',
+            '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL',
+            '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt',
+            'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2',
+            '9z9H5dA6AejJ1LpXbyENhXog3jfpjVFdDEFbuymHjFSL',
+            'Fk6PvoxW9LcjSg9ix7EJAnrAViHmqoKonX15WDau2NYv',
+            '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok',
+            'JLAhz46kzixKZsnyGAovKVGT577qetPPCqJQZBhJiEe',
+            'Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82',
+            'G5YGpBWvwFo2Ah1HXmCrmMMMPrnmvsaNs7TwW3win4Qw',
+            'CYaXLzjVneHu2tXNN5KtyiithTeiyEZFdniu8nk4wNGi',
+            '3ywio6QgKQKL5Mtte1eVCZskSpHMvCoP29C8cA3JV1Ca'
+        ];
+
+        async function testDataLoad() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Loading data...</p>';
+            
+            try {
+                const dataUrl = 'helius-dashboard-data.json?v=' + Date.now() + '&t=' + Math.random();
+                console.log('Loading:', dataUrl);
+                
+                const response = await fetch(dataUrl);
+                const data = await response.json();
+                
+                console.log('Data loaded:', data);
+                
+                // Check if banned wallets exist
+                const bannedFound = EXCLUDED_WALLETS.filter(wallet => 
+                    data.allRecipients.some(recipient => recipient.wallet === wallet)
+                );
+                
+                output.innerHTML = `
+                    <h2>Data Load Results:</h2>
+                    <p><strong>Total Recipients:</strong> ${data.allRecipients.length}</p>
+                    <p><strong>Biggest Winner:</strong> ${data.summary.biggestWinner}</p>
+                    <p><strong>Biggest Amount:</strong> ${data.summary.biggestAmount}</p>
+                    <p><strong>Banned Wallets Found:</strong> ${bannedFound.length}</p>
+                    ${bannedFound.length > 0 ? `<p><strong>Banned Wallets:</strong> ${bannedFound.join(', ')}</p>` : '<p>✅ No banned wallets found in data!</p>'}
+                    
+                    <h3>First 5 Recipients:</h3>
+                    <ul>
+                        ${data.allRecipients.slice(0, 5).map(r => `<li>${r.wallet}: ${r.amount}</li>`).join('')}
+                    </ul>
+                `;
+                
+            } catch (error) {
+                output.innerHTML = `<p>Error: ${error.message}</p>`;
+                console.error('Error:', error);
+            }
+        }
+        
+        testDataLoad();
+    </script>
+</body>
+</html>
