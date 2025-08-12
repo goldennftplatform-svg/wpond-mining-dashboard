@@ -32,7 +32,9 @@ const EXCLUDED_WALLETS = [
     'Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82', // single huge tx
     'G5YGpBWvwFo2Ah1HXmCrmMMMPrnmvsaNs7TwW3win4Qw', // single huge tx
     'CYaXLzjVneHu2tXNN5KtyiithTeiyEZFdniu8nk4wNGi', // single huge tx
-    '3ywio6QgKQKL5Mtte1eVCZskSpHMvCoP29C8cA3JV1Ca'  // single huge tx
+    '3ywio6QgKQKL5Mtte1eVCZskSpHMvCoP29C8cA3JV1Ca', // single huge tx
+    '2aC1XMPKr9yj9RdK6fPrGZ9QhC6b3zbn5aKfZQnUrWeP', // suspicious huge amount
+    'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ'  // suspicious payout pattern
 ];
 
 // Helper function to filter out excluded wallets - ENHANCED VERSION
