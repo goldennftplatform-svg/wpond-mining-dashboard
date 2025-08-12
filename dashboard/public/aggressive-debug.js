@@ -11,19 +11,41 @@ window.fetch = function(...args) {
     });
 };
 
-// Monitor dashboardData changes
-let dashboardDataProxy = null;
-Object.defineProperty(window, 'dashboardData', {
-    get: function() {
-        return dashboardDataProxy;
-    },
-    set: function(value) {
-        console.log('🚨 DASHBOARD DATA CHANGED!');
-        console.log('📊 New data:', value);
-        console.log('🔍 Data source:', new Error().stack);
-        dashboardDataProxy = value;
+// Monitor dashboardData changes - using a different approach to avoid conflicts
+console.log('🔍 Setting up dashboardData monitoring...');
+const originalDashboardData = window.dashboardData;
+
+// Monitor after the main script loads
+setTimeout(() => {
+    try {
+        // Check if dashboardData exists and what it contains
+        if (window.dashboardData) {
+            console.log('🚨 DASHBOARD DATA FOUND!');
+            console.log('📊 Data:', window.dashboardData);
+            console.log('🔍 Recipients count:', window.dashboardData.allRecipients?.length);
+            console.log('🔍 Sample recipient:', window.dashboardData.allRecipients?.[0]);
+            
+            // Check for banned wallets
+            const bannedWallets = [
+                '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok',
+                'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2'
+            ];
+            
+            const bannedFound = bannedWallets.filter(wallet => 
+                window.dashboardData.allRecipients?.some(recipient => recipient.wallet === wallet)
+            );
+            
+            console.log('🚫 Banned wallets found:', bannedFound.length);
+            if (bannedFound.length > 0) {
+                console.log('🚫 Banned wallets:', bannedFound);
+            }
+        } else {
+            console.log('❌ No dashboard data found');
+        }
+    } catch (error) {
+        console.log('❌ Error monitoring dashboard data:', error);
     }
-});
+}, 2000);
 
 // Monitor all data loading functions
 console.log('🔍 Monitoring all data loading...');
