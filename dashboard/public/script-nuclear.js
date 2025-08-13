@@ -748,44 +748,45 @@ function createTopWinnersBubbleBoard() {
 
 // Create recent winners bubble board
 function createRecentWinnersBubbleBoard() {
-    console.log('🔍 createRecentWinnersBubbleBoard() called');
-    
-    // Get today's date
-    const today = new Date().toISOString().split('T')[0];
-    
-    const bubbleBoard = document.getElementById('recentWinnersBubbleBoard');
-    console.log('🔍 Bubble board element found:', !!bubbleBoard);
-    
-    if (!bubbleBoard) {
-        console.error('❌ Bubble board element not found!');
-        return;
-    }
-    
-    bubbleBoard.innerHTML = '';
-    console.log('🔍 Dashboard data available:', !!dashboardData);
-    console.log('🔍 All recipients available:', !!dashboardData?.allRecipients);
-    console.log('🔍 Recipients count:', dashboardData?.allRecipients?.length || 0);
+    try {
+        console.log('🔍 createRecentWinnersBubbleBoard() called');
+        
+        // Get today's date
+        const today = new Date().toISOString().split('T')[0];
+        
+        const bubbleBoard = document.getElementById('recentWinnersBubbleBoard');
+        console.log('🔍 Bubble board element found:', !!bubbleBoard);
+        
+        if (!bubbleBoard) {
+            console.warn('⚠️ Bubble board element not found - skipping bubble board creation');
+            return;
+        }
+        
+        bubbleBoard.innerHTML = '';
+        console.log('🔍 Dashboard data available:', !!dashboardData);
+        console.log('🔍 All recipients available:', !!dashboardData?.allRecipients);
+        console.log('🔍 Recipients count:', dashboardData?.allRecipients?.length || 0);
 
-    if (!dashboardData || !dashboardData.allRecipients) {
-        console.warn('⚠️ No dashboard data or recipients available');
-        bubbleBoard.innerHTML = `
-            <div style="
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                text-align: center;
-                color: #ff69b4;
-                font-family: 'Press Start 2P', monospace;
-                font-size: 14px;
-            ">
-                <div style="margin-bottom: 10px;">⚠️</div>
-                <div>NO DATA AVAILABLE</div>
-                <div style="font-size: 10px; margin-top: 10px; opacity: 0.8;">CHECK CONSOLE FOR ERRORS</div>
-            </div>
-        `;
-        return;
-    }
+        if (!dashboardData || !dashboardData.allRecipients) {
+            console.warn('⚠️ No dashboard data or recipients available for bubble board');
+            bubbleBoard.innerHTML = `
+                <div style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    text-align: center;
+                    color: #ff69b4;
+                    font-family: 'Press Start 2P', monospace;
+                    font-size: 14px;
+                ">
+                    <div style="margin-bottom: 10px;">⚠️</div>
+                    <div>NO DATA AVAILABLE</div>
+                    <div style="font-size: 10px; margin-top: 10px; opacity: 0.8;">CHECK CONSOLE FOR ERRORS</div>
+                </div>
+            `;
+            return;
+        }
 
     // Filter excluded wallets and sort by date (most recent first)
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
@@ -925,6 +926,34 @@ function createRecentWinnersBubbleBoard() {
         bubble.appendChild(content);
         bubbleBoard.appendChild(bubble);
     });
+    
+    console.log('✅ Bubble board created successfully with', claimsToShow.length, 'bubbles');
+    
+    } catch (error) {
+        console.error('❌ Error in createRecentWinnersBubbleBoard:', error);
+        
+        // Show error message in bubble board if possible
+        if (bubbleBoard) {
+            bubbleBoard.innerHTML = `
+                <div style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    text-align: center;
+                    color: #ff0000;
+                    font-family: 'Press Start 2P', monospace;
+                    font-size: 14px;
+                ">
+                    <div style="margin-bottom: 10px;">❌</div>
+                    <div>BUBBLE BOARD ERROR</div>
+                    <div style="font-size: 10px; margin-top: 10px; opacity: 0.8;">CHECK CONSOLE FOR DETAILS</div>
+                </div>
+            `;
+        }
+        
+        // Don't throw - just log the error and continue
+    }
 }
 
 // Function to check wallet on blockchain
