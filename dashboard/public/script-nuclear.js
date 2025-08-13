@@ -748,9 +748,17 @@ function createRecentWinnersBubbleBoard() {
         return;
     }
 
-    // Show the most recent recipients (already sorted by date in the data)
+    // Filter excluded wallets and sort by date (most recent first)
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-    const claimsToShow = allRecipients.slice(0, 20); // Show last 20 recent recipients
+    
+    // Sort by date (newest first) and take the last 20 recent recipients
+    const sortedByDate = allRecipients.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA; // Newest first
+    });
+    
+    const claimsToShow = sortedByDate.slice(0, 20); // Show last 20 recent recipients
     console.log('🔍 Claims to show:', claimsToShow.length);
 
     if (claimsToShow.length === 0) {
