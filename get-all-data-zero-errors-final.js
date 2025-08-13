@@ -5,8 +5,9 @@ console.log('🎯 REALISTIC & STABLE wPOND DATA PROCESSING\n');
 // Configuration - REALISTIC APPROACH
 const CONFIG = {
     HELIUS_ENDPOINTS: [
-        'https://mainnet.helius-rpc.com/?api-key=e65494f7-8afe-4be6-a2ae-63cb8e18c44b',
-        'https://api.helius.xyz/v0/transactions/?api-key=e65494f7-8afe-4be6-a2ae-63cb8e18c44b'
+        'https://mainnet.helius-rpc.com/?api-key=a5da9446-ceea-4925-b4bf-3ebb7811ff86',
+        'https://api.helius.xyz/v0/transactions/?api-key=a5da9446-ceea-4925-b4bf-3ebb7811ff86',
+        'https://rpc.helius.xyz/?api-key=a5da9446-ceea-4925-b4bf-3ebb7811ff86'
     ],
     WPOND_MINT: '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq',
     PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT',
@@ -73,12 +74,16 @@ const saveProgress = () => {
     console.log(`💾 Progress saved: Chunk ${currentChunk}, ${totalProcessed}/${allSignatures.length} signatures`);
 };
 
-// Ultra-reliable fetch function with rate limit handling
+// Ultra-reliable fetch function with endpoint rotation and rate limit handling
 async function fetchTransaction(signature, maxRetries = CONFIG.MAX_RETRIES) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        // Rotate between endpoints to reduce rate limiting
+        const endpointIndex = (attempt - 1) % CONFIG.HELIUS_ENDPOINTS.length;
+        const endpoint = CONFIG.HELIUS_ENDPOINTS[endpointIndex];
+        
         try {
-            // Use Helius POST (most reliable)
-            const endpoint = CONFIG.HELIUS_ENDPOINTS[0];
+            console.log(`    🔄 Trying endpoint ${endpointIndex + 1}/${CONFIG.HELIUS_ENDPOINTS.length}`);
+            
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
