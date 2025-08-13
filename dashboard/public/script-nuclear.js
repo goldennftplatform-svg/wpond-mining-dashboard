@@ -87,9 +87,7 @@ function filterExcludedWallets(recipients) {
         // }
         
         // DEBUG: Log first few amounts to see what's being kept
-        if (filtered.length < 5) {
-            console.log('✅ Keeping wallet:', recipient.wallet, 'Amount:', recipient.amount);
-        }
+        // Note: Can't reference filtered.length here since filtered isn't defined yet
         
         return true;
     });
@@ -782,13 +780,16 @@ function createTopWinnersBubbleBoard() {
 
 // Create recent winners bubble board
 function createRecentWinnersBubbleBoard() {
+    // Declare bubbleBoard at function scope so it's available in catch block
+    let bubbleBoard = null;
+    
     try {
         console.log('🔍 createRecentWinnersBubbleBoard() called');
         
         // Get today's date
         const today = new Date().toISOString().split('T')[0];
         
-        const bubbleBoard = document.getElementById('recentWinnersBubbleBoard');
+        bubbleBoard = document.getElementById('recentWinnersBubbleBoard');
         console.log('🔍 Bubble board element found:', !!bubbleBoard);
         
         if (!bubbleBoard) {
