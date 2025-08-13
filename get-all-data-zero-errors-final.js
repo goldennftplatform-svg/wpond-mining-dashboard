@@ -1,8 +1,8 @@
 const fs = require('fs');
 
-console.log('🎯 FINAL MISSION: GET ALL wPOND DATA WITH ZERO ERRORS\n');
+console.log('🎯 REALISTIC & STABLE wPOND DATA PROCESSING\n');
 
-// Configuration
+// Configuration - REALISTIC APPROACH
 const CONFIG = {
     HELIUS_ENDPOINTS: [
         'https://mainnet.helius-rpc.com/?api-key=e65494f7-8afe-4be6-a2ae-63cb8e18c44b',
@@ -10,11 +10,12 @@ const CONFIG = {
     ],
     WPOND_MINT: '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq',
     PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT',
-    BATCH_SIZE: 50, // Increased from 10 to 50
-    MAX_RETRIES: 10, // Reduced from 20 to 10
-    DELAY_BETWEEN_BATCHES: 200, // Reduced from 1500ms to 200ms
-    SAVE_INTERVAL: 100,
-    PARALLEL_REQUESTS: 5 // New: Process 5 signatures in parallel
+    CHUNK_SIZE: 1000, // Process 1000 signatures at a time (realistic)
+    BATCH_SIZE: 25, // Smaller batches within chunks
+    MAX_RETRIES: 3, // Fewer retries for speed
+    DELAY_BETWEEN_BATCHES: 500, // Realistic delay
+    SAVE_EVERY: 100, // Save progress every 100 signatures
+    MAX_MEMORY_CLAIMS: 5000 // Don't keep more than 5000 claims in memory
 };
 
 // Load all signatures
@@ -23,45 +24,61 @@ const allSignatures = Array.isArray(allSignaturesData) ? allSignaturesData : all
 
 console.log(`📋 Total signatures to process: ${allSignatures.length}\n`);
 
-// SMART RESUME: Load existing progress or start fresh
-let existingClaims = [];
-let existingErrors = [];
-let processedCount = 0;
+// SMART CHUNK-BASED PROCESSING
+let currentChunk = 0;
+let totalProcessed = 0;
+let allClaims = [];
+let allErrors = [];
 
-// Try to load existing progress
+// Load progress if exists
 try {
-    if (fs.existsSync('zero-errors-final-results.json')) {
-        const existingResults = JSON.parse(fs.readFileSync('zero-errors-final-results.json', 'utf8'));
-        processedCount = existingResults.totalProcessed || 0;
-        console.log(`🔄 RESUMING from previous progress: ${processedCount} signatures already processed`);
-        
-        // Load existing claims from batch files
-        const batchFiles = fs.readdirSync('.').filter(f => f.startsWith('zero-errors-final-batch-') && f.endsWith('.json'));
-        for (const file of batchFiles) {
-            try {
-                const batchData = JSON.parse(fs.readFileSync(file, 'utf8'));
-                if (batchData.claims) {
-                    existingClaims.push(...batchData.claims);
-                }
-            } catch (e) {
-                // Skip corrupted batch files
-            }
-        }
-        console.log(`📊 Loaded ${existingClaims.length} existing claims`);
+    if (fs.existsSync('chunk-progress.json')) {
+        const progress = JSON.parse(fs.readFileSync('chunk-progress.json', 'utf8'));
+        currentChunk = progress.currentChunk || 0;
+        totalProcessed = progress.totalProcessed || 0;
+        console.log(`🔄 RESUMING from chunk ${currentChunk}, ${totalProcessed} signatures already processed`);
     }
 } catch (e) {
-    console.log('🆕 Starting fresh - no existing progress found');
+    console.log('🆕 Starting fresh');
 }
 
-const remainingSignatures = allSignatures.slice(processedCount);
-console.log(`🔄 Processing ${remainingSignatures.length} remaining signatures (${processedCount} already done)\n`);
+// Calculate current chunk signatures
+const getCurrentChunkSignatures = () => {
+    const start = currentChunk * CONFIG.CHUNK_SIZE;
+    const end = Math.min(start + CONFIG.CHUNK_SIZE, allSignatures.length);
+    return allSignatures.slice(start, end);
+};
 
-// Ultra-reliable fetch function
-async function fetchTransactionZeroErrors(signature, maxRetries = CONFIG.MAX_RETRIES) {
-    const strategies = [
-        // Strategy 1: Helius POST
-        async () => {
-            const endpoint = CONFIG.HELIUS_ENDPOINTS[Math.floor(Math.random() * CONFIG.HELIUS_ENDPOINTS.length)];
+// Save progress
+const saveProgress = () => {
+    const progress = {
+        timestamp: new Date().toISOString(),
+        currentChunk,
+        totalProcessed,
+        totalClaims: allClaims.length,
+        totalErrors: allErrors.length
+    };
+    fs.writeFileSync('chunk-progress.json', JSON.stringify(progress, null, 2));
+    
+    // Save claims in chunks to avoid memory issues
+    if (allClaims.length > 0) {
+        const chunkData = {
+            chunk: currentChunk,
+            timestamp: new Date().toISOString(),
+            claims: allClaims.slice(-CONFIG.MAX_MEMORY_CLAIMS) // Keep only recent claims
+        };
+        fs.writeFileSync(`chunk-${currentChunk}-claims.json`, JSON.stringify(chunkData, null, 2));
+    }
+    
+    console.log(`💾 Progress saved: Chunk ${currentChunk}, ${totalProcessed}/${allSignatures.length} signatures`);
+};
+
+// Ultra-reliable fetch function (simplified)
+async function fetchTransaction(signature, maxRetries = CONFIG.MAX_RETRIES) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            // Use Helius POST (most reliable)
+            const endpoint = CONFIG.HELIUS_ENDPOINTS[0];
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -73,160 +90,60 @@ async function fetchTransactionZeroErrors(signature, maxRetries = CONFIG.MAX_RET
                 })
             });
             
-            if (!response.ok) throw new Error(`Helius POST failed: ${response.status}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
-            if (data.error) throw new Error(`Helius error: ${data.error.message}`);
+            if (data.error) throw new Error(`API error: ${data.error.message}`);
             return data.result;
-        },
-        
-        // Strategy 2: Helius GET
-        async () => {
-            const endpoint = CONFIG.HELIUS_ENDPOINTS[Math.floor(Math.random() * CONFIG.HELIUS_ENDPOINTS.length)];
-            const response = await fetch(`${endpoint.replace('/?', '/v0/transactions/?')}&signature=${signature}`);
-            
-            if (!response.ok) throw new Error(`Helius GET failed: ${response.status}`);
-            const data = await response.json();
-            return data;
-        },
-        
-        // Strategy 3: Helius alternative endpoint
-        async () => {
-            const endpoint = 'https://api.helius.xyz/v0/transactions/?api-key=e65494f7-8afe-4be6-a2ae-63cb8e18c44b';
-            const response = await fetch(`${endpoint}&signature=${signature}`);
-            
-            if (!response.ok) throw new Error(`Helius alt failed: ${response.status}`);
-            const data = await response.json();
-            return data;
-        }
-    ];
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        for (let strategyIndex = 0; strategyIndex < strategies.length; strategyIndex++) {
-            try {
-                const result = await strategies[strategyIndex]();
-                if (result) return result;
-            } catch (error) {
-                if (attempt === maxRetries && strategyIndex === strategies.length - 1) {
-                    throw error;
-                }
-                // Faster backoff for speed
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
-            }
+        } catch (error) {
+            if (attempt === maxRetries) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
         }
     }
-    
-    throw new Error(`All strategies failed after ${maxRetries} attempts`);
 }
 
-// Process wPOND transaction - FIXED to track individual micro-transactions
+// Process wPOND transaction (simplified)
 function processWpondTransaction(transaction) {
     try {
         if (!transaction || !transaction.meta || !transaction.transaction) return null;
         
         const { meta, transaction: tx } = transaction;
-        
-        // Check if this is a token transfer
         if (!meta.postTokenBalances || !meta.preTokenBalances) return null;
         
         const claims = [];
         
-        // Look for actual transfer instructions in the transaction
-        if (meta.innerInstructions) {
-            for (const inner of meta.innerInstructions) {
-                for (const instruction of inner.instructions) {
-                    // Check if this is a transfer instruction
-                    if (instruction.parsed && instruction.parsed.type === 'transfer') {
-                        const { info } = instruction.parsed;
-                        
-                        // Check if it's a wPOND transfer
-                        if (info.mint === CONFIG.WPOND_MINT && info.amount) {
-                            const recipient = info.destination;
-                            const amount = parseFloat(info.amount) / Math.pow(10, info.decimals || 9);
-                            
-                                        // Skip excluded wallets
-            if (recipient === 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT' || 
-                recipient === '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL' ||
-                recipient === '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt' ||
-                recipient === 'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2' ||
-                recipient === '2aC1XMPKr9yj9RdK6fPrGZ9QhC6b3zbn5aKfZQnUrWeP') {
+        // Check balance changes for wPOND
+        for (let i = 0; i < meta.postTokenBalances.length; i++) {
+            const postBalance = meta.postTokenBalances[i];
+            const preBalance = meta.preTokenBalances.find(b => b.accountIndex === postBalance.accountIndex);
+            
+            if (!postBalance || !preBalance || postBalance.mint !== CONFIG.WPOND_MINT) continue;
+            
+            const preAmount = preBalance.uiTokenAmount?.uiAmount || 0;
+            const postAmount = postBalance.uiTokenAmount?.uiAmount || 0;
+            const change = postAmount - preAmount;
+            
+            if (change <= 0) continue;
+            
+            const accountIndex = postBalance.accountIndex;
+            const account = tx.message.accountKeys[accountIndex];
+            if (!account) continue;
+            
+            // Skip excluded wallets
+            if (account === CONFIG.PAYOUT_WALLET || 
+                account === '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Bf71gxYSZNt' ||
+                account === '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt' ||
+                account === 'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2' ||
+                account === '2aC1XMPKr9yj9RdK6fPrGZ9QhC6b3zbn5aC1XMPKr9yj9RdK6fPrGZ9QhC6b3zbn5') {
                 continue;
             }
-                            
-                            claims.push({
-                                recipient: recipient,
-                                wpondAmount: amount,
-                                date: new Date(transaction.blockTime * 1000).toISOString().split('T')[0],
-                                signature: transaction.transaction.signatures[0],
-                                timestamp: transaction.blockTime,
-                                transferType: 'individual'
-                            });
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Fallback: If no inner instructions, check balance changes but track as micro-transactions
-        if (claims.length === 0) {
-            for (let i = 0; i < meta.postTokenBalances.length; i++) {
-                const postBalance = meta.postTokenBalances[i];
-                const preBalance = meta.preTokenBalances.find(b => b.accountIndex === postBalance.accountIndex);
-                
-                if (!postBalance || !preBalance) continue;
-                
-                // Check if this is wPOND token
-                if (postBalance.mint !== CONFIG.WPOND_MINT) continue;
-                
-                const preAmount = preBalance.uiTokenAmount?.uiAmount || 0;
-                const postAmount = postBalance.uiTokenAmount?.uiAmount || 0;
-                const change = postAmount - preAmount;
-                
-                // Only process positive changes (receiving wPOND)
-                if (change <= 0) continue;
-                
-                // Get account info
-                const accountIndex = postBalance.accountIndex;
-                const account = tx.message.accountKeys[accountIndex];
-                
-                if (!account) continue;
-                
-                // Skip excluded wallets
-                if (account === 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT' || 
-                    account === '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL' ||
-                    account === '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt' ||
-                    account === 'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2' ||
-                    account === '2aC1XMPKr9yj9RdK6fPrGZ9QhC6b3zbn5aKfZQnUrWeP') {
-                    continue;
-                }
-                
-                // Split large amounts into micro-transactions (assume 1000 micro-tx per large claim)
-                if (change > 1000000) { // If over 1M wPOND, likely aggregated
-                    const microTxCount = Math.min(1000, Math.floor(change / 100000)); // Max 1000 micro-tx
-                    const microAmount = change / microTxCount;
-                    
-                    for (let j = 0; j < microTxCount; j++) {
-                        claims.push({
-                            recipient: account,
-                            wpondAmount: microAmount,
-                            date: new Date(transaction.blockTime * 1000).toISOString().split('T')[0],
-                            signature: transaction.transaction.signatures[0],
-                            timestamp: transaction.blockTime,
-                            transferType: 'micro-split',
-                            originalAmount: change,
-                            microTxIndex: j + 1
-                        });
-                    }
-                } else {
-                    claims.push({
-                        recipient: account,
-                        wpondAmount: change,
-                        date: new Date(transaction.blockTime * 1000).toISOString().split('T')[0],
-                        signature: transaction.transaction.signatures[0],
-                        timestamp: transaction.blockTime,
-                        transferType: 'individual'
-                    });
-                }
-            }
+            
+            claims.push({
+                recipient: account,
+                wpondAmount: change,
+                date: new Date(transaction.blockTime * 1000).toISOString().split('T')[0],
+                signature: transaction.transaction.signatures[0],
+                timestamp: transaction.blockTime
+            });
         }
         
         return claims;
@@ -236,104 +153,133 @@ function processWpondTransaction(transaction) {
     }
 }
 
-// Process batch with parallel processing
+// Process a batch of signatures
 async function processBatch(signatures, batchNumber) {
     const batchClaims = [];
     const batchErrors = [];
     
     console.log(`🔄 Processing batch ${batchNumber}: ${signatures.length} signatures`);
     
-    // Process signatures in parallel chunks
-    for (let i = 0; i < signatures.length; i += CONFIG.PARALLEL_REQUESTS) {
-        const chunk = signatures.slice(i, i + CONFIG.PARALLEL_REQUESTS);
-        const chunkPromises = chunk.map(async (signature, chunkIndex) => {
-            const globalIndex = processedCount + (batchNumber * CONFIG.BATCH_SIZE) + i + chunkIndex;
+    for (let i = 0; i < signatures.length; i++) {
+        const signature = signatures[i];
+        const globalIndex = totalProcessed + (batchNumber * CONFIG.BATCH_SIZE) + i;
+        
+        try {
+            console.log(`  [${globalIndex + 1}/${allSignatures.length}] ${signature.substring(0, 8)}...`);
             
-            try {
-                console.log(`  [${globalIndex + 1}/${allSignatures.length}] ${signature.substring(0, 8)}...`);
-                
-                const transaction = await fetchTransactionZeroErrors(signature);
-                const claims = processWpondTransaction(transaction);
-                
-                if (claims && claims.length > 0) {
-                    console.log(`    ✅ Found ${claims.length} claims`);
-                    return { success: true, claims, error: null };
-                } else {
-                    console.log(`    ⚠️  No wPOND claims found`);
-                    return { success: true, claims: [], error: null };
-                }
-                
-            } catch (error) {
-                console.log(`    ❌ Error: ${error.message}`);
-                return { success: false, claims: [], error: error.message, signature };
-            }
-        });
-        
-        // Wait for all parallel requests to complete
-        const chunkResults = await Promise.all(chunkPromises);
-        
-        // Process results
-        chunkResults.forEach(result => {
-            if (result.success) {
-                batchClaims.push(...result.claims);
+            const transaction = await fetchTransaction(signature);
+            const claims = processWpondTransaction(transaction);
+            
+            if (claims && claims.length > 0) {
+                batchClaims.push(...claims);
+                console.log(`    ✅ Found ${claims.length} claims`);
             } else {
-                batchErrors.push({ signature: result.signature, error: result.error });
+                console.log(`    ⚠️  No wPOND claims found`);
             }
-        });
+            
+        } catch (error) {
+            batchErrors.push({ signature, error: error.message });
+            console.log(`    ❌ Error: ${error.message}`);
+        }
         
-        // Minimal delay between chunks to avoid rate limiting
-        if (i + CONFIG.PARALLEL_REQUESTS < signatures.length) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+        // Small delay between requests
+        if (i < signatures.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 200));
         }
     }
     
     return { claims: batchClaims, errors: batchErrors };
 }
 
-// Save intermediate results (MINIMAL - no massive files)
-function saveIntermediateResults(claims, errors, batchNumber, totalProcessed) {
-    // Only save minimal summary data - NO massive JSON files
-    const intermediateData = {
-        timestamp: new Date().toISOString(),
-        batchNumber,
-        claimsCount: claims.length,
-        errorCount: errors.length,
-        totalProcessed,
-        errorRate: totalProcessed > 0 ? ((errors.length / totalProcessed) * 100).toFixed(2) + '%' : '0.00%'
-    };
+// Process current chunk
+async function processCurrentChunk() {
+    const chunkSignatures = getCurrentChunkSignatures();
+    if (chunkSignatures.length === 0) {
+        console.log('🎉 All chunks processed!');
+        return true;
+    }
     
-    // Save minimal batch summary (tiny file)
-    fs.writeFileSync(`zero-errors-final-batch-${batchNumber}.json`, JSON.stringify(intermediateData, null, 2));
+    console.log(`\n🚀 Processing chunk ${currentChunk}: ${chunkSignatures.length} signatures`);
+    console.log(`📊 Progress: ${totalProcessed}/${allSignatures.length} (${((totalProcessed/allSignatures.length)*100).toFixed(1)}%)\n`);
     
-    // Save cumulative results without full claims data
-    const cumulativeData = {
-        timestamp: new Date().toISOString(),
-        totalProcessed,
-        totalClaims: claims.length,
-        totalErrors: errors.length,
-        errorRate: totalProcessed > 0 ? ((errors.length / totalProcessed) * 100).toFixed(2) + '%' : '0.00%'
-    };
+    // Process in batches within the chunk
+    for (let i = 0; i < chunkSignatures.length; i += CONFIG.BATCH_SIZE) {
+        const batchSignatures = chunkSignatures.slice(i, i + CONFIG.BATCH_SIZE);
+        const batchNumber = Math.floor(i / CONFIG.BATCH_SIZE);
+        
+        const batchResult = await processBatch(batchSignatures, batchNumber);
+        
+        allClaims.push(...batchResult.claims);
+        allErrors.push(...batchResult.errors);
+        totalProcessed += batchSignatures.length;
+        
+        // Save progress frequently
+        if (totalProcessed % CONFIG.SAVE_EVERY === 0) {
+            saveProgress();
+        }
+        
+        console.log(`\n📊 Batch ${batchNumber} Complete:`);
+        console.log(`   - Processed: ${totalProcessed}/${allSignatures.length}`);
+        console.log(`   - Claims: ${allClaims.length}`);
+        console.log(`   - Errors: ${allErrors.length}`);
+        console.log(`   - Error Rate: ${((allErrors.length / totalProcessed) * 100).toFixed(2)}%`);
+        
+        // Delay between batches
+        if (i + CONFIG.BATCH_SIZE < chunkSignatures.length) {
+            console.log(`⏳ Waiting ${CONFIG.DELAY_BETWEEN_BATCHES}ms before next batch...\n`);
+            await new Promise(resolve => setTimeout(resolve, CONFIG.DELAY_BETWEEN_BATCHES));
+        }
+    }
     
-    fs.writeFileSync('zero-errors-final-results.json', JSON.stringify(cumulativeData, null, 2));
+    // Chunk complete
+    console.log(`\n✅ Chunk ${currentChunk} complete!`);
+    currentChunk++;
+    saveProgress();
     
-    // NO MORE MASSIVE CHUNK FILES - just keep data in memory
-    console.log(`💾 Saved minimal batch ${batchNumber} summary (${intermediateData.claimsCount} claims, ${intermediateData.errorCount} errors)`);
+    return false; // Not done yet
 }
 
-// NEW: Create proper dashboard data with micro-transactions
-function createDashboardData(claims) {
-    console.log('🔧 Creating dashboard data from micro-transactions...');
+// Main processing loop
+async function processAllChunks() {
+    console.log('🚀 Starting CHUNK-BASED processing...\n');
+    
+    while (true) {
+        const isDone = await processCurrentChunk();
+        if (isDone) break;
+        
+        // Small break between chunks
+        console.log('⏳ Taking a 2-second break between chunks...\n');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    // Final results
+    console.log('\n🎉 ALL CHUNKS PROCESSED!');
+    console.log('==============================');
+    console.log(`📊 Final Results:`);
+    console.log(`   - Total Processed: ${totalProcessed}`);
+    console.log(`   - Total Claims: ${allClaims.length}`);
+    console.log(`   - Total Errors: ${allErrors.length}`);
+    console.log(`   - Final Error Rate: ${((allErrors.length / totalProcessed) * 100).toFixed(2)}%`);
+    
+    // Create final dashboard data
+    createFinalDashboardData();
+    
+    return { totalProcessed, totalClaims: allClaims.length, totalErrors: allErrors.length };
+}
+
+// Create final dashboard data
+function createFinalDashboardData() {
+    console.log('\n🔧 Creating final dashboard data...');
     
     // Group claims by recipient
     const recipientMap = new Map();
     
-    claims.forEach(claim => {
+    allClaims.forEach(claim => {
         if (!recipientMap.has(claim.recipient)) {
             recipientMap.set(claim.recipient, {
                 wallet: claim.recipient,
                 totalAmount: 0,
                 claimCount: 0,
-                microTransactions: [],
                 firstClaimDate: claim.date,
                 lastClaimDate: claim.date,
                 lastSignature: claim.signature
@@ -343,14 +289,7 @@ function createDashboardData(claims) {
         const recipient = recipientMap.get(claim.recipient);
         recipient.totalAmount += claim.wpondAmount;
         recipient.claimCount += 1;
-        recipient.microTransactions.push({
-            amount: claim.wpondAmount,
-            date: claim.date,
-            signature: claim.signature,
-            transferType: claim.transferType || 'individual'
-        });
         
-        // Update dates
         if (claim.date < recipient.firstClaimDate) {
             recipient.firstClaimDate = claim.date;
         }
@@ -359,25 +298,16 @@ function createDashboardData(claims) {
         }
     });
     
-    // Convert to array and sort by total amount
     const allRecipients = Array.from(recipientMap.values())
         .sort((a, b) => b.totalAmount - a.totalAmount);
     
-    // Calculate summary stats
-    const totalWpond = allRecipients.reduce((sum, r) => sum + r.totalAmount, 0);
-    const totalClaims = allRecipients.reduce((sum, r) => sum + r.claimCount, 0);
-    const biggestWinner = allRecipients[0]?.wallet || '';
-    const biggestAmount = allRecipients[0]?.totalAmount || 0;
-    const averageAmount = totalClaims > 0 ? totalWpond / totalClaims : 0;
-    
     const dashboardData = {
         summary: {
-            totalClaims,
-            totalWpond,
+            totalClaims: allClaims.length,
+            totalWpond: allRecipients.reduce((sum, r) => sum + r.totalAmount, 0),
             totalRecipients: allRecipients.length,
-            biggestWinner,
-            biggestAmount,
-            averageAmount,
+            biggestWinner: allRecipients[0]?.wallet || '',
+            biggestAmount: allRecipients[0]?.totalAmount || 0,
             dateGenerated: new Date().toISOString()
         },
         allRecipients: allRecipients.map(r => ({
@@ -385,89 +315,13 @@ function createDashboardData(claims) {
             amount: r.totalAmount,
             claimCount: r.claimCount,
             date: r.lastClaimDate,
-            signature: r.lastSignature,
-            timestamp: new Date(r.lastClaimDate).getTime() / 1000
+            signature: r.lastSignature
         }))
     };
     
-    // Save dashboard data
-    fs.writeFileSync('helius-dashboard-data-micro-tx.json', JSON.stringify(dashboardData, null, 2));
-    console.log(`✅ Dashboard data saved: ${allRecipients.length} recipients, ${totalClaims} total claims`);
-    
-    return dashboardData;
-}
-
-// Main processing function
-async function processAllSignaturesZeroErrors() {
-    const allClaims = [...existingClaims];
-    const allErrors = [...existingErrors];
-    let totalProcessed = processedCount;
-    let batchNumber = Math.floor(processedCount / CONFIG.BATCH_SIZE);
-    
-    console.log('🚀 Starting ZERO ERRORS processing...\n');
-    
-    // Process in batches
-    for (let i = 0; i < remainingSignatures.length; i += CONFIG.BATCH_SIZE) {
-        const batchSignatures = remainingSignatures.slice(i, i + CONFIG.BATCH_SIZE);
-        const batchResult = await processBatch(batchSignatures, batchNumber);
-        
-        allClaims.push(...batchResult.claims);
-        allErrors.push(...batchResult.errors);
-        totalProcessed += batchSignatures.length;
-        
-        // Save intermediate results
-        saveIntermediateResults(allClaims, allErrors, batchNumber, totalProcessed);
-        
-        console.log(`\n📊 Batch ${batchNumber} Complete:`);
-        console.log(`   - Processed: ${totalProcessed}/${allSignatures.length}`);
-        console.log(`   - Claims: ${allClaims.length}`);
-        console.log(`   - Errors: ${allErrors.length}`);
-        console.log(`   - Error Rate: ${((allErrors.length / totalProcessed) * 100).toFixed(2)}%`);
-        
-        batchNumber++;
-        
-        // Delay between batches
-        if (i + CONFIG.BATCH_SIZE < remainingSignatures.length) {
-            console.log(`⏳ Waiting ${CONFIG.DELAY_BETWEEN_BATCHES}ms before next batch...\n`);
-            await new Promise(resolve => setTimeout(resolve, CONFIG.DELAY_BETWEEN_BATCHES));
-        }
-    }
-    
-    // Final results
-    const finalResults = {
-        timestamp: new Date().toISOString(),
-        totalProcessed,
-        totalClaims: allClaims.length,
-        totalErrors: allErrors.length,
-        errorRate: ((allErrors.length / totalProcessed) * 100).toFixed(2) + '%',
-        claims: allClaims,
-        errors: allErrors
-    };
-    
-    fs.writeFileSync('zero-errors-final-complete.json', JSON.stringify(finalResults, null, 2));
-    
-    // Create dashboard data from the claims
-    console.log('\n🔧 Creating dashboard data...');
-    createDashboardData(allClaims);
-    
-    console.log('\n🎉 FINAL PROCESSING COMPLETE!');
-    console.log('==============================');
-    console.log(`📊 Final Results:`);
-    console.log(`   - Total Processed: ${finalResults.totalProcessed}`);
-    console.log(`   - Total Claims: ${finalResults.totalClaims}`);
-    console.log(`   - Total Errors: ${finalResults.totalErrors}`);
-    console.log(`   - Final Error Rate: ${finalResults.errorRate}`);
-    console.log(`   - Results saved to: zero-errors-final-complete.json`);
-    console.log(`   - Dashboard data saved to: helius-dashboard-data-micro-tx.json`);
-    
-    if (allErrors.length === 0) {
-        console.log('\n✅ PERFECT! ZERO ERRORS ACHIEVED!');
-    } else {
-        console.log('\n⚠️  Still have errors. Need to retry failed signatures.');
-    }
-    
-    return finalResults;
+    fs.writeFileSync('helius-dashboard-data-final.json', JSON.stringify(dashboardData, null, 2));
+    console.log(`✅ Final dashboard data saved: ${allRecipients.length} recipients, ${allClaims.length} total claims`);
 }
 
 // Run the processing
-processAllSignaturesZeroErrors().catch(console.error);
+processAllChunks().catch(console.error);
