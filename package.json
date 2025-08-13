@@ -1,27 +1,3 @@
-{
-  "name": "wpond-distributed-processor",
-  "version": "1.0.0",
-  "description": "Distributed processing system for wPOND mining rewards",
-  "main": "distributed-processor.js",
-  "scripts": {
-    "start": "node distributed-processor.js process",
-    "process": "node distributed-processor.js process",
-    "merge": "node distributed-processor.js merge",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "solana",
-    "wpond",
-    "blockchain",
-    "distributed",
-    "processing"
-  ],
-  "author": "wPOND Team",
-  "license": "MIT",
-  "dependencies": {
-    "node-fetch": "^3.3.2"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:a61dc0c5a9bb350ec99d2e40a24bc080ec54b2d3db48a1af1d3dd53709ddbb68
+size 689

@@ -1,26 +1,3 @@
-{
-  "name": "wpond-dashboard",
-  "version": "1.0.0",
-  "description": "wPOND Mining Rewards Dashboard",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node simple-server.js",
-    "sweep": "node daily-tx-sweeper.js",
-    "sweep-later": "node run-sweeper-later.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": ["solana", "wpond", "dashboard", "blockchain"],
-  "author": "wPOND Team",
-  "license": "MIT",
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5"
-  },
-  "devDependencies": {
-    "node-fetch": "^2.6.7"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:72278b9ac80a38c465a4b640580afcddfa54a24ca6ffe05dca1b6d7d1a0fee2e
+size 666

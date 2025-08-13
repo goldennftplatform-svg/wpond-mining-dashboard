@@ -1,17 +1,3 @@
-{
-  "lastRun": "2025-08-07T03:11:37.715Z",
-  "runs": [
-    {
-      "timestamp": "2025-08-07T03:11:37.715Z",
-      "newTransactions": 0,
-      "newFees": 0,
-      "totalTransactions": 1267,
-      "totalFees": 0.010145444000000104,
-      "success": true,
-      "duration": 1211
-    }
-  ],
-  "totalRuns": 1,
-  "totalNewTransactions": 0,
-  "totalNewFees": 0
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:4c80d7b9d96896300addfc62ade949b2e28d40fd9a8a360cdefefcb0d43d2875
+size 355

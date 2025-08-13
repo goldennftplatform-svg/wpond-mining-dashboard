@@ -38,6 +38,26 @@ try {
         currentChunk = progress.currentChunk || 0;
         totalProcessed = progress.totalProcessed || 0;
         console.log(`🔄 RESUMING from chunk ${currentChunk}, ${totalProcessed} signatures already processed`);
+        
+        // Load existing chunk data when resuming
+        if (currentChunk > 0) {
+            console.log('🔄 Loading existing chunk data...');
+            for (let i = 0; i < currentChunk; i++) {
+                const chunkFile = `chunk-${i}-claims.json`;
+                if (fs.existsSync(chunkFile)) {
+                    try {
+                        const chunkData = JSON.parse(fs.readFileSync(chunkFile, 'utf8'));
+                        if (chunkData.claims && Array.isArray(chunkData.claims)) {
+                            allClaims.push(...chunkData.claims);
+                            console.log(`✅ Loaded chunk ${i}: ${chunkData.claims.length} claims`);
+                        }
+                    } catch (e) {
+                        console.log(`⚠️ Error loading chunk ${i}:`, e.message);
+                    }
+                }
+            }
+            console.log(`📊 Total existing claims loaded: ${allClaims.length}`);
+        }
     }
 } catch (e) {
     console.log('🆕 Starting fresh');
