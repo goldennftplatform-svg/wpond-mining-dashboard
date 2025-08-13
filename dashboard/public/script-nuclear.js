@@ -760,6 +760,11 @@ function createRecentWinnersBubbleBoard() {
     
     const claimsToShow = sortedByDate.slice(0, 20); // Show last 20 recent recipients
     console.log('🔍 Claims to show:', claimsToShow.length);
+    
+    // DEBUG: Log the dates we're working with
+    console.log('🔍 First 5 dates:', claimsToShow.slice(0, 5).map(c => c.date));
+    console.log('🔍 Last 5 dates:', claimsToShow.slice(-5).map(c => c.date));
+    console.log('🔍 All unique dates:', [...new Set(claimsToShow.map(c => c.date))]);
 
     if (claimsToShow.length === 0) {
         console.warn('⚠️ No claims to show');
