@@ -167,14 +167,18 @@ async function loadDashboardData() {
             debugStatus.style.background = '#2d2d5a';
         }
         
-        // Try to load the data file with multiple fallbacks - PRIORITIZE NEW MICRO-TX DATA
+        // Try to load the data file with multiple fallbacks - PRIORITIZE REAL MINING DATA
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-            // Use simple, working data file
-    const dataSources = [
-        'working-mining-data.json' // SIMPLE: Working mining data (225M-217M wPOND)
-    ];
+        // PRIORITY ORDER: Real mining data first, fallbacks last
+        const dataSources = [
+            'helius-dashboard-data-micro-tx.json',    // REAL: 467K individual claims (225M-2.64B wPOND)
+            'mining-claims-data.json',               // REAL: Mining claims data (120M-5B wPOND)
+            'helius-dashboard-data-final.json',      // FALLBACK: Aggregated data
+            'dashboard-data-complete.json',          // FALLBACK: Small working data
+            'working-mining-data.json'               // LAST RESORT: Test data only
+        ];
         
         for (const source of dataSources) {
             try {
