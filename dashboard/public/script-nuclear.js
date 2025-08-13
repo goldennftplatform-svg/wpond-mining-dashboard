@@ -779,6 +779,7 @@ function createTopWinnersBubbleBoard() {
 }
 
 // Create recent winners bubble board
+// TRIGGER UPDATE: 2025-08-13 19:15 UTC - JavaScript errors fixed
 function createRecentWinnersBubbleBoard() {
     // Declare bubbleBoard at function scope so it's available in catch block
     let bubbleBoard = null;
