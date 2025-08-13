@@ -80,8 +80,8 @@ function filterExcludedWallets(recipients) {
         //     return false;
         // }
         
-        // TEMPORARILY DISABLED: Check if amount is unrealistic (over 100 billion = 1e11 - catches trillion amounts)
-        // if (recipient.amount > 1e11) {
+        // TEMPORARILY DISABLED: Check if amount is unrealistic (over 10 billion = 1e10 - allows realistic mining claims up to 10B)
+        // if (recipient.amount > 1e10) {
         //     console.log('🚫 Unrealistic amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
         //     return false;
         // }
@@ -271,6 +271,14 @@ async function loadDashboardData() {
                 claimCount: recipient.claimCount || 1
             }));
         }
+        
+        // DEBUG: Log the final data structure
+        console.log('🔍 Final data structure:', {
+            hasAllRecipients: !!data.allRecipients,
+            allRecipientsLength: data.allRecipients?.length || 0,
+            sampleRecipient: data.allRecipients?.[0] || 'none',
+            sampleAmount: data.allRecipients?.[0]?.amount || 'none'
+        });
         
         // Update the dashboard immediately
         console.log('🔄 Updating dashboard...');
