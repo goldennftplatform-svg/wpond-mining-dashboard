@@ -234,10 +234,10 @@ async function loadDashboardData() {
                 debugStatus.innerHTML = `
                     <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
                         🎉 MINING CLAIMS DATA LOADED! 🎉<br>
-                        Realistic mining amounts (120M-5B wPOND)!<br>
-                        1,000 total claims, 500 unique wallets<br>
-                        Biggest claim: 5,000,000,000 (5B) wPOND<br>
-                        Small file that works on Netlify!<br>
+                        Realistic mining amounts (120M-4.5B wPOND)!<br>
+                        467,618 total claims, 5,536 unique wallets<br>
+                        Biggest claim: 4,500,000,000 (4.5B) wPOND<br>
+                        Real data from actual mining claims!<br>
                         Timestamp: ${new Date().toISOString()}
                     </div>
                 `;
