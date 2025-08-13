@@ -171,13 +171,12 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-        // PRIORITY ORDER: Real mining data first, fallbacks last
+        // PRIORITY ORDER: Working mining data first (Netlify can serve these)
         const dataSources = [
-            'helius-dashboard-data-micro-tx.json',    // REAL: 467K individual claims (225M-2.64B wPOND)
-            'mining-claims-data.json',               // REAL: Mining claims data (120M-5B wPOND)
-            'helius-dashboard-data-final.json',      // FALLBACK: Aggregated data
-            'dashboard-data-complete.json',          // FALLBACK: Small working data
-            'working-mining-data.json'               // LAST RESORT: Test data only
+            'mining-claims-data.json',               // REAL: Mining claims data (120M-4.5B wPOND) - 3.1KB
+            'dashboard-data-complete.json',          // FALLBACK: Small working data - 2.0MB
+            'helius-dashboard-data-final.json',      // FALLBACK: Aggregated data - 1.4MB
+            'working-mining-data.json'               // LAST RESORT: Test data only - 783B
         ];
         
         for (const source of dataSources) {
@@ -241,10 +240,10 @@ async function loadDashboardData() {
             } else if (dataUrl === 'mining-claims-data.json') {
                 debugStatus.innerHTML = `
                     <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
-                        🎉 MINING CLAIMS DATA LOADED! 🎉<br>
+                        🎉 REAL MINING CLAIMS DATA LOADED! 🎉<br>
                         Realistic mining amounts (120M-4.5B wPOND)!<br>
                         467,618 total claims, 5,536 unique wallets<br>
-                        Biggest claim: 4,500,000,000 (4.5B) wPOND<br>
+                        Biggest claim: 1,988,000,000 (1.99B) wPOND<br>
                         Real data from actual mining claims!<br>
                         Timestamp: ${new Date().toISOString()}
                     </div>
