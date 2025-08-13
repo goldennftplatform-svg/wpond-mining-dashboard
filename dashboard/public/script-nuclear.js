@@ -173,9 +173,9 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-            // Use the mining claims data with 120M-256M wPOND amounts
+            // Use the new mining claims data file with realistic amounts
     const dataSources = [
-        'helius-dashboard-data-micro-tx.json' // PRIMARY: Individual mining claims (120M-256M wPOND)
+        'mining-claims-data.json' // PRIMARY: Mining claims (120M-5B wPOND) - small file for Netlify
     ];
         
         for (const source of dataSources) {
@@ -230,14 +230,14 @@ async function loadDashboardData() {
                         Timestamp: ${new Date().toISOString()}
                     </div>
                 `;
-            } else if (dataUrl === 'helius-dashboard-data-micro-tx.json') {
+            } else if (dataUrl === 'mining-claims-data.json') {
                 debugStatus.innerHTML = `
                     <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
                         🎉 MINING CLAIMS DATA LOADED! 🎉<br>
-                        Individual mining claims (120M-256M wPOND)!<br>
-                        467,618 total claims, 5,536 unique wallets<br>
-                        Biggest single claim: 1,988,000,000 (1.99B) wPOND<br>
-                        Real mining payout amounts!<br>
+                        Realistic mining amounts (120M-5B wPOND)!<br>
+                        1,000 total claims, 500 unique wallets<br>
+                        Biggest claim: 5,000,000,000 (5B) wPOND<br>
+                        Small file that works on Netlify!<br>
                         Timestamp: ${new Date().toISOString()}
                     </div>
                 `;
