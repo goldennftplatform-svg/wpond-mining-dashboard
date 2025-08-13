@@ -173,11 +173,9 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-            // Use multiple data sources with fallbacks
+            // Use simple, working data file
     const dataSources = [
-        'mining-claims-data.json', // PRIMARY: Mining claims (120M-5B wPOND)
-        'dashboard-data-complete.json', // Fallback: Working data
-        'helius-dashboard-data-final.json' // Fallback: Final data
+        'working-mining-data.json' // SIMPLE: Working mining data (225M-217M wPOND)
     ];
         
         for (const source of dataSources) {
