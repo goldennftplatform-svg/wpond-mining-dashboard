@@ -141,14 +141,14 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-        // Try multiple data sources - NEW FINAL DATA FIRST
-        const dataSources = [
-            'helius-dashboard-data-final.json', // NEW: Complete final data with 13,733 claims
-            'helius-dashboard-data-micro-tx.json', // Fallback: Clean micro-transaction data
-            'helius-dashboard-data-fresh.json',
-            'helius-dashboard-data.json',
-            'dashboard-data-complete.json'
-        ];
+            // Try multiple data sources - MICRO-TRANSACTION DATA FIRST (realistic amounts)
+    const dataSources = [
+        'helius-dashboard-data-micro-tx.json', // NEW: Individual micro-transactions with realistic amounts
+        'helius-dashboard-data-final.json', // Fallback: Aggregated data (massive amounts)
+        'helius-dashboard-data-fresh.json',
+        'helius-dashboard-data.json',
+        'dashboard-data-complete.json'
+    ];
         
         for (const source of dataSources) {
             try {
@@ -190,9 +190,11 @@ async function loadDashboardData() {
             } else if (dataUrl === 'helius-dashboard-data-micro-tx.json') {
                 debugStatus.innerHTML = `
                     <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
-                        🚨 PREMO MICRO-TX DATA LOADED! 🚨<br>
-                        Clean data with individual micro-transactions<br>
-                        Excluded wallets filtered out<br>
+                        🎉 MICRO-TRANSACTION DATA LOADED! 🎉<br>
+                        Individual claims preserved (realistic amounts)!<br>
+                        0.22B-1.99B per claim (not lumped 50B-100B)<br>
+                        467,618 total claims, 5,536 unique wallets<br>
+                        145 unique dates from 2024-10-09 to 2025-08-04<br>
                         Timestamp: ${new Date().toISOString()}
                     </div>
                 `;
