@@ -141,11 +141,11 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-            // Try multiple data sources - WORKING DATA FIRST (prioritize functional files)
+            // Try multiple data sources - INDIVIDUAL CLAIMS FIRST (realistic amounts)
     const dataSources = [
-        'helius-dashboard-data-final.json', // WORKING: Aggregated data with proper structure
+        'helius-dashboard-data-micro-tx.json', // PRIMARY: 467,618 individual claims with realistic amounts (0.23B-1.99B)
+        'helius-dashboard-data-final.json', // Fallback: Aggregated data (massive amounts)
         'dashboard-data-complete.json', // Fallback: Complete dashboard data
-        'helius-dashboard-data-micro-tx.json', // Fallback: Large micro-transaction file
         'helius-dashboard-data-fresh.json',
         'helius-dashboard-data.json'
         // 'helius-dashboard-data-individual.json' // DISABLED: File appears corrupted
@@ -188,14 +188,14 @@ async function loadDashboardData() {
                         Timestamp: ${new Date().toISOString()}
                     </div>
                 `;
-            } else if (dataUrl === 'helius-dashboard-data-final.json') {
+            } else if (dataUrl === 'helius-dashboard-data-micro-tx.json') {
                 debugStatus.innerHTML = `
                     <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
-                        🎉 WORKING DATA LOADED! 🎉<br>
-                        Dashboard fully functional with proper structure!<br>
-                        462,618 total claims, 5,536 unique wallets<br>
-                        Biggest winner and average claim data available<br>
-                        All tables and charts working properly<br>
+                        🎉 INDIVIDUAL CLAIMS DATA LOADED! 🎉<br>
+                        Realistic mining amounts (0.23B - 1.99B per claim)!<br>
+                        467,618 individual claims, 5,536 unique wallets<br>
+                        No more cooked trillion-dollar amounts!<br>
+                        Real micro-transaction granularity<br>
                         Timestamp: ${new Date().toISOString()}
                     </div>
                 `;
