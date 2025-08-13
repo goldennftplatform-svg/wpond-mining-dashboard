@@ -986,7 +986,7 @@ function getRankIcon(rank) {
     return icons[rank - 1] || `${rank}`;
 }
 
-// Update recent activity
+// Update recent activity - Show last 10 payouts by date
 function updateRecentActivity() {
     const recentActivity = document.getElementById('recentActivity');
     if (!recentActivity) {
@@ -1000,9 +1000,17 @@ function updateRecentActivity() {
         return;
     }
 
-    // Use the first 10 recipients as recent activity for now
+    // Filter excluded wallets and sort by date (most recent first)
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-    const recentRecipients = allRecipients.slice(0, 10);
+    
+    // Sort by date (newest first) and take the last 10 payouts
+    const sortedByDate = allRecipients.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA; // Newest first
+    });
+    
+    const recentRecipients = sortedByDate.slice(0, 10);
 
     recentActivity.innerHTML = recentRecipients.map(recipient => `
         <tr>
