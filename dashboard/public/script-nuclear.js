@@ -173,14 +173,14 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-            // Try multiple data sources - INDIVIDUAL CLAIMS FIRST (realistic amounts)
+            // Try multiple data sources - WORKING FILES FIRST
     const dataSources = [
-        'helius-dashboard-data-micro-tx.json', // PRIMARY: 467,618 individual claims with realistic amounts (0.23B-1.99B)
-        'helius-dashboard-data-final.json', // Fallback: Aggregated data (massive amounts)
-        'dashboard-data-complete.json', // Fallback: Complete dashboard data
-        'helius-dashboard-data-fresh.json',
-        'helius-dashboard-data.json'
-        // 'helius-dashboard-data-individual.json' // DISABLED: File appears corrupted
+        'dashboard-data-complete.json', // PRIMARY: Smaller, working file
+        'helius-dashboard-data-final.json', // Fallback: Aggregated data
+        'test-dashboard-data.json' // Fallback: Test data for debugging
+        // 'helius-dashboard-data-micro-tx.json' // DISABLED: Large file causing issues
+        // 'helius-dashboard-data-fresh.json' // DISABLED: May not exist
+        // 'helius-dashboard-data.json' // DISABLED: May not exist
     ];
         
         for (const source of dataSources) {
@@ -189,13 +189,17 @@ async function loadDashboardData() {
                 console.log('📡 Attempting to fetch:', testUrl);
                 
                 response = await fetch(testUrl);
+                console.log('📡 Response status:', response.status, response.statusText);
+                
                 if (response.ok) {
                     dataUrl = source;
                     console.log('✅ Successfully loaded from:', source);
                     break;
+                } else {
+                    console.log('⚠️ Failed to load from:', source, 'Status:', response.status);
                 }
             } catch (error) {
-                console.log('⚠️ Failed to load from:', source, error.message);
+                console.log('⚠️ Failed to load from:', source, 'Error:', error.message);
                 continue;
             }
         }
