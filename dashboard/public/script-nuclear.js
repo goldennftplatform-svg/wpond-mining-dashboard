@@ -786,14 +786,14 @@ function createRecentWinnersBubbleBoard() {
         const bubble = document.createElement('div');
         bubble.className = 'recent-bubble';
         
-        // Calculate bubble size based on wPOND amount (35% bigger)
-        const size = Math.max(67, Math.min(162, 67 + (claim.amount / 1e9) * 13));
+        // Calculate bubble size based on wPOND amount (smaller, max 80px)
+        const size = Math.max(40, Math.min(80, 40 + (claim.amount / 1e9) * 8));
         
-        // Position in a grid-like pattern with better spacing
-        const row = Math.floor(index / 4);
-        const col = index % 4;
-        const left = 6 + (col * 22); // 4 columns with better spacing
-        const top = 8 + (row * 18); // Rows with better spacing to fit in 400px height
+        // Position in a grid-like pattern with NO overlap - smaller bubbles need more space
+        const row = Math.floor(index / 5); // 5 columns instead of 4
+        const col = index % 5;
+        const left = 5 + (col * 18); // 5 columns with 18% spacing each
+        const top = 5 + (row * 20); // Rows with 20% spacing each
         
         // Random animation delay
         const delay = Math.random() * 2;
@@ -1723,7 +1723,7 @@ function createSimulatedRecentData() {
     }));
 }
 
-// Update today's winners section with simulated recent data
+// Update today's winners section with ACTUAL last 10 claims by date
 function updateTodaysWinners() {
     const todaysWinnersSection = document.getElementById('todays-winners');
     if (!todaysWinnersSection) return;
@@ -1734,23 +1734,30 @@ function updateTodaysWinners() {
         return;
     }
     
-    const recentData = createSimulatedRecentData();
-    const todaysWinners = recentData.filter(w => w.isRecent);
+    // Get actual last 10 claims by date (most recent first)
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    const sortedByDate = allRecipients.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA; // Newest first
+    });
     
-    if (todaysWinners.length === 0) {
-        todaysWinnersSection.innerHTML = '<p>No recent winners found. Running sweeper to update data...</p>';
+    const last10Claims = sortedByDate.slice(0, 10);
+    
+    if (last10Claims.length === 0) {
+        todaysWinnersSection.innerHTML = '<p>No recent claims found.</p>';
         return;
     }
     
     todaysWinnersSection.innerHTML = `
-        <h3>Today's Winners (Last 24 Hours)</h3>
+        <h3>Last 10 Claims Made</h3>
         <div class="winners-grid">
-            ${todaysWinners.map((winner, index) => `
-                <div class="winner-card ${index === 0 ? 'top-winner' : ''}" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
+            ${last10Claims.map((claim, index) => `
+                <div class="winner-card ${index === 0 ? 'top-winner' : ''}" onclick="showWinnerDetails(${JSON.stringify(claim).replace(/"/g, '&quot;')})">
                     <div class="rank-icon">${getRankIcon(index + 1)}</div>
-                    <div class="winner-wallet">${formatWallet(winner.wallet)}</div>
-                    <div class="winner-amount">${formatWpondAmount(winner.amount)} wPOND</div>
-                    <div class="winner-date">${winner.date}</div>
+                    <div class="winner-wallet">${formatWallet(claim.wallet)}</div>
+                    <div class="winner-amount">${formatWpondAmount(claim.amount)} wPOND</div>
+                    <div class="winner-date">${claim.date}</div>
                 </div>
             `).join('')}
         </div>
