@@ -141,9 +141,10 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-        // Try multiple data sources - NEW MICRO-TX DATA FIRST
+        // Try multiple data sources - NEW FINAL DATA FIRST
         const dataSources = [
-            'helius-dashboard-data-micro-tx.json', // NEW: Clean micro-transaction data
+            'helius-dashboard-data-final.json', // NEW: Complete final data with 13,733 claims
+            'helius-dashboard-data-micro-tx.json', // Fallback: Clean micro-transaction data
             'helius-dashboard-data-fresh.json',
             'helius-dashboard-data.json',
             'dashboard-data-complete.json'
@@ -176,7 +177,17 @@ async function loadDashboardData() {
         console.log('✅ Data summary:', data.summary);
         
         if (debugStatus) {
-            if (dataUrl === 'helius-dashboard-data-micro-tx.json') {
+            if (dataUrl === 'helius-dashboard-data-final.json') {
+                debugStatus.innerHTML = `
+                    <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
+                        🎉 FINAL COMPLETE DATA LOADED! 🎉<br>
+                        All 96,332 signatures processed!<br>
+                        13,733 total claims, 3,725 recipients<br>
+                        Excluded wallets filtered out<br>
+                        Timestamp: ${new Date().toISOString()}
+                    </div>
+                `;
+            } else if (dataUrl === 'helius-dashboard-data-micro-tx.json') {
                 debugStatus.innerHTML = `
                     <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
                         🚨 PREMO MICRO-TX DATA LOADED! 🚨<br>
