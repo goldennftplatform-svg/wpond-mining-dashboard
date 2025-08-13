@@ -34,10 +34,15 @@ const EXCLUDED_WALLETS = [
     'CYaXLzjVneHu2tXNN5KtyiithTeiyEZFdniu8nk4wNGi', // single huge tx
     '3ywio6QgKQKL5Mtte1eVCZskSpHMvCoP29C8cA3JV1Ca', // single huge tx
     '2aC1XMPKr9yj9RdK6fPrGZ9QhC6b3zbn5aKfZQnUrWeP', // suspicious huge amount
-    'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ'  // suspicious payout pattern
+    'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ', // suspicious payout pattern
+    // NEW: Add the specific trillion-dollar wallets from the current data
+    '2Ag1QgyyJj2nS6nD6SLbpAUFaWPhaDrmHwrGwWpMqV9K', // 111.9T - suspicious massive amount
+    'HwyJtiPXGt29', // 74.7T - suspicious massive amount (partial match)
+    '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok', // 7.5T - suspicious massive amount
+    'Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82'  // Additional suspicious wallet
 ];
 
-// Helper function to filter out excluded wallets - ENHANCED VERSION
+// Helper function to filter out excluded wallets - ENHANCED VERSION with amount threshold
 function filterExcludedWallets(recipients) {
     if (!recipients || !Array.isArray(recipients)) {
         console.warn('⚠️ filterExcludedWallets: Invalid recipients data');
@@ -62,12 +67,26 @@ function filterExcludedWallets(recipients) {
     // DEBUG: Check first few recipients to see wallet format
     console.log('🔍 First 3 recipients:', recipients.slice(0, 3).map(r => r.wallet));
     
+    // AGGRESSIVE FILTERING: Remove suspicious wallets AND unrealistic amounts
     const filtered = recipients.filter(recipient => {
         if (!recipient || !recipient.wallet) {
             console.warn('⚠️ Invalid recipient found:', recipient);
             return false;
         }
-        return !EXCLUDED_WALLETS.includes(recipient.wallet);
+        
+        // Check if wallet is in banned list
+        if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
+            console.log('🚫 Banned wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
+        
+        // Check if amount is unrealistic (over 1 trillion = 1e12)
+        if (recipient.amount > 1e12) {
+            console.log('🚫 Unrealistic amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
+        
+        return true;
     });
     
     console.log('✅ Wallets after filter:', filtered.length);
@@ -75,10 +94,18 @@ function filterExcludedWallets(recipients) {
     
     // Verify filtering worked
     const stillBanned = filtered.some(r => EXCLUDED_WALLETS.includes(r.wallet));
+    const stillUnrealistic = filtered.some(r => r.amount > 1e12);
+    
     if (stillBanned) {
         console.error('❌ FILTERING FAILED - banned wallets still present!');
     } else {
         console.log('✅ Filtering successful - no banned wallets remain');
+    }
+    
+    if (stillUnrealistic) {
+        console.error('❌ FILTERING FAILED - unrealistic amounts still present!');
+    } else {
+        console.log('✅ Filtering successful - no unrealistic amounts remain');
     }
     
     return filtered;
