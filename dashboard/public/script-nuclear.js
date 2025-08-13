@@ -1040,37 +1040,57 @@ function getRankIcon(rank) {
 
 // Update recent activity - Show last 10 payouts by date
 function updateRecentActivity() {
-    const recentActivity = document.getElementById('recentActivity');
-    if (!recentActivity) {
-        console.warn('⚠️ recentActivity element not found');
-        return;
-    }
-    
-    if (!dashboardData || !dashboardData.allRecipients) {
-        console.warn('⚠️ No recipients data available');
-        recentActivity.innerHTML = '<tr><td colspan="3" class="no-results">No recent activity data available</td></tr>';
-        return;
-    }
+    try {
+        console.log('🔄 updateRecentActivity() called');
+        
+        const recentActivity = document.getElementById('recentActivity');
+        if (!recentActivity) {
+            console.warn('⚠️ recentActivity element not found - skipping recent activity update');
+            return;
+        }
+        
+        if (!dashboardData || !dashboardData.allRecipients) {
+            console.warn('⚠️ No recipients data available for recent activity');
+            recentActivity.innerHTML = '<tr><td colspan="3" class="no-results">No recent activity data available</td></tr>';
+            return;
+        }
 
-    // Filter excluded wallets and sort by date (most recent first)
-    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-    
-    // Sort by date (newest first) and take the last 10 payouts
-    const sortedByDate = allRecipients.sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateB - dateA; // Newest first
-    });
-    
-    const recentRecipients = sortedByDate.slice(0, 10);
+        console.log('📊 Processing recent activity with', dashboardData.allRecipients.length, 'recipients');
 
-    recentActivity.innerHTML = recentRecipients.map(recipient => `
-        <tr>
-            <td class="wallet-cell" onclick="copyToClipboard('${recipient.wallet}')">${formatWallet(recipient.wallet)}</td>
-            <td>${formatWpondAmount(recipient.amount)} wPOND</td>
-            <td>${recipient.date}</td>
-        </tr>
-    `).join('');
+        // Filter excluded wallets and sort by date (most recent first)
+        const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+        console.log('✅ Filtered recipients for recent activity:', allRecipients.length);
+        
+        if (allRecipients.length === 0) {
+            console.warn('⚠️ No recipients after filtering - showing no data message');
+            recentActivity.innerHTML = '<tr><td colspan="3" class="no-results">No recent activity data available</td></tr>';
+            return;
+        }
+        
+        // Sort by date (newest first) and take the last 10 payouts
+        const sortedByDate = allRecipients.sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateB - dateA; // Newest first
+        });
+        
+        const recentRecipients = sortedByDate.slice(0, 10);
+        console.log('✅ Recent recipients prepared:', recentRecipients.length);
+
+        recentActivity.innerHTML = recentRecipients.map(recipient => `
+            <tr>
+                <td class="wallet-cell" onclick="copyToClipboard('${recipient.wallet}')">${formatWallet(recipient.wallet)}</td>
+                <td>${formatWpondAmount(recipient.amount)} wPOND</td>
+                <td>${recipient.date}</td>
+            </tr>
+        `).join('');
+        
+        console.log('✅ Recent activity updated successfully');
+        
+    } catch (error) {
+        console.error('❌ Error in updateRecentActivity:', error);
+        // Don't throw - just log the error and continue
+    }
 }
 
 // Update all winners table
