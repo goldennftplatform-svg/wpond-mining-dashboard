@@ -173,9 +173,11 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-            // Use the new mining claims data file with realistic amounts
+            // Use multiple data sources with fallbacks
     const dataSources = [
-        'mining-claims-data.json' // PRIMARY: Mining claims (120M-5B wPOND) - small file for Netlify
+        'mining-claims-data.json', // PRIMARY: Mining claims (120M-5B wPOND)
+        'dashboard-data-complete.json', // Fallback: Working data
+        'helius-dashboard-data-final.json' // Fallback: Final data
     ];
         
         for (const source of dataSources) {
@@ -207,6 +209,12 @@ async function loadDashboardData() {
         console.log('✅ Data loaded successfully from:', dataUrl);
         console.log('✅ Data keys:', Object.keys(data));
         console.log('✅ Data summary:', data.summary);
+        console.log('✅ Data structure check:', {
+            hasSummary: !!data.summary,
+            hasAllRecipients: !!data.allRecipients,
+            allRecipientsLength: data.allRecipients?.length || 0,
+            sampleData: data.allRecipients?.[0] || 'none'
+        });
         
         if (debugStatus) {
             if (dataUrl === 'helius-dashboard-data-final.json') {
