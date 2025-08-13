@@ -73,7 +73,7 @@ const saveProgress = () => {
     console.log(`💾 Progress saved: Chunk ${currentChunk}, ${totalProcessed}/${allSignatures.length} signatures`);
 };
 
-// Ultra-reliable fetch function (simplified)
+// Ultra-reliable fetch function with rate limit handling
 async function fetchTransaction(signature, maxRetries = CONFIG.MAX_RETRIES) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
@@ -90,13 +90,23 @@ async function fetchTransaction(signature, maxRetries = CONFIG.MAX_RETRIES) {
                 })
             });
             
+            if (response.status === 429) {
+                // Rate limited - wait longer and try again
+                console.log(`    ⏳ Rate limited (429), waiting ${5 * attempt} seconds...`);
+                await new Promise(resolve => setTimeout(resolve, 5000 * attempt));
+                continue;
+            }
+            
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             if (data.error) throw new Error(`API error: ${data.error.message}`);
             return data.result;
         } catch (error) {
             if (attempt === maxRetries) throw error;
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+            // Smart backoff based on error type
+            const waitTime = error.message.includes('429') ? 10000 * attempt : 2000 * attempt;
+            console.log(`    ⏳ Retry ${attempt}/${maxRetries} in ${waitTime/1000}s...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
         }
     }
 }
@@ -153,10 +163,11 @@ function processWpondTransaction(transaction) {
     }
 }
 
-// Process a batch of signatures
+// Process a batch of signatures with rate limit protection
 async function processBatch(signatures, batchNumber) {
     const batchClaims = [];
     const batchErrors = [];
+    let rateLimitCount = 0;
     
     console.log(`🔄 Processing batch ${batchNumber}: ${signatures.length} signatures`);
     
@@ -177,14 +188,28 @@ async function processBatch(signatures, batchNumber) {
                 console.log(`    ⚠️  No wPOND claims found`);
             }
             
+            // Reset rate limit counter on success
+            rateLimitCount = 0;
+            
         } catch (error) {
             batchErrors.push({ signature, error: error.message });
             console.log(`    ❌ Error: ${error.message}`);
+            
+            // Track rate limit errors
+            if (error.message.includes('429')) {
+                rateLimitCount++;
+                if (rateLimitCount >= 3) {
+                    console.log(`    🚨 Too many rate limits! Taking a 30-second break...`);
+                    await new Promise(resolve => setTimeout(resolve, 30000));
+                    rateLimitCount = 0;
+                }
+            }
         }
         
-        // Small delay between requests
+        // Adaptive delay based on rate limit status
+        const delay = rateLimitCount > 0 ? 2000 : 200;
         if (i < signatures.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
     
