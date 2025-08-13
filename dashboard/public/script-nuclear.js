@@ -141,10 +141,10 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-            // Try multiple data sources - MICRO-TRANSACTION DATA FIRST (realistic amounts)
+            // Try multiple data sources - WORKING FINAL DATA FIRST
     const dataSources = [
-        'helius-dashboard-data-micro-tx.json', // NEW: Individual micro-transactions with realistic amounts
-        'helius-dashboard-data-final.json', // Fallback: Aggregated data (massive amounts)
+        'helius-dashboard-data-final.json', // WORKING: 462,618 claims, 5,536 recipients
+        'helius-dashboard-data-micro-tx.json', // Fallback: Individual micro-transactions (large file)
         'helius-dashboard-data-fresh.json',
         'helius-dashboard-data.json',
         'dashboard-data-complete.json'
