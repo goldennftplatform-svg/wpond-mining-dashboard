@@ -1,7 +1,7 @@
 // 🎯 CLEAN DASHBOARD - SINGLE PAGE, NO DUPLICATES, ALL FEATURES WORKING
-// Data sources in priority order - USE REAL DATA
+// Data sources in priority order - ONLY REAL DATA
 const DATA_SOURCES = [
-    'working-mining-data.json',  // Real data with actual multi-claimers
+    'working-mining-data.json',  // Real data with actual multi-claimers (462K claims, 5.5K recipients)
     'mining-claims-data.json',   // Real data with individual claims
     'dashboard-data-complete.json' // Large file with more real data
 ];
