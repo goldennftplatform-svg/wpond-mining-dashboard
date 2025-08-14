@@ -41,6 +41,14 @@ function filterExcludedWallets(data) {
     if (!data || !Array.isArray(data)) return [];
     
     console.log(`🔍 filterExcludedWallets: Input data length: ${data.length}`);
+    console.log(`🔍 EXCLUDED_WALLETS list:`, EXCLUDED_WALLETS);
+    
+    // Check if the problematic wallet is in the input data
+    const problematicWallet = data.find(r => r.wallet === 'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ');
+    if (problematicWallet) {
+        console.log(`🚨 PROBLEMATIC WALLET FOUND:`, problematicWallet);
+        console.log(`🚨 Is it in EXCLUDED_WALLETS?`, EXCLUDED_WALLETS.includes(problematicWallet.wallet));
+    }
     
     const filtered = data.filter(recipient => {
         // Filter out excluded wallet addresses
@@ -59,6 +67,13 @@ function filterExcludedWallets(data) {
     });
     
     console.log(`✅ filterExcludedWallets: Output data length: ${filtered.length}`);
+    
+    // Check if the problematic wallet is still in the filtered data
+    const stillThere = filtered.find(r => r.wallet === 'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ');
+    if (stillThere) {
+        console.log(`🚨 PROBLEMATIC WALLET STILL THERE AFTER FILTERING:`, stillThere);
+    }
+    
     return filtered;
 }
 
