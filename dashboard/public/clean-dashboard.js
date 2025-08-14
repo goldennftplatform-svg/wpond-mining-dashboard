@@ -1,9 +1,9 @@
 // 🎯 CLEAN DASHBOARD - SINGLE PAGE, NO DUPLICATES, ALL FEATURES WORKING
 // Data sources in priority order - ONLY CLEAN DATA
 const DATA_SOURCES = [
+    'mining-data-CLEAN.json',  // Clean data with only legitimate wallets
     'mining-claims-data.json',  // Small, clean sample data
-    'dashboard-data-complete.json', // 2MB file with realistic amounts
-    'working-mining-data.json'  // Fallback but filter heavily
+    'dashboard-data-complete.json' // 2MB file with realistic amounts
 ];
 
 // Excluded wallets (house wallets, cooked data)
@@ -68,45 +68,37 @@ function filterWinners(filterType, buttonElement = null) {
         buttonElement.classList.add('active');
     }
     
-    // AGGRESSIVE FILTERING - Remove all inflated amounts
-    const realisticRecipients = allRecipients.filter(r => {
-        // Only allow amounts that make sense for mining payouts
-        return r.amount >= 1e6 && r.amount <= 5e8; // 1M to 500M wPOND only
-    });
-    
-    console.log(`🔍 Filtering: ${allRecipients.length} total -> ${realisticRecipients.length} realistic`);
-    
     switch (filterType) {
         case 'all':
-            filteredData = realisticRecipients;
+            filteredData = allRecipients;
             break;
         case 'top10':
-            filteredData = realisticRecipients
+            filteredData = allRecipients
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 10);
             break;
         case 'top50':
-            filteredData = realisticRecipients
+            filteredData = allRecipients
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 50);
             break;
         case 'topClaimers':
-            filteredData = realisticRecipients
+            filteredData = allRecipients
                 .sort((a, b) => (b.claimCount || 1) - (a.claimCount || 1))
                 .slice(0, 50);
             break;
         case 'multiClaimers':
-            // Only wallets with multiple claims, realistic amounts
-            filteredData = realisticRecipients
+            // Only wallets with multiple claims
+            filteredData = allRecipients
                 .filter(r => (r.claimCount || 1) > 1)
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 50);
             break;
         case 'recentOnly':
-            // Only recent payouts (last 3 months) - should be around 225M
+            // Only recent payouts (last 3 months)
             const threeMonthsAgo = new Date();
             threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-            filteredData = realisticRecipients
+            filteredData = allRecipients
                 .filter(r => {
                     const payoutDate = new Date(r.date);
                     return payoutDate >= threeMonthsAgo;
@@ -115,7 +107,7 @@ function filterWinners(filterType, buttonElement = null) {
                 .slice(0, 50);
             break;
         default:
-            filteredData = realisticRecipients;
+            filteredData = allRecipients;
     }
     
     // Update winners table
@@ -144,8 +136,8 @@ async function loadDashboardData() {
                 console.warn(`❌ Failed to load ${source}: ${response.status} ${response.statusText}`);
                 continue;
             }
-            
-            const data = await response.json();
+        
+        const data = await response.json();
             console.log(`✅ Loaded ${source}:`, data);
             console.log(`📊 Data summary:`, {
                 hasSummary: !!data.summary,
@@ -168,15 +160,15 @@ async function loadDashboardData() {
                 console.log(`✅ Normalized ${data.allRecipients.length} recipients`);
             }
             
-            dashboardData = data;
+        dashboardData = data;
             console.log(`🎯 Using data source: ${source}`);
             console.log(`📊 Final dashboard data:`, {
                 summary: dashboardData.summary,
                 allRecipientsCount: dashboardData.allRecipients?.length || 0
             });
             break;
-            
-        } catch (error) {
+        
+    } catch (error) {
             console.warn(`❌ Error loading ${source}:`, error);
             continue;
         }
@@ -260,16 +252,11 @@ function updateRecentActivity() {
     
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
     
-    // AGGRESSIVE FILTERING - Only realistic amounts (1M to 500M)
-    const realisticRecipients = allRecipients.filter(r => {
-        return r.amount >= 1e6 && r.amount <= 5e8; // 1M to 500M wPOND only
-    });
-    
-    // Only show recent payouts (last 3 months) with realistic amounts around 225M
+    // Only show recent payouts (last 3 months)
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
     
-    const recentRecipients = realisticRecipients.filter(r => {
+    const recentRecipients = allRecipients.filter(r => {
         const payoutDate = new Date(r.date);
         return payoutDate >= threeMonthsAgo;
     });
@@ -302,7 +289,7 @@ function updateRecentActivity() {
         tbody.appendChild(row);
     });
     
-    console.log(`📅 Recent Activity: ${realisticRecipients.length} realistic -> ${recentActivity.length} recent payouts`);
+    console.log(`📅 Recent Activity: ${recentActivity.length} recent payouts`);
 }
 
 // Update winners table based on current filter
@@ -470,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh data every 5 minutes
     setInterval(() => {
         try {
-            loadDashboardData();
+    loadDashboardData();
         } catch (error) {
             console.error('❌ Error during refresh:', error);
         }
