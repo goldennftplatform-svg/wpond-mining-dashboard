@@ -80,20 +80,14 @@ function filterExcludedWallets(recipients) {
             return false;
         }
         
-        // FILTER 2: Remove house wallet trillions (over 1 trillion = 1e12)
-        if (recipient.amount > 1e12) {
-            console.log('🚫 House wallet trillion filtered:', recipient.wallet, 'Amount:', recipient.amount);
+        // FILTER 2: Remove house wallet trillions (over 100 billion = 1e11)
+        if (recipient.amount > 1e11) {
+            console.log('🚫 House wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
             return false;
         }
         
-        // FILTER 3: Remove unrealistic amounts (over 10 billion = 1e10 - allows realistic mining claims up to 10B)
-        if (recipient.amount > 1e10) {
-            console.log('🚫 Unrealistic amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
-            return false;
-        }
-        
-        // FILTER 4: Remove amounts that are too small (under 50M = 5e7 - likely not real mining claims)
-        if (recipient.amount < 5e7) {
+        // FILTER 3: Remove amounts that are too small (under 10M = 1e7 - likely not real mining claims)
+        if (recipient.amount < 1e7) {
             console.log('🚫 Too small amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
             return false;
         }
@@ -109,9 +103,8 @@ function filterExcludedWallets(recipients) {
     
     // Verify filtering worked
     const stillBanned = filtered.some(r => EXCLUDED_WALLETS.includes(r.wallet));
-    const stillHouseTrillions = filtered.some(r => r.amount > 1e12);
-    const stillUnrealistic = filtered.some(r => r.amount > 1e10);
-    const stillTooSmall = filtered.some(r => r.amount < 5e7);
+    const stillHouseWallets = filtered.some(r => r.amount > 1e11);
+    const stillTooSmall = filtered.some(r => r.amount < 1e7);
     
     if (stillBanned) {
         console.error('❌ FILTERING FAILED - banned wallets still present!');
@@ -119,16 +112,10 @@ function filterExcludedWallets(recipients) {
         console.log('✅ Filtering successful - no banned wallets remain');
     }
     
-    if (stillHouseTrillions) {
-        console.error('❌ FILTERING FAILED - house wallet trillions still present!');
+    if (stillHouseWallets) {
+        console.error('❌ FILTERING FAILED - house wallets still present!');
     } else {
-        console.log('✅ Filtering successful - no house wallet trillions remain');
-    }
-    
-    if (stillUnrealistic) {
-        console.error('❌ FILTERING FAILED - unrealistic amounts still present!');
-    } else {
-        console.log('✅ Filtering successful - no unrealistic amounts remain');
+        console.log('✅ Filtering successful - no house wallets remain');
     }
     
     if (stillTooSmall) {
