@@ -19,27 +19,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 let dashboardData = null;
 
-// Exclude specific wallets from display (ALL suspicious wallets identified)
+// Exclude ONLY the truly suspicious trillion-dollar house wallets
 const EXCLUDED_WALLETS = [
-    'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT', // opt (payout wallet)
-    '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL', // iWWL (sister wallet)
-    '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt', // another house wallet
-    'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2', // suspected liquidity bot
-    '9z9H5dA6AejJ1LpXbyENhXog3jfpjVFdDEFbuymHjFSL', // single huge tx
-    'Fk6PvoxW9LcjSg9ix7EJAnrAViHmqoKonX15WDau2NYv', // single huge tx
-    '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok', // single huge tx
-    'JLAhz46kzixKZsnyGAovKVGT577qetPPCqJQZBhJiEe', // single huge tx
-    'Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82', // single huge tx
-    'G5YGpBWvwFo2Ah1HXmCrmMMMPrnmvsaNs7TwW3win4Qw', // single huge tx
-    'CYaXLzjVneHu2tXNN5KtyiithTeiyEZFdniu8nk4wNGi', // single huge tx
-    '3ywio6QgKQKL5Mtte1eVCZskSpHMvCoP29C8cA3JV1Ca', // single huge tx
-    '2aC1XMPKr9yj9RdK6fPrGZ9QhC6b3zbn5aKfZQnUrWeP', // suspicious huge amount
-    'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ', // suspicious payout pattern
-    // NEW: Add the specific trillion-dollar wallets from the current data
-    '2Ag1QgyyJj2nS6nD6SLbpAUFaWPhaDrmHwrGwWpMqV9K', // 111.9T - suspicious massive amount
-    'HwyJtiPXGt29', // 74.7T - suspicious massive amount (partial match)
-    '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok', // 7.5T - suspicious massive amount
-    'Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82'  // Additional suspicious wallet
+    // ONLY the massive trillion-dollar house wallets that are clearly not real mining
+    '2Ag1QgyyJj2nS6nD6SLbpAUFaWPhaDrmHwrGwWpMqV9K', // 111.9T - house wallet
+    'HwyJtiPXGt29', // 74.7T - house wallet (partial match)
+    '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok', // 7.5T - house wallet
+    'Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82'  // house wallet
 ];
 
 // Helper function to filter out excluded wallets - ENHANCED VERSION with amount threshold
@@ -67,25 +53,33 @@ function filterExcludedWallets(recipients) {
     // DEBUG: Check first few recipients to see wallet format
     console.log('🔍 First 3 recipients:', recipients.slice(0, 3).map(r => r.wallet));
     
-    // EMERGENCY: TEMPORARILY DISABLE ALL FILTERING TO SEE WHAT DATA WE ACTUALLY HAVE
-    console.log('🚨 EMERGENCY DEBUG: Starting with', recipients.length, 'recipients');
-    console.log('🚨 EMERGENCY DEBUG: First 5 recipients:', recipients.slice(0, 5).map(r => ({ wallet: r.wallet, amount: r.amount, date: r.date })));
+    // PROPER FILTERING: Remove only truly suspicious wallets and unrealistic amounts
+    console.log('🔍 FILTERING DEBUG: Starting with', recipients.length, 'recipients');
     
-    // TEMPORARILY DISABLE ALL FILTERING - JUST RETURN EVERYTHING
     const filtered = recipients.filter(recipient => {
         if (!recipient || !recipient.wallet) {
             console.warn('⚠️ Invalid recipient found:', recipient);
             return false;
         }
         
-        // TEMPORARILY DISABLE ALL FILTERS - JUST LOG WHAT WE'RE KEEPING
-        console.log('✅ KEEPING recipient:', recipient.wallet, 'Amount:', recipient.amount, 'Date:', recipient.date);
+        // FILTER 1: Remove only the massive trillion-dollar house wallets
+        if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
+            console.log('🚫 House wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
         
+        // FILTER 2: Remove amounts that are too small (under 10M = 1e7 - likely not real mining claims)
+        if (recipient.amount < 1e7) {
+            console.log('🚫 Too small amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
+        
+        // KEEP all legitimate mining claims (10M - 4.5B range)
         return true;
     });
     
-    console.log('🚨 EMERGENCY DEBUG: After filtering,', filtered.length, 'recipients remain');
-    console.log('🚨 EMERGENCY DEBUG: Sample filtered amounts:', filtered.slice(0, 5).map(r => ({ wallet: r.wallet, amount: r.amount })));
+    console.log('🔍 FILTERING DEBUG: After filtering,', filtered.length, 'recipients remain');
+    console.log('🔍 FILTERING DEBUG: Sample filtered amounts:', filtered.slice(0, 5).map(r => ({ wallet: r.wallet, amount: r.amount })));
     
     console.log('✅ Wallets after filter:', filtered.length);
     console.log('🚫 Wallets excluded:', recipients.length - filtered.length);
