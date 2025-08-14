@@ -68,6 +68,8 @@ function filterExcludedWallets(recipients) {
     console.log('🔍 First 3 recipients:', recipients.slice(0, 3).map(r => r.wallet));
     
     // MULTI-CLAIM FILTERING: Remove suspicious wallets and unrealistic amounts
+    console.log('🔍 FILTERING DEBUG: Starting with', recipients.length, 'recipients');
+    
     const filtered = recipients.filter(recipient => {
         if (!recipient || !recipient.wallet) {
             console.warn('⚠️ Invalid recipient found:', recipient);
@@ -97,6 +99,9 @@ function filterExcludedWallets(recipients) {
         
         return true;
     });
+    
+    console.log('🔍 FILTERING DEBUG: After filtering,', filtered.length, 'recipients remain');
+    console.log('🔍 FILTERING DEBUG: Sample filtered amounts:', filtered.slice(0, 5).map(r => ({ wallet: r.wallet, amount: r.amount })));
     
     console.log('✅ Wallets after filter:', filtered.length);
     console.log('🚫 Wallets excluded:', recipients.length - filtered.length);
