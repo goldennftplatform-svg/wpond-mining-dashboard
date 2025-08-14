@@ -1411,14 +1411,14 @@ function filterWinners(filterType) {
             break;
         case 'topClaimers':
             // Show top claimers (wallets with most claims) - calculate from actual data
-            const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-            const walletClaimCounts = {};
+            const topClaimersData = filterExcludedWallets(dashboardData.allRecipients);
+            const topWalletClaimCounts = {};
             
             // Count claims per wallet
-            allRecipients.forEach(winner => {
+            topClaimersData.forEach(winner => {
                 const wallet = winner.wallet;
-                if (!walletClaimCounts[wallet]) {
-                    walletClaimCounts[wallet] = {
+                if (!topWalletClaimCounts[wallet]) {
+                    topWalletClaimCounts[wallet] = {
                         wallet: wallet,
                         totalAmount: 0,
                         claimCount: 0,
@@ -1426,16 +1426,16 @@ function filterWinners(filterType) {
                         lastSignature: winner.signature
                     };
                 }
-                walletClaimCounts[wallet].totalAmount += winner.amount;
-                walletClaimCounts[wallet].claimCount += (winner.claimCount || 1);
-                if (new Date(winner.date) > new Date(walletClaimCounts[wallet].lastClaimDate)) {
-                    walletClaimCounts[wallet].lastClaimDate = winner.date;
-                    walletClaimCounts[wallet].lastSignature = winner.signature;
+                topWalletClaimCounts[wallet].totalAmount += winner.amount;
+                topWalletClaimCounts[wallet].claimCount += (winner.claimCount || 1);
+                if (new Date(winner.date) > new Date(topWalletClaimCounts[wallet].lastClaimDate)) {
+                    topWalletClaimCounts[wallet].lastClaimDate = winner.date;
+                    topWalletClaimCounts[wallet].lastSignature = winner.signature;
                 }
             });
             
             // Sort by claim count and take top 50
-            filteredWinners = Object.values(walletClaimCounts)
+            filteredWinners = Object.values(topWalletClaimCounts)
                 .sort((a, b) => b.claimCount - a.claimCount)
                 .slice(0, 50)
                 .map(claimer => ({
@@ -1447,39 +1447,39 @@ function filterWinners(filterType) {
                 }));
             
             console.log('🔍 Top Claimers Filter Debug:');
-            console.log(`   - Total unique wallets: ${Object.keys(walletClaimCounts).length}`);
+            console.log(`   - Total unique wallets: ${Object.keys(topWalletClaimCounts).length}`);
             console.log(`   - Top 50 claimers shown: ${filteredWinners.length}`);
             console.log(`   - Top claimer:`, filteredWinners[0]);
             break;
         case 'multiClaimers':
             // Show wallets with multiple claims (2 or more) - deduplicate and show total amounts
-            let allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-            const walletTotals = {};
-            const walletClaimCounts = {};
+            const multiClaimersData = filterExcludedWallets(dashboardData.allRecipients);
+            const multiWalletTotals = {};
+            const multiWalletClaimCounts = {};
             
-            allRecipients.forEach(winner => {
+            multiClaimersData.forEach(winner => {
                 const wallet = winner.wallet;
-                if (!walletTotals[wallet]) {
-                    walletTotals[wallet] = 0;
-                    walletClaimCounts[wallet] = winner.claimCount || 1; // Use the actual claim count
+                if (!multiWalletTotals[wallet]) {
+                    multiWalletTotals[wallet] = 0;
+                    multiWalletClaimCounts[wallet] = winner.claimCount || 1; // Use the actual claim count
                 }
-                walletTotals[wallet] += winner.amount;
+                multiWalletTotals[wallet] += winner.amount;
             });
             
             // Filter wallets with 2 or more claims
-            filteredWinners = Object.keys(walletTotals)
-                .filter(wallet => walletClaimCounts[wallet] >= 2)
+            filteredWinners = Object.keys(multiWalletTotals)
+                .filter(wallet => multiWalletClaimCounts[wallet] >= 2)
                 .map(wallet => ({
                     wallet: wallet,
-                    amount: walletTotals[wallet],
-                    claimCount: walletClaimCounts[wallet],
-                    date: allRecipients.find(w => w.wallet === wallet)?.date || 'Multiple dates',
+                    amount: multiWalletTotals[wallet],
+                    claimCount: multiWalletClaimCounts[wallet],
+                    date: multiClaimersData.find(w => w.wallet === wallet)?.date || 'Multiple dates',
                     signature: 'Multiple claims'
                 }))
                 .sort((a, b) => b.amount - a.amount);
             
             console.log('🔍 Multi-Claimers Filter Debug:');
-            console.log(`   - Total unique wallets: ${Object.keys(walletTotals).length}`);
+            console.log(`   - Total unique wallets: ${Object.keys(multiWalletTotals).length}`);
             console.log(`   - Wallets with 2+ claims: ${filteredWinners.length}`);
             console.log(`   - Sample multi-claimer:`, filteredWinners[0]);
             break;
