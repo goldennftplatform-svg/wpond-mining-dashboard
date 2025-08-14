@@ -74,23 +74,24 @@ function filterExcludedWallets(recipients) {
             return false;
         }
         
+        // TEMPORARILY DISABLED: Aggressive filtering was removing too much data
         // FILTER 1: Remove banned/suspicious wallets
-        if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
-            console.log('🚫 Banned wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
-            return false;
-        }
+        // if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
+        //     console.log('🚫 Banned wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
+        //     return false;
+        // }
         
         // FILTER 2: Remove unrealistic amounts (over 5 billion = 5e9 - allows realistic mining claims up to 5B)
-        if (recipient.amount > 5e9) {
-            console.log('🚫 Unrealistic amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
-            return false;
-        }
+        // if (recipient.amount > 5e9) {
+        //     console.log('🚫 Unrealistic amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
+        //     return false;
+        // }
         
         // FILTER 3: Remove amounts that are too small (under 100M = 1e8 - likely not real mining claims)
-        if (recipient.amount < 1e8) {
-            console.log('🚫 Too small amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
-            return false;
-        }
+        // if (recipient.amount < 1e8) {
+        //     console.log('🚫 Too small amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
+        //     return false;
+        // }
         
         // DEBUG: Log first few amounts to see what's being kept
         // Note: Can't reference filtered.length here since filtered isn't defined yet
@@ -184,11 +185,11 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-        // PRIORITY ORDER: Working mining data first (Netlify can serve these)
+        // PRIORITY ORDER: Real mining data first (Netlify can serve these)
         const dataSources = [
-            'mining-claims-data.json',               // REAL: Mining claims data (120M-4.5B wPOND) - 3.1KB
+            'helius-dashboard-data-final.json',      // REAL: Full mining data (1.4MB) - 96K signatures, 13K claims
             'dashboard-data-complete.json',          // FALLBACK: Small working data - 2.0MB
-            'helius-dashboard-data-final.json',      // FALLBACK: Aggregated data - 1.4MB
+            'mining-claims-data.json',               // FALLBACK: Sample data - 3.1KB
             'working-mining-data.json'               // LAST RESORT: Test data only - 783B
         ];
         
