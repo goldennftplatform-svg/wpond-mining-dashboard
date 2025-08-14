@@ -1,308 +1,331 @@
-// CLEAN DASHBOARD - Rebuilt from scratch to actually work!
-console.log('🚨 CLEAN DASHBOARD LOADED! This should work perfectly!');
-
-// Banned wallets list - these will be filtered out
-const BANNED_WALLETS = [
-    'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT', // opt (payout wallet)
-    '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL', // iWWL (sister wallet)
-    '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt', // another house wallet
-    'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2', // suspected liquidity bot
-    '9z9H5dA6AejJ1LpXbyENhXog3jfpjVFdDEFbuymHjFSL', // single huge tx
-    'Fk6PvoxW9LcjSg9ix7EJAnrAViHmqoKonX15WDau2NYv', // single huge tx
-    '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok', // single huge tx
-    'JLAhz46kzixKZsnyGAovKVGT577qetPPCqJQZBhJiEe', // single huge tx
-    'Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82', // single huge tx
-    'G5YGpBWvwFo2Ah1HXmCrmMMMPrnmvsaNs7TwW3win4Qw', // single huge tx
-    'CYaXLzjVneHu2tXNN5KtyiithTeiyEZFdniu8nk4wNGi', // single huge tx
-    '3ywio6QgKQKL5Mtte1eVCZskSpHMvCoP29C8cA3JV1Ca'  // single huge tx
+// 🎯 CLEAN DASHBOARD - SINGLE PAGE, NO DUPLICATES
+// Data sources in priority order
+const DATA_SOURCES = [
+    'working-mining-data.json',
+    'mining-claims-data.json', 
+    'dashboard-data-complete.json',
+    'helius-dashboard-data-final.json'
 ];
 
-// Global data storage
+// Excluded wallets (house wallets, cooked data)
+const EXCLUDED_WALLETS = [
+    '2Ag1QgyyJj2nS6nD6SLbpAUFaWPhaDrmHwrGwWpMqV9K',
+    'HwyJtiPXGt29',
+    'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT',
+    'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2',
+    '9z9H5dA6AejJ1LpXbyENhXog3jfpjVFdDEFbuymHjFSL',
+    'Fk6PvoxW9LcjSg9ix7EJAnrAViHmqoKonX15WDau2NYv',
+    'G5YGpBWvwFo2Ah1HXmCrmMMMPrnmvsaNs7TwW3win4Qw',
+    'CYaXLzjVneHu2tXNN5KtyiithTeiyEZFdniu8nk4wNGi',
+    'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ'
+];
+
+// Global dashboard data
 let dashboardData = null;
-let filteredRecipients = null;
 
-// Clean filtering function - removes banned wallets
-function filterBannedWallets(recipients) {
-    if (!recipients || !Array.isArray(recipients)) return [];
-    
-    console.log('🔍 CLEAN FILTERING - Total before:', recipients.length);
-    console.log('🚫 Banned wallets to exclude:', BANNED_WALLETS.length);
-    
-    const filtered = recipients.filter(recipient => !BANNED_WALLETS.includes(recipient.wallet));
-    
-    console.log('✅ CLEAN FILTERING - Total after:', filtered.length);
-    console.log('🚫 CLEAN FILTERING - Wallets excluded:', recipients.length - filtered.length);
-    
-    return filtered;
+// Utility functions
+function formatNumber(num) {
+    if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+    return num.toFixed(2);
 }
 
-// Format wPOND amounts
-function formatWpondAmount(amount) {
-    if (amount === null || amount === undefined || isNaN(amount)) return '0';
-    
-    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    
-    if (numAmount >= 1e12) return (numAmount / 1e12).toFixed(1) + 'T';
-    if (numAmount >= 1e9) return (numAmount / 1e9).toFixed(1) + 'B';
-    if (numAmount >= 1e6) return (numAmount / 1e6).toFixed(1) + 'M';
-    if (numAmount >= 1e3) return (numAmount / 1e3).toFixed(1) + 'K';
-    return numAmount.toString();
-}
-
-// Format wallet addresses
 function formatWallet(wallet) {
-    if (!wallet) return 'Unknown';
-    return wallet.substring(0, 6) + '...' + wallet.substring(wallet.length - 4);
+    return wallet ? `${wallet.slice(0, 4)}...${wallet.slice(-4)}` : 'Unknown';
 }
 
-// Load dashboard data
-async function loadDashboardData() {
-    const debugStatus = document.getElementById('debugStatus');
+function filterExcludedWallets(data) {
+    if (!data || !Array.isArray(data)) return [];
     
-    try {
-        console.log('🚀 CLEAN DASHBOARD - Loading data...');
-        if (debugStatus) debugStatus.textContent = '🚀 Loading clean data...';
+    return data.filter(recipient => {
+        // Filter out excluded wallet addresses
+        if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
+            return false;
+        }
         
-        // Load the clean data file
-        const dataUrl = 'helius-dashboard-data-fresh.json?v=' + Date.now();
-        console.log('📡 Loading from:', dataUrl);
+        // Filter out monster claims (over 100B = likely inflated/cooked data)
+        if (recipient.amount > 1e11) {
+            return false;
+        }
         
-        const response = await fetch(dataUrl);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const data = await response.json();
-        console.log('✅ CLEAN DASHBOARD - Data loaded successfully');
-        
-        // Store the data
-        dashboardData = data;
-        
-        // Apply banned wallet filtering immediately
-        filteredRecipients = filterBannedWallets(data.allRecipients || []);
-        console.log('✅ CLEAN DASHBOARD - Banned wallets filtered out');
-        
-        // Update the dashboard
-        updateDashboard();
-        
-    } catch (error) {
-        console.error('❌ CLEAN DASHBOARD - Error loading data:', error);
-        if (debugStatus) debugStatus.textContent = '❌ Error loading data';
-    }
-}
-
-// Update the entire dashboard
-function updateDashboard() {
-    if (!dashboardData || !filteredRecipients) return;
-    
-    console.log('🔄 CLEAN DASHBOARD - Updating display...');
-    
-    // Update summary cards
-    updateSummaryCards();
-    
-    // Update all sections
-    updateTopWinners();
-    updateRecentActivity();
-    updateAllWinners();
-    updateDailyStats();
-    
-    console.log('✅ CLEAN DASHBOARD - All updates completed!');
-}
-
-// Update summary cards
-function updateSummaryCards() {
-    const totalClaimsEl = document.getElementById('totalClaims');
-    const totalWpondEl = document.getElementById('totalWpond');
-    const biggestWinnerEl = document.getElementById('biggestWinner');
-    const averageClaimEl = document.getElementById('averageClaim');
-    
-    if (totalClaimsEl) totalClaimsEl.textContent = (dashboardData.summary?.totalClaims || 0).toLocaleString();
-    if (totalWpondEl) totalWpondEl.textContent = formatWpondAmount(dashboardData.summary?.totalWpond || 0);
-    if (biggestWinnerEl) biggestWinnerEl.textContent = formatWpondAmount(dashboardData.summary?.biggestAmount || 0);
-    if (averageClaimEl) averageClaimEl.textContent = formatWpondAmount(dashboardData.summary?.averageAmount || 0);
-}
-
-// Update top winners
-function updateTopWinners() {
-    const winnersGrid = document.getElementById('topWinnersGrid');
-    if (!winnersGrid || !filteredRecipients) return;
-    
-    const topWinners = filteredRecipients.slice(0, 10);
-    
-    winnersGrid.innerHTML = topWinners.map((winner, index) => `
-        <div class="winner-card ${index === 0 ? 'top-winner' : ''}" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
-            <div class="rank-icon">${getRankIcon(index + 1)}</div>
-            <div class="winner-wallet">${formatWallet(winner.wallet)}</div>
-            <div class="winner-amount">${formatWpondAmount(winner.amount)} wPOND</div>
-            <div class="winner-date">${winner.date}</div>
-        </div>
-    `).join('');
-}
-
-// Get rank icon
-function getRankIcon(rank) {
-    const icons = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-    return icons[rank - 1] || `${rank}`;
-}
-
-// Update recent activity
-function updateRecentActivity() {
-    const recentActivity = document.getElementById('recentActivity');
-    if (!recentActivity || !filteredRecipients) return;
-    
-    const recentRecipients = filteredRecipients.slice(0, 10);
-    
-    recentActivity.innerHTML = recentRecipients.map(recipient => `
-        <tr>
-            <td class="wallet-cell" onclick="copyToClipboard('${recipient.wallet}')">${formatWallet(recipient.wallet)}</td>
-            <td>${formatWpondAmount(recipient.amount)} wPOND</td>
-            <td>${recipient.date}</td>
-        </tr>
-    `).join('');
-}
-
-// Update all winners table
-function updateAllWinners() {
-    const winnersTableBody = document.getElementById('winnersTableBody');
-    if (!winnersTableBody || !filteredRecipients) return;
-    
-    winnersTableBody.innerHTML = filteredRecipients.map((winner, index) => `
-        <tr onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
-            <td>${index + 1}</td>
-            <td class="wallet-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.wallet}')" title="Click to copy wallet">${formatWallet(winner.wallet)}</td>
-            <td>${formatWpondAmount(winner.amount)} wPOND</td>
-            <td class="claims-cell">${winner.claimCount || 1} 🔥</td>
-            <td>${winner.date}</td>
-            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.signature || 'N/A'}')" title="Click to copy signature">${(winner.signature || 'N/A').substring(0, 8)}...</td>
-        </tr>
-    `).join('');
-}
-
-// Update daily stats
-function updateDailyStats() {
-    const todayWinnersEl = document.getElementById('todayWinners');
-    const todayWpondEl = document.getElementById('todayWpond');
-    const todayClaimsEl = document.getElementById('todayClaims');
-    
-    if (todayWinnersEl) todayWinnersEl.textContent = filteredRecipients.length;
-    if (todayWpondEl) todayWpondEl.textContent = formatWpondAmount(filteredRecipients.reduce((sum, r) => sum + (r.amount || 0), 0));
-    if (todayClaimsEl) todayClaimsEl.textContent = filteredRecipients.reduce((sum, r) => sum + (r.claimCount || 1), 0);
-}
-
-// Filter winners (for filter buttons)
-function filterWinners(filterType) {
-    if (!filteredRecipients) return;
-    
-    let filteredWinners = [];
-    
-    switch (filterType) {
-        case 'top10':
-            filteredWinners = filteredRecipients.slice(0, 10);
-            break;
-        case 'top50':
-            filteredWinners = filteredRecipients.slice(0, 50);
-            break;
-        case 'top100':
-            filteredWinners = filteredRecipients.slice(0, 100);
-            break;
-        default:
-            filteredWinners = filteredRecipients;
-    }
-    
-    updateFilteredWinnersTable(filteredWinners);
-    
-    // Update button states
-    document.querySelectorAll('.filter-controls button').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-}
-
-// Update filtered winners table
-function updateFilteredWinnersTable(winners) {
-    const winnersTableBody = document.getElementById('winnersTableBody');
-    if (!winnersTableBody) return;
-    
-    if (winners.length === 0) {
-        winnersTableBody.innerHTML = '<tr><td colspan="6" class="no-results">No winners found for this filter</td></tr>';
-        return;
-    }
-    
-    winnersTableBody.innerHTML = winners.map((winner, index) => `
-        <tr onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
-            <td>${index + 1}</td>
-            <td class="wallet-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.wallet}')" title="Click to copy wallet">${formatWallet(winner.wallet)}</td>
-            <td>${formatWpondAmount(winner.amount)} wPOND</td>
-            <td class="claims-cell">${winner.claimCount || 1} 🔥</td>
-            <td>${winner.date}</td>
-            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.signature || 'N/A'}')" title="Click to copy signature">${(winner.signature || 'N/A').substring(0, 8)}...</td>
-        </tr>
-    `).join('');
-}
-
-// Reset filters
-function resetFilters() {
-    filterWinners('all');
-    document.querySelectorAll('.filter-controls button').forEach(btn => btn.classList.remove('active'));
-    document.querySelector('.filter-controls button').classList.add('active');
-}
-
-// Show winner details modal
-function showWinnerDetails(winner) {
-    const modal = document.getElementById('winnerModal');
-    const details = document.getElementById('winnerDetails');
-    
-    if (modal && details) {
-        details.innerHTML = `
-            <h3>🏆 Winner Details</h3>
-            <p><strong>Wallet:</strong> <span class="wallet-cell" onclick="copyToClipboard('${winner.wallet}')">${winner.wallet}</span></p>
-            <p><strong>Total wPOND:</strong> ${formatWpondAmount(winner.amount)}</p>
-            <p><strong>Claims:</strong> ${winner.claimCount || 1}</p>
-            <p><strong>Claim Date:</strong> ${winner.date}</p>
-        `;
-        modal.style.display = 'block';
-    }
-}
-
-// Copy to clipboard
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        console.log('📋 Copied to clipboard:', text);
+        return true;
     });
 }
 
-// Search wallet
-function searchWallet() {
-    const searchInput = document.getElementById('searchInput').value.trim();
-    if (!searchInput || !filteredRecipients) return;
-    
-    const found = filteredRecipients.find(r => 
-        r.wallet.toLowerCase().includes(searchInput.toLowerCase())
-    );
-    
-    if (found) {
-        showWinnerDetails(found);
-    } else {
-        alert('Wallet not found');
+// Load dashboard data from multiple sources
+async function loadDashboardData() {
+    for (const source of DATA_SOURCES) {
+        try {
+            console.log(`🔄 Trying data source: ${source}`);
+            const response = await fetch(source);
+            
+            if (!response.ok) {
+                console.warn(`❌ Failed to load ${source}: ${response.status}`);
+                continue;
+            }
+            
+            const data = await response.json();
+            console.log(`✅ Loaded ${source}:`, data);
+            
+            // Normalize data structure
+            if (data.recipients && !data.allRecipients) {
+                data.allRecipients = data.recipients.map(r => ({
+                    wallet: r.wallet,
+                    amount: r.wpondAmount || r.amount,
+                    claimCount: r.claimCount || 1,
+                    date: r.date,
+                    signature: r.signature
+                }));
+            }
+            
+            dashboardData = data;
+            console.log(`🎯 Using data source: ${source}`);
+            break;
+            
+        } catch (error) {
+            console.warn(`❌ Error loading ${source}:`, error);
+            continue;
+        }
     }
+    
+    if (!dashboardData) {
+        console.error('❌ All data sources failed');
+        return;
+    }
+    
+    // Update dashboard
+    updateDashboard();
 }
 
-// Set payout alert
-function setPayoutAlert() {
-    const alertInput = document.getElementById('alertInput').value.trim();
-    if (!alertInput) return;
-    
-    alert(`Alert set for wallet: ${alertInput}`);
+// Update all dashboard sections
+function updateDashboard() {
+    updateStats();
+    updateTopWinners();
+    updateRecentActivity();
+    createTopWinnersBubbleBoard();
 }
 
-// Close modal
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('winnerModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
+// Update summary statistics
+function updateStats() {
+    if (!dashboardData || !dashboardData.summary) return;
+    
+    const summary = dashboardData.summary;
+    
+    document.getElementById('totalClaims').textContent = formatNumber(summary.totalClaims || 0);
+    document.getElementById('totalWpond').textContent = formatNumber(summary.totalWpond || 0);
+    document.getElementById('totalRecipients').textContent = formatNumber(summary.totalRecipients || 0);
+    document.getElementById('biggestAmount').textContent = formatNumber(summary.biggestAmount || 0);
+    document.getElementById('averageAmount').textContent = formatNumber(summary.averageAmount || 0);
+}
+
+// Update top 10 winners grid
+function updateTopWinners() {
+    if (!dashboardData || !dashboardData.allRecipients) return;
+    
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    
+    // Sort by amount (highest first) and take top 10
+    const sortedByAmount = allRecipients.sort((a, b) => b.amount - a.amount);
+    const topWinners = sortedByAmount.slice(0, 10);
+    
+    const grid = document.getElementById('topWinnersGrid');
+    grid.innerHTML = '';
+    
+    if (topWinners.length === 0) {
+        grid.innerHTML = '<div class="no-data">No winners data available</div>';
+        return;
     }
-});
+    
+    topWinners.forEach((winner, index) => {
+        const card = document.createElement('div');
+        card.className = `winner-card ${index === 0 ? 'top-winner' : ''}`;
+        
+        const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+        
+        card.innerHTML = `
+            <div class="rank-icon">${rankIcon}</div>
+            <div class="winner-wallet">${formatWallet(winner.wallet)}</div>
+            <div class="winner-amount">${formatNumber(winner.amount)} wPOND</div>
+            <div class="winner-date">${winner.date || 'Unknown'}</div>
+        `;
+        
+        // Add click event to check wallet on blockchain
+        card.addEventListener('click', () => {
+            checkWalletOnBlockchain(winner.wallet);
+        });
+        
+        grid.appendChild(card);
+    });
+}
+
+// Update recent activity table
+function updateRecentActivity() {
+    if (!dashboardData || !dashboardData.allRecipients) return;
+    
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    
+    // Sort by date (newest first) and take last 10
+    const sortedByDate = allRecipients.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const recentActivity = sortedByDate.slice(0, 10);
+    
+    const tbody = document.getElementById('recentActivity');
+    tbody.innerHTML = '';
+    
+    if (recentActivity.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="no-data">No recent activity</td></tr>';
+        return;
+    }
+    
+    recentActivity.forEach(activity => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${formatWallet(activity.wallet)}</td>
+            <td>${formatNumber(activity.amount)} wPOND</td>
+            <td>${activity.date || 'Unknown'}</td>
+        `;
+        
+        // Add click event to check wallet on blockchain
+        row.addEventListener('click', () => {
+            checkWalletOnBlockchain(activity.wallet);
+        });
+        
+        tbody.appendChild(row);
+    });
+}
+
+// Create top winners bubble board
+function createTopWinnersBubbleBoard() {
+    if (!dashboardData || !dashboardData.allRecipients) return;
+    
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    
+    // Sort by amount (highest first) and take top 20 for bubbles
+    const sortedByAmount = allRecipients.sort((a, b) => b.amount - a.amount);
+    const topBubbles = sortedByAmount.slice(0, 20);
+    
+    const bubbleBoard = document.getElementById('topWinnersBubbleBoard');
+    bubbleBoard.innerHTML = '';
+    
+    if (topBubbles.length === 0) {
+        bubbleBoard.innerHTML = '<div class="no-data">No bubble data available</div>';
+        return;
+    }
+    
+    // Calculate bubble sizes and positions
+    const maxAmount = Math.max(...topBubbles.map(w => w.amount));
+    const minAmount = Math.min(...topBubbles.map(w => w.amount));
+    
+    topBubbles.forEach((winner, index) => {
+        const bubble = document.createElement('div');
+        bubble.className = 'recent-bubble';
+        
+        // Calculate bubble size based on amount (relative to max)
+        const sizeRatio = (winner.amount - minAmount) / (maxAmount - minAmount);
+        const size = Math.max(40, Math.min(120, 40 + (sizeRatio * 80)));
+        
+        // Calculate position (avoid overlapping)
+        const angle = (index / topBubbles.length) * 2 * Math.PI;
+        const radius = 150;
+        const centerX = 200;
+        const centerY = 200;
+        
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        
+        // Set bubble properties
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        bubble.style.left = `${x - size/2}px`;
+        bubble.style.top = `${y - size/2}px`;
+        bubble.style.background = `radial-gradient(circle, #ff69b4, #ff1493)`;
+        bubble.style.border = `2px solid #fff`;
+        bubble.style.boxShadow = `0 0 10px rgba(255, 105, 180, 0.5)`;
+        
+        // Add floating animation
+        bubble.style.animation = `bubbleFloat ${3 + Math.random() * 2}s ease-in-out infinite`;
+        bubble.style.animationDelay = `${Math.random() * 2}s`;
+        
+        // Bubble content
+        bubble.innerHTML = `
+            <div style="font-size: ${Math.max(6, size/15)}px;">
+                ${formatWallet(winner.wallet)}<br>
+                ${formatNumber(winner.amount)}
+            </div>
+        `;
+        
+        // Add click event to check wallet on blockchain
+        bubble.addEventListener('click', () => {
+            checkWalletOnBlockchain(winner.wallet);
+        });
+        
+        bubbleBoard.appendChild(bubble);
+    });
+}
+
+// Check wallet on blockchain explorer
+function checkWalletOnBlockchain(walletAddress) {
+    if (!walletAddress) {
+        console.warn('❌ No wallet address provided');
+        return;
+    }
+    
+    console.log('🔍 Checking wallet on blockchain:', walletAddress);
+    
+    // Open Solana Explorer in new tab
+    const solanaExplorerUrl = `https://solscan.io/account/${walletAddress}`;
+    window.open(solanaExplorerUrl, '_blank');
+    
+    // Show notification
+    showNotification(`🔍 Checking wallet ${formatWallet(walletAddress)} on blockchain...`, 'info');
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'info' ? '#4a90e2' : '#ff69b4'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 10px;
+        z-index: 1000;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
 
 // Initialize dashboard when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 CLEAN DASHBOARD - Initializing...');
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🎯 Clean Dashboard Initializing...');
     loadDashboardData();
+    
+    // Refresh data every 5 minutes
+    setInterval(loadDashboardData, 5 * 60 * 1000);
 });
 
-console.log('✅ CLEAN DASHBOARD - Script loaded and ready!');
+// Export functions for debugging
+window.dashboardDebug = {
+    loadDashboardData,
+    updateDashboard,
+    filterExcludedWallets,
+    checkWalletOnBlockchain,
+    showNotification
+};
