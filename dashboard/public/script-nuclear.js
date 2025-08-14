@@ -67,41 +67,25 @@ function filterExcludedWallets(recipients) {
     // DEBUG: Check first few recipients to see wallet format
     console.log('🔍 First 3 recipients:', recipients.slice(0, 3).map(r => r.wallet));
     
-    // MULTI-CLAIM FILTERING: Remove suspicious wallets and unrealistic amounts
-    console.log('🔍 FILTERING DEBUG: Starting with', recipients.length, 'recipients');
+    // EMERGENCY: TEMPORARILY DISABLE ALL FILTERING TO SEE WHAT DATA WE ACTUALLY HAVE
+    console.log('🚨 EMERGENCY DEBUG: Starting with', recipients.length, 'recipients');
+    console.log('🚨 EMERGENCY DEBUG: First 5 recipients:', recipients.slice(0, 5).map(r => ({ wallet: r.wallet, amount: r.amount, date: r.date })));
     
+    // TEMPORARILY DISABLE ALL FILTERING - JUST RETURN EVERYTHING
     const filtered = recipients.filter(recipient => {
         if (!recipient || !recipient.wallet) {
             console.warn('⚠️ Invalid recipient found:', recipient);
             return false;
         }
         
-        // FILTER 1: Remove banned/suspicious wallets
-        if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
-            console.log('🚫 Banned wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
-            return false;
-        }
-        
-        // FILTER 2: Remove house wallet trillions (over 100 billion = 1e11)
-        if (recipient.amount > 1e11) {
-            console.log('🚫 House wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
-            return false;
-        }
-        
-        // FILTER 3: Remove amounts that are too small (under 10M = 1e7 - likely not real mining claims)
-        if (recipient.amount < 1e7) {
-            console.log('🚫 Too small amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
-            return false;
-        }
-        
-        // DEBUG: Log first few amounts to see what's being kept
-        // Note: Can't reference filtered.length here since filtered isn't defined yet
+        // TEMPORARILY DISABLE ALL FILTERS - JUST LOG WHAT WE'RE KEEPING
+        console.log('✅ KEEPING recipient:', recipient.wallet, 'Amount:', recipient.amount, 'Date:', recipient.date);
         
         return true;
     });
     
-    console.log('🔍 FILTERING DEBUG: After filtering,', filtered.length, 'recipients remain');
-    console.log('🔍 FILTERING DEBUG: Sample filtered amounts:', filtered.slice(0, 5).map(r => ({ wallet: r.wallet, amount: r.amount })));
+    console.log('🚨 EMERGENCY DEBUG: After filtering,', filtered.length, 'recipients remain');
+    console.log('🚨 EMERGENCY DEBUG: Sample filtered amounts:', filtered.slice(0, 5).map(r => ({ wallet: r.wallet, amount: r.amount })));
     
     console.log('✅ Wallets after filter:', filtered.length);
     console.log('🚫 Wallets excluded:', recipients.length - filtered.length);
@@ -1469,7 +1453,7 @@ function filterWinners(filterType) {
             break;
         case 'multiClaimers':
             // Show wallets with multiple claims (2 or more) - deduplicate and show total amounts
-            const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+            let allRecipients = filterExcludedWallets(dashboardData.allRecipients);
             const walletTotals = {};
             const walletClaimCounts = {};
             
