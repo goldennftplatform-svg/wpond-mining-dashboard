@@ -1115,10 +1115,15 @@ function updateTopWinners() {
         return;
     }
 
-    // Use allRecipients instead of topWinners, take top 10
+    // Use allRecipients instead of topWinners, sort by amount (highest first), take top 10
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-    const topWinners = allRecipients.slice(0, 10);
+    
+    // Sort by amount (highest first) for proper ranking
+    const sortedByAmount = allRecipients.sort((a, b) => b.amount - a.amount);
+    const topWinners = sortedByAmount.slice(0, 10);
+    
     console.log('🔍 Top 10 winners found:', topWinners.length);
+    console.log('🔍 Top 3 amounts:', topWinners.slice(0, 3).map(w => ({ amount: w.amount, date: w.date })));
     
     winnersGrid.innerHTML = topWinners.map((winner, index) => `
         <div class="winner-card ${index === 0 ? 'top-winner' : ''}" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
