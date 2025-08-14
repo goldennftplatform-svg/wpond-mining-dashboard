@@ -74,24 +74,29 @@ function filterExcludedWallets(recipients) {
             return false;
         }
         
-        // TEMPORARILY DISABLED: Aggressive filtering was removing too much data
         // FILTER 1: Remove banned/suspicious wallets
-        // if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
-        //     console.log('🚫 Banned wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
-        //     return false;
-        // }
+        if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
+            console.log('🚫 Banned wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
         
-        // FILTER 2: Remove unrealistic amounts (over 5 billion = 5e9 - allows realistic mining claims up to 5B)
-        // if (recipient.amount > 5e9) {
-        //     console.log('🚫 Unrealistic amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
-        //     return false;
-        // }
+        // FILTER 2: Remove house wallet trillions (over 1 trillion = 1e12)
+        if (recipient.amount > 1e12) {
+            console.log('🚫 House wallet trillion filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
         
-        // FILTER 3: Remove amounts that are too small (under 100M = 1e8 - likely not real mining claims)
-        // if (recipient.amount < 1e8) {
-        //     console.log('🚫 Too small amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
-        //     return false;
-        // }
+        // FILTER 3: Remove unrealistic amounts (over 10 billion = 1e10 - allows realistic mining claims up to 10B)
+        if (recipient.amount > 1e10) {
+            console.log('🚫 Unrealistic amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
+        
+        // FILTER 4: Remove amounts that are too small (under 50M = 5e7 - likely not real mining claims)
+        if (recipient.amount < 5e7) {
+            console.log('🚫 Too small amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
         
         // DEBUG: Log first few amounts to see what's being kept
         // Note: Can't reference filtered.length here since filtered isn't defined yet
@@ -104,13 +109,20 @@ function filterExcludedWallets(recipients) {
     
     // Verify filtering worked
     const stillBanned = filtered.some(r => EXCLUDED_WALLETS.includes(r.wallet));
-    const stillUnrealistic = filtered.some(r => r.amount > 5e9);
-    const stillTooSmall = filtered.some(r => r.amount < 1e8);
+    const stillHouseTrillions = filtered.some(r => r.amount > 1e12);
+    const stillUnrealistic = filtered.some(r => r.amount > 1e10);
+    const stillTooSmall = filtered.some(r => r.amount < 5e7);
     
     if (stillBanned) {
         console.error('❌ FILTERING FAILED - banned wallets still present!');
     } else {
         console.log('✅ Filtering successful - no banned wallets remain');
+    }
+    
+    if (stillHouseTrillions) {
+        console.error('❌ FILTERING FAILED - house wallet trillions still present!');
+    } else {
+        console.log('✅ Filtering successful - no house wallet trillions remain');
     }
     
     if (stillUnrealistic) {
@@ -1411,16 +1423,46 @@ function filterWinners(filterType) {
             filteredWinners = filterExcludedWallets(dashboardData.allRecipients).slice(0, 100);
             break;
         case 'topClaimers':
-            // Show top claimers (wallets with most claims)
-            if (dashboardData.topClaimers) {
-                filteredWinners = filterExcludedWallets(dashboardData.topClaimers).map(claimer => ({
+            // Show top claimers (wallets with most claims) - calculate from actual data
+            const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+            const walletClaimCounts = {};
+            
+            // Count claims per wallet
+            allRecipients.forEach(winner => {
+                const wallet = winner.wallet;
+                if (!walletClaimCounts[wallet]) {
+                    walletClaimCounts[wallet] = {
+                        wallet: wallet,
+                        totalAmount: 0,
+                        claimCount: 0,
+                        lastClaimDate: winner.date,
+                        lastSignature: winner.signature
+                    };
+                }
+                walletClaimCounts[wallet].totalAmount += winner.amount;
+                walletClaimCounts[wallet].claimCount += (winner.claimCount || 1);
+                if (new Date(winner.date) > new Date(walletClaimCounts[wallet].lastClaimDate)) {
+                    walletClaimCounts[wallet].lastClaimDate = winner.date;
+                    walletClaimCounts[wallet].lastSignature = winner.signature;
+                }
+            });
+            
+            // Sort by claim count and take top 50
+            filteredWinners = Object.values(walletClaimCounts)
+                .sort((a, b) => b.claimCount - a.claimCount)
+                .slice(0, 50)
+                .map(claimer => ({
                     wallet: claimer.wallet,
                     amount: claimer.totalAmount,
                     claimCount: claimer.claimCount,
                     date: claimer.lastClaimDate,
-                    signature: 'Multiple claims'
+                    signature: claimer.lastSignature
                 }));
-            }
+            
+            console.log('🔍 Top Claimers Filter Debug:');
+            console.log(`   - Total unique wallets: ${Object.keys(walletClaimCounts).length}`);
+            console.log(`   - Top 50 claimers shown: ${filteredWinners.length}`);
+            console.log(`   - Top claimer:`, filteredWinners[0]);
             break;
         case 'multiClaimers':
             // Show wallets with multiple claims (2 or more) - deduplicate and show total amounts
