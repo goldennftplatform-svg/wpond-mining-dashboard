@@ -53,20 +53,44 @@ async function loadData() {
     console.log('🔄 Loading real mining data...');
     
     try {
+        console.log('🔍 Attempting to fetch working-mining-data.json...');
         const response = await fetch('working-mining-data.json');
+        console.log('📡 Response status:', response.status, response.statusText);
+        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
-        console.log('✅ Data loaded:', data);
+        console.log('✅ Data loaded successfully:', data);
+        console.log('📊 Data summary:', {
+            totalClaims: data.summary?.totalClaims,
+            totalWpond: data.summary?.totalWpond,
+            totalRecipients: data.summary?.totalRecipients,
+            allRecipientsCount: data.allRecipients?.length
+        });
         
         dashboardData = data;
         updateDashboard();
         
     } catch (error) {
         console.error('❌ Failed to load data:', error);
+        console.error('🚨 Full error details:', error.stack);
         showError('Failed to load mining data');
+        
+        // Try fallback data source
+        console.log('🔄 Trying fallback data source...');
+        try {
+            const fallbackResponse = await fetch('mining-claims-data.json');
+            if (fallbackResponse.ok) {
+                const fallbackData = await fallbackResponse.json();
+                console.log('✅ Fallback data loaded:', fallbackData);
+                dashboardData = fallbackData;
+                updateDashboard();
+            }
+        } catch (fallbackError) {
+            console.error('❌ Fallback also failed:', fallbackError);
+        }
     }
 }
 
