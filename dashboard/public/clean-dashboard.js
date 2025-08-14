@@ -40,19 +40,26 @@ function formatWallet(wallet) {
 function filterExcludedWallets(data) {
     if (!data || !Array.isArray(data)) return [];
     
-    return data.filter(recipient => {
+    console.log(`🔍 filterExcludedWallets: Input data length: ${data.length}`);
+    
+    const filtered = data.filter(recipient => {
         // Filter out excluded wallet addresses
         if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
+            console.log(`❌ Filtered out excluded wallet: ${recipient.wallet} (${formatNumber(recipient.amount)} wPOND)`);
             return false;
         }
         
         // Filter out monster claims (over 100B = likely inflated/cooked data)
         if (recipient.amount > 1e11) {
+            console.log(`❌ Filtered out monster claim: ${recipient.wallet} (${formatNumber(recipient.amount)} wPOND)`);
             return false;
         }
         
         return true;
     });
+    
+    console.log(`✅ filterExcludedWallets: Output data length: ${filtered.length}`);
+    return filtered;
 }
 
 // Filter winners based on selection
