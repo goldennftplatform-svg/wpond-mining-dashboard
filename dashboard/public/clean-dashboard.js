@@ -159,7 +159,7 @@ async function loadDashboardData() {
                 continue;
             }
         
-        const data = await response.json();
+            const data = await response.json();
             console.log(`✅ Loaded ${source}:`, data);
             console.log(`📊 Data summary:`, {
                 hasSummary: !!data.summary,
@@ -182,16 +182,16 @@ async function loadDashboardData() {
                 console.log(`✅ Normalized ${data.allRecipients.length} recipients`);
             }
             
-        dashboardData = data;
+            dashboardData = data;
             console.log(`🎯 Using data source: ${source}`);
             console.log(`📊 Final dashboard data:`, {
                 summary: dashboardData.summary,
                 allRecipientsCount: dashboardData.allRecipients?.length || 0
             });
             break;
-        
-    } catch (error) {
-            console.warn(`❌ Error loading ${source}:`, error);
+            
+        } catch (error) {
+            console.warn(`❌ Error loading ${source}: ${error}`);
             continue;
         }
     }
