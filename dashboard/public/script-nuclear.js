@@ -74,6 +74,12 @@ function filterExcludedWallets(recipients) {
             return false;
         }
         
+        // FILTER 3: Remove amounts that are too large (over 100B = 1e11 - likely inflated/cooked data)
+        if (recipient.amount > 1e11) {
+            console.log('🚫 Monster claim filtered:', recipient.wallet, 'Amount:', recipient.amount, '(over 100B)');
+            return false;
+        }
+        
         // KEEP all legitimate mining claims (10M - 4.5B range)
         return true;
     });
@@ -167,12 +173,12 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-        // PRIORITY ORDER: CORRECTED mining data first (Netlify can definitely serve these)
+        // PRIORITY ORDER: Use original data files and filter out monster claims
         const dataSources = [
-            'mining-data-corrected.json',            // CORRECTED: Real mining data with realistic amounts
-            'working-mining-data.json',              // FALLBACK: Working mining data (25KB) - 25 wallets
+            'working-mining-data.json',              // REAL: Working mining data (25KB) - 25 wallets
             'mining-claims-data.json',               // FALLBACK: Sample data - 3.1KB
-            'dashboard-data-complete.json'           // LAST RESORT: Small working data - 2.0MB
+            'dashboard-data-complete.json',          // FALLBACK: Small working data - 2.0MB
+            'helius-dashboard-data-final.json'       // LAST RESORT: Large data - 1.4MB
         ];
         
         for (const source of dataSources) {
@@ -241,18 +247,6 @@ async function loadDashboardData() {
                         467,618 total claims, 5,536 unique wallets<br>
                         Biggest claim: 1,988,000,000 (1.99B) wPOND<br>
                         Real data from actual mining claims!<br>
-                        Timestamp: ${new Date().toISOString()}
-                    </div>
-                `;
-            } else if (dataUrl === 'mining-data-corrected.json') {
-                debugStatus.innerHTML = `
-                    <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
-                        🎉 CORRECTED MINING DATA LOADED! 🎉<br>
-                        REALISTIC mining amounts - Legacy in BILLIONS, Recent in MILLIONS!<br>
-                        462,618 total claims, 5,536 unique wallets<br>
-                        Legacy claims: 1.09B, 448.9B, 380.2B wPOND<br>
-                        Recent claims: 225.8M, 217.1M, 256M wPOND<br>
-                        NO MORE INFLATED TRILLIONS!<br>
                         Timestamp: ${new Date().toISOString()}
                     </div>
                 `;
