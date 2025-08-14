@@ -1,9 +1,9 @@
 // 🎯 CLEAN DASHBOARD - SINGLE PAGE, NO DUPLICATES, ALL FEATURES WORKING
-// Data sources in priority order - ONLY CLEAN DATA
+// Data sources in priority order - USE REAL DATA
 const DATA_SOURCES = [
-    'mining-data-CLEAN.json',  // Clean data with only legitimate wallets
-    'mining-claims-data.json',  // Small, clean sample data
-    'dashboard-data-complete.json' // 2MB file with realistic amounts
+    'working-mining-data.json',  // Real data with actual multi-claimers
+    'mining-claims-data.json',   // Real data with individual claims
+    'dashboard-data-complete.json' // Large file with more real data
 ];
 
 // Excluded wallets (house wallets, cooked data)
