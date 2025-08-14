@@ -167,12 +167,12 @@ async function loadDashboardData() {
         let dataUrl = 'helius-dashboard-data-micro-tx.json';
         let response = null;
         
-        // PRIORITY ORDER: Working mining data first (Netlify can definitely serve these)
+        // PRIORITY ORDER: CORRECTED mining data first (Netlify can definitely serve these)
         const dataSources = [
-            'working-mining-data.json',              // REAL: Working mining data (25KB) - 25 wallets, realistic amounts
+            'mining-data-corrected.json',            // CORRECTED: Real mining data with realistic amounts
+            'working-mining-data.json',              // FALLBACK: Working mining data (25KB) - 25 wallets
             'mining-claims-data.json',               // FALLBACK: Sample data - 3.1KB
-            'dashboard-data-complete.json',          // FALLBACK: Small working data - 2.0MB
-            'helius-dashboard-data-final.json'       // LAST RESORT: Large data - 1.4MB
+            'dashboard-data-complete.json'           // LAST RESORT: Small working data - 2.0MB
         ];
         
         for (const source of dataSources) {
@@ -241,6 +241,18 @@ async function loadDashboardData() {
                         467,618 total claims, 5,536 unique wallets<br>
                         Biggest claim: 1,988,000,000 (1.99B) wPOND<br>
                         Real data from actual mining claims!<br>
+                        Timestamp: ${new Date().toISOString()}
+                    </div>
+                `;
+            } else if (dataUrl === 'mining-data-corrected.json') {
+                debugStatus.innerHTML = `
+                    <div style="background: #00ff00; color: black; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: 5px solid #ff0000;">
+                        🎉 CORRECTED MINING DATA LOADED! 🎉<br>
+                        REALISTIC mining amounts - Legacy in BILLIONS, Recent in MILLIONS!<br>
+                        462,618 total claims, 5,536 unique wallets<br>
+                        Legacy claims: 1.09B, 448.9B, 380.2B wPOND<br>
+                        Recent claims: 225.8M, 217.1M, 256M wPOND<br>
+                        NO MORE INFLATED TRILLIONS!<br>
                         Timestamp: ${new Date().toISOString()}
                     </div>
                 `;
@@ -642,6 +654,12 @@ function createBubbleChart() {
 
         // Add click event for blockchain check
         bubble.addEventListener('click', () => {
+            console.log('🔍 BUBBLE CLICK DEBUG (createBubbleChart):');
+            console.log('   - Winner object:', winner);
+            console.log('   - Winner wallet:', winner.wallet);
+            console.log('   - Winner amount:', winner.amount);
+            console.log('   - Winner date:', winner.date);
+            console.log('   - About to call checkWalletOnBlockchain with:', winner.wallet);
             checkWalletOnBlockchain(winner.wallet);
         });
 
@@ -764,6 +782,12 @@ function createTopWinnersBubbleBoard() {
 
         // Add click event for blockchain check
         bubble.addEventListener('click', () => {
+            console.log('🔍 BUBBLE CLICK DEBUG (createTopWinnersBubbleBoard):');
+            console.log('   - Winner object:', winner);
+            console.log('   - Winner wallet:', winner.wallet);
+            console.log('   - Winner amount:', winner.amount);
+            console.log('   - Winner date:', winner.date);
+            console.log('   - About to call checkWalletOnBlockchain with:', winner.wallet);
             checkWalletOnBlockchain(winner.wallet);
         });
 
@@ -1004,8 +1028,15 @@ function createRecentWinnersBubbleBoard() {
 
 // Function to check wallet on blockchain
 function checkWalletOnBlockchain(walletAddress) {
+    console.log('🔍 checkWalletOnBlockchain DEBUG:');
+    console.log('   - Received walletAddress:', walletAddress);
+    console.log('   - Type of walletAddress:', typeof walletAddress);
+    console.log('   - Length of walletAddress:', walletAddress?.length);
+    
     // Open Solana Explorer in new tab
     const solanaExplorerUrl = `https://solscan.io/account/${walletAddress}`;
+    console.log('   - About to open URL:', solanaExplorerUrl);
+    
     window.open(solanaExplorerUrl, '_blank');
     
     // Show notification
