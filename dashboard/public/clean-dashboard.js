@@ -71,29 +71,51 @@ function filterWinners(filterType, buttonElement = null) {
     
     switch (filterType) {
         case 'all':
-            filteredData = allRecipients;
+            // Show all but filter out obvious cooked data
+            filteredData = allRecipients.filter(r => r.amount <= 5e9); // Max 5B (legitimate legacy)
             break;
         case 'top10':
-            filteredData = allRecipients.sort((a, b) => b.amount - a.amount).slice(0, 10);
+            // Top 10 by amount, but only realistic amounts
+            filteredData = allRecipients
+                .filter(r => r.amount <= 5e9) // Max 5B
+                .sort((a, b) => b.amount - a.amount)
+                .slice(0, 10);
             break;
         case 'top50':
-            filteredData = allRecipients.sort((a, b) => b.amount - a.amount).slice(0, 50);
+            // Top 50 by amount, realistic amounts only
+            filteredData = allRecipients
+                .filter(r => r.amount <= 5e9) // Max 5B
+                .sort((a, b) => b.amount - a.amount)
+                .slice(0, 50);
             break;
         case 'topClaimers':
-            // Sort by claim count (highest first)
+            // Sort by claim count (highest first), realistic amounts
             filteredData = allRecipients
+                .filter(r => r.amount <= 5e9) // Max 5B
                 .sort((a, b) => (b.claimCount || 1) - (a.claimCount || 1))
                 .slice(0, 50);
             break;
         case 'multiClaimers':
-            // Only wallets with multiple claims
+            // Only wallets with multiple claims, realistic amounts
             filteredData = allRecipients
-                .filter(r => (r.claimCount || 1) > 1)
+                .filter(r => (r.claimCount || 1) > 1 && r.amount <= 5e9) // Max 5B
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 50);
             break;
+        case 'recentOnly':
+            // Only recent payouts (last 3 months) - should be around 225M
+            const threeMonthsAgo = new Date();
+            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            filteredData = allRecipients
+                .filter(r => {
+                    const payoutDate = new Date(r.date);
+                    return payoutDate >= threeMonthsAgo && r.amount <= 1e9; // Max 1B for recent
+                })
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 50);
+            break;
         default:
-            filteredData = allRecipients;
+            filteredData = allRecipients.filter(r => r.amount <= 5e9);
     }
     
     // Update winners table
@@ -238,15 +260,25 @@ function updateRecentActivity() {
     
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
     
+    // Only show recent payouts (last 3 months) with realistic amounts around 225M
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    
+    const recentRecipients = allRecipients.filter(r => {
+        const payoutDate = new Date(r.date);
+        // Only recent payouts with realistic amounts (max 1B for recent)
+        return payoutDate >= threeMonthsAgo && r.amount <= 1e9;
+    });
+    
     // Sort by date (newest first) and take last 10
-    const sortedByDate = allRecipients.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sortedByDate = recentRecipients.sort((a, b) => new Date(b.date) - new Date(a.date));
     const recentActivity = sortedByDate.slice(0, 10);
     
     const tbody = document.getElementById('recentActivity');
     tbody.innerHTML = '';
     
     if (recentActivity.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="no-data">No recent activity</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="no-data">No recent activity (last 3 months)</td></tr>';
         return;
     }
     
@@ -265,6 +297,8 @@ function updateRecentActivity() {
         
         tbody.appendChild(row);
     });
+    
+    console.log(`📅 Recent Activity: Showing ${recentActivity.length} recent payouts (last 3 months)`);
 }
 
 // Update winners table based on current filter
@@ -416,11 +450,71 @@ function showNotification(message, type = 'info') {
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🎯 Clean Dashboard Initializing...');
-    loadDashboardData();
+    console.log('🔍 DOM Elements Check:');
+    console.log('   - topWinnersGrid:', document.getElementById('topWinnersGrid'));
+    console.log('   - recentActivity:', document.getElementById('recentActivity'));
+    console.log('   - topWinnersBubbleBoard:', document.getElementById('topWinnersBubbleBoard'));
+    console.log('   - winnersTableBody:', document.getElementById('winnersTableBody'));
+    console.log('   - Filter buttons:', document.querySelectorAll('.filter-btn').length);
+    
+    try {
+        loadDashboardData();
+    } catch (error) {
+        console.error('❌ Error during initialization:', error);
+    }
     
     // Refresh data every 5 minutes
-    setInterval(loadDashboardData, 5 * 60 * 1000);
+    setInterval(() => {
+        try {
+            loadDashboardData();
+        } catch (error) {
+            console.error('❌ Error during refresh:', error);
+        }
+    }, 5 * 60 * 1000);
 });
+
+// Test function to manually check dashboard functionality
+function testDashboard() {
+    console.log('🧪 TESTING DASHBOARD FUNCTIONALITY...');
+    
+    // Test 1: Check if data is loaded
+    console.log('📊 Test 1 - Data Check:');
+    console.log('   - dashboardData:', dashboardData);
+    console.log('   - currentFilter:', currentFilter);
+    console.log('   - filteredData length:', filteredData?.length || 0);
+    
+    // Test 2: Check DOM elements
+    console.log('🔍 Test 2 - DOM Elements:');
+    console.log('   - topWinnersGrid:', document.getElementById('topWinnersGrid'));
+    console.log('   - recentActivity:', document.getElementById('recentActivity'));
+    console.log('   - topWinnersBubbleBoard:', document.getElementById('topWinnersBubbleBoard'));
+    console.log('   - winnersTableBody:', document.getElementById('winnersTableBody'));
+    
+    // Test 3: Test filter function
+    console.log('🎯 Test 3 - Filter Function:');
+    if (dashboardData && dashboardData.allRecipients) {
+        console.log('   - Total recipients:', dashboardData.allRecipients.length);
+        console.log('   - Sample recipient:', dashboardData.allRecipients[0]);
+        
+        // Test filtering
+        const testFilter = filterExcludedWallets(dashboardData.allRecipients);
+        console.log('   - After filtering:', testFilter.length);
+        console.log('   - Sample filtered:', testFilter[0]);
+    } else {
+        console.log('   - No data available for testing');
+    }
+    
+    // Test 4: Manual filter test
+    console.log('🎯 Test 4 - Manual Filter Test:');
+    try {
+        filterWinners('all', document.querySelector('.filter-btn'));
+        console.log('   - All filter applied successfully');
+    } catch (error) {
+        console.error('   - Filter error:', error);
+    }
+    
+    console.log('✅ Dashboard test completed');
+}
 
 // Export functions for debugging
 window.dashboardDebug = {
@@ -430,5 +524,6 @@ window.dashboardDebug = {
     resetFilters,
     filterExcludedWallets,
     checkWalletOnBlockchain,
-    showNotification
+    showNotification,
+    testDashboard
 };
