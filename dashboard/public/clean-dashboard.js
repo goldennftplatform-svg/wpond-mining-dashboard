@@ -1,4 +1,4 @@
-// 🎯 CLEAN DASHBOARD - SINGLE PAGE, NO DUPLICATES
+// 🎯 CLEAN DASHBOARD - SINGLE PAGE, NO DUPLICATES, ALL FEATURES WORKING
 // Data sources in priority order
 const DATA_SOURCES = [
     'working-mining-data.json',
@@ -22,6 +22,8 @@ const EXCLUDED_WALLETS = [
 
 // Global dashboard data
 let dashboardData = null;
+let currentFilter = 'all';
+let filteredData = [];
 
 // Utility functions
 function formatNumber(num) {
@@ -52,6 +54,57 @@ function filterExcludedWallets(data) {
         
         return true;
     });
+}
+
+// Filter winners based on selection
+function filterWinners(filterType) {
+    if (!dashboardData || !dashboardData.allRecipients) return;
+    
+    currentFilter = filterType;
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
+    
+    // Update active button
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    switch (filterType) {
+        case 'all':
+            filteredData = allRecipients;
+            break;
+        case 'top10':
+            filteredData = allRecipients.sort((a, b) => b.amount - a.amount).slice(0, 10);
+            break;
+        case 'top50':
+            filteredData = allRecipients.sort((a, b) => b.amount - a.amount).slice(0, 50);
+            break;
+        case 'topClaimers':
+            // Sort by claim count (highest first)
+            filteredData = allRecipients
+                .sort((a, b) => (b.claimCount || 1) - (a.claimCount || 1))
+                .slice(0, 50);
+            break;
+        case 'multiClaimers':
+            // Only wallets with multiple claims
+            filteredData = allRecipients
+                .filter(r => (r.claimCount || 1) > 1)
+                .sort((a, b) => b.amount - a.amount)
+                .slice(0, 50);
+            break;
+        default:
+            filteredData = allRecipients;
+    }
+    
+    // Update winners table
+    updateWinnersTable();
+    
+    console.log(`✅ Filter applied: ${filterType}, showing ${filteredData.length} results`);
+}
+
+// Reset filters
+function resetFilters() {
+    filterWinners('all');
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.filter-btn').classList.add('active');
 }
 
 // Load dashboard data from multiple sources
@@ -105,6 +158,7 @@ function updateDashboard() {
     updateTopWinners();
     updateRecentActivity();
     createTopWinnersBubbleBoard();
+    filterWinners('all'); // Initialize with all winners
 }
 
 // Update summary statistics
@@ -189,6 +243,35 @@ function updateRecentActivity() {
         // Add click event to check wallet on blockchain
         row.addEventListener('click', () => {
             checkWalletOnBlockchain(activity.wallet);
+        });
+        
+        tbody.appendChild(row);
+    });
+}
+
+// Update winners table based on current filter
+function updateWinnersTable() {
+    if (!filteredData || filteredData.length === 0) {
+        document.getElementById('winnersTableBody').innerHTML = '<tr><td colspan="5" class="no-data">No data for current filter</td></tr>';
+        return;
+    }
+    
+    const tbody = document.getElementById('winnersTableBody');
+    tbody.innerHTML = '';
+    
+    filteredData.forEach((winner, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${formatWallet(winner.wallet)}</td>
+            <td>${formatNumber(winner.amount)} wPOND</td>
+            <td>${winner.claimCount || 1}</td>
+            <td>${winner.date || 'Unknown'}</td>
+        `;
+        
+        // Add click event to check wallet on blockchain
+        row.addEventListener('click', () => {
+            checkWalletOnBlockchain(winner.wallet);
         });
         
         tbody.appendChild(row);
@@ -325,6 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.dashboardDebug = {
     loadDashboardData,
     updateDashboard,
+    filterWinners,
+    resetFilters,
     filterExcludedWallets,
     checkWalletOnBlockchain,
     showNotification
