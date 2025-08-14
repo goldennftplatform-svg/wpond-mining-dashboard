@@ -1,10 +1,9 @@
 // 🎯 CLEAN DASHBOARD - SINGLE PAGE, NO DUPLICATES, ALL FEATURES WORKING
-// Data sources in priority order
+// Data sources in priority order - ONLY CLEAN DATA
 const DATA_SOURCES = [
-    'working-mining-data.json',
-    'mining-claims-data.json', 
-    'dashboard-data-complete.json',
-    'helius-dashboard-data-final.json'
+    'mining-claims-data.json',  // Small, clean sample data
+    'dashboard-data-complete.json', // 2MB file with realistic amounts
+    'working-mining-data.json'  // Fallback but filter heavily
 ];
 
 // Excluded wallets (house wallets, cooked data)
@@ -69,36 +68,37 @@ function filterWinners(filterType, buttonElement = null) {
         buttonElement.classList.add('active');
     }
     
+    // AGGRESSIVE FILTERING - Remove all inflated amounts
+    const realisticRecipients = allRecipients.filter(r => {
+        // Only allow amounts that make sense for mining payouts
+        return r.amount >= 1e6 && r.amount <= 5e8; // 1M to 500M wPOND only
+    });
+    
+    console.log(`🔍 Filtering: ${allRecipients.length} total -> ${realisticRecipients.length} realistic`);
+    
     switch (filterType) {
         case 'all':
-            // Show all but filter out obvious cooked data
-            filteredData = allRecipients.filter(r => r.amount <= 5e9); // Max 5B (legitimate legacy)
+            filteredData = realisticRecipients;
             break;
         case 'top10':
-            // Top 10 by amount, but only realistic amounts
-            filteredData = allRecipients
-                .filter(r => r.amount <= 5e9) // Max 5B
+            filteredData = realisticRecipients
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 10);
             break;
         case 'top50':
-            // Top 50 by amount, realistic amounts only
-            filteredData = allRecipients
-                .filter(r => r.amount <= 5e9) // Max 5B
+            filteredData = realisticRecipients
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 50);
             break;
         case 'topClaimers':
-            // Sort by claim count (highest first), realistic amounts
-            filteredData = allRecipients
-                .filter(r => r.amount <= 5e9) // Max 5B
+            filteredData = realisticRecipients
                 .sort((a, b) => (b.claimCount || 1) - (a.claimCount || 1))
                 .slice(0, 50);
             break;
         case 'multiClaimers':
             // Only wallets with multiple claims, realistic amounts
-            filteredData = allRecipients
-                .filter(r => (r.claimCount || 1) > 1 && r.amount <= 5e9) // Max 5B
+            filteredData = realisticRecipients
+                .filter(r => (r.claimCount || 1) > 1)
                 .sort((a, b) => b.amount - a.amount)
                 .slice(0, 50);
             break;
@@ -106,16 +106,16 @@ function filterWinners(filterType, buttonElement = null) {
             // Only recent payouts (last 3 months) - should be around 225M
             const threeMonthsAgo = new Date();
             threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-            filteredData = allRecipients
+            filteredData = realisticRecipients
                 .filter(r => {
                     const payoutDate = new Date(r.date);
-                    return payoutDate >= threeMonthsAgo && r.amount <= 1e9; // Max 1B for recent
+                    return payoutDate >= threeMonthsAgo;
                 })
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 50);
             break;
         default:
-            filteredData = allRecipients.filter(r => r.amount <= 5e9);
+            filteredData = realisticRecipients;
     }
     
     // Update winners table
@@ -260,14 +260,18 @@ function updateRecentActivity() {
     
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
     
+    // AGGRESSIVE FILTERING - Only realistic amounts (1M to 500M)
+    const realisticRecipients = allRecipients.filter(r => {
+        return r.amount >= 1e6 && r.amount <= 5e8; // 1M to 500M wPOND only
+    });
+    
     // Only show recent payouts (last 3 months) with realistic amounts around 225M
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
     
-    const recentRecipients = allRecipients.filter(r => {
+    const recentRecipients = realisticRecipients.filter(r => {
         const payoutDate = new Date(r.date);
-        // Only recent payouts with realistic amounts (max 1B for recent)
-        return payoutDate >= threeMonthsAgo && r.amount <= 1e9;
+        return payoutDate >= threeMonthsAgo;
     });
     
     // Sort by date (newest first) and take last 10
@@ -298,7 +302,7 @@ function updateRecentActivity() {
         tbody.appendChild(row);
     });
     
-    console.log(`📅 Recent Activity: Showing ${recentActivity.length} recent payouts (last 3 months)`);
+    console.log(`📅 Recent Activity: ${realisticRecipients.length} realistic -> ${recentActivity.length} recent payouts`);
 }
 
 // Update winners table based on current filter
