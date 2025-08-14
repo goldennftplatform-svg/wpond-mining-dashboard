@@ -67,24 +67,30 @@ function filterExcludedWallets(recipients) {
     // DEBUG: Check first few recipients to see wallet format
     console.log('🔍 First 3 recipients:', recipients.slice(0, 3).map(r => r.wallet));
     
-    // AGGRESSIVE FILTERING: Remove suspicious wallets AND unrealistic amounts
+    // MULTI-CLAIM FILTERING: Remove suspicious wallets and unrealistic amounts
     const filtered = recipients.filter(recipient => {
         if (!recipient || !recipient.wallet) {
             console.warn('⚠️ Invalid recipient found:', recipient);
             return false;
         }
         
-        // TEMPORARILY DISABLED: Check if wallet is in banned list (causing data cooking)
-        // if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
-        //     console.log('🚫 Banned wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
-        //     return false;
-        // }
+        // FILTER 1: Remove banned/suspicious wallets
+        if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
+            console.log('🚫 Banned wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
         
-        // TEMPORARILY DISABLED: Check if amount is unrealistic (over 10 billion = 1e10 - allows realistic mining claims up to 10B)
-        // if (recipient.amount > 1e10) {
-        //     console.log('🚫 Unrealistic amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
-        //     return false;
-        // }
+        // FILTER 2: Remove unrealistic amounts (over 5 billion = 5e9 - allows realistic mining claims up to 5B)
+        if (recipient.amount > 5e9) {
+            console.log('🚫 Unrealistic amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
+        
+        // FILTER 3: Remove amounts that are too small (under 100M = 1e8 - likely not real mining claims)
+        if (recipient.amount < 1e8) {
+            console.log('🚫 Too small amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
+            return false;
+        }
         
         // DEBUG: Log first few amounts to see what's being kept
         // Note: Can't reference filtered.length here since filtered isn't defined yet
@@ -97,7 +103,8 @@ function filterExcludedWallets(recipients) {
     
     // Verify filtering worked
     const stillBanned = filtered.some(r => EXCLUDED_WALLETS.includes(r.wallet));
-    // const stillUnrealistic = filtered.some(r => r.amount > 1e11);
+    const stillUnrealistic = filtered.some(r => r.amount > 5e9);
+    const stillTooSmall = filtered.some(r => r.amount < 1e8);
     
     if (stillBanned) {
         console.error('❌ FILTERING FAILED - banned wallets still present!');
@@ -105,11 +112,17 @@ function filterExcludedWallets(recipients) {
         console.log('✅ Filtering successful - no banned wallets remain');
     }
     
-    // if (stillUnrealistic) {
-    //     console.error('❌ FILTERING FAILED - unrealistic amounts still present!');
-    // } else {
-    //     console.log('✅ Filtering successful - no unrealistic amounts remain');
-    // }
+    if (stillUnrealistic) {
+        console.error('❌ FILTERING FAILED - unrealistic amounts still present!');
+    } else {
+        console.log('✅ Filtering successful - no unrealistic amounts remain');
+    }
+    
+    if (stillTooSmall) {
+        console.error('❌ FILTERING FAILED - too small amounts still present!');
+    } else {
+        console.log('✅ Filtering successful - no too small amounts remain');
+    }
     
     return filtered;
 }
