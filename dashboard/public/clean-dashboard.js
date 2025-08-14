@@ -51,6 +51,12 @@ function filterExcludedWallets(data) {
     }
     
     const filtered = data.filter(recipient => {
+        // FORCE REMOVE THE PROBLEMATIC 4.5B WALLET
+        if (recipient.wallet === 'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ') {
+            console.log(`🚨 FORCE REMOVING PROBLEMATIC WALLET: ${recipient.wallet} (${formatNumber(recipient.amount)} wPOND)`);
+            return false;
+        }
+        
         // Filter out excluded wallet addresses
         if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
             console.log(`❌ Filtered out excluded wallet: ${recipient.wallet} (${formatNumber(recipient.amount)} wPOND)`);
