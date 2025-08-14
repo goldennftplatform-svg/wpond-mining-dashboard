@@ -57,7 +57,7 @@ function filterExcludedWallets(data) {
 }
 
 // Filter winners based on selection
-function filterWinners(filterType) {
+function filterWinners(filterType, buttonElement = null) {
     if (!dashboardData || !dashboardData.allRecipients) return;
     
     currentFilter = filterType;
@@ -65,7 +65,9 @@ function filterWinners(filterType) {
     
     // Update active button
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (buttonElement) {
+        buttonElement.classList.add('active');
+    }
     
     switch (filterType) {
         case 'all':
@@ -109,21 +111,31 @@ function resetFilters() {
 
 // Load dashboard data from multiple sources
 async function loadDashboardData() {
+    console.log('🔄 Starting to load dashboard data...');
+    
     for (const source of DATA_SOURCES) {
         try {
             console.log(`🔄 Trying data source: ${source}`);
             const response = await fetch(source);
             
             if (!response.ok) {
-                console.warn(`❌ Failed to load ${source}: ${response.status}`);
+                console.warn(`❌ Failed to load ${source}: ${response.status} ${response.statusText}`);
                 continue;
             }
             
             const data = await response.json();
             console.log(`✅ Loaded ${source}:`, data);
+            console.log(`📊 Data summary:`, {
+                hasSummary: !!data.summary,
+                hasAllRecipients: !!data.allRecipients,
+                hasRecipients: !!data.recipients,
+                allRecipientsCount: data.allRecipients?.length || 0,
+                recipientsCount: data.recipients?.length || 0
+            });
             
             // Normalize data structure
             if (data.recipients && !data.allRecipients) {
+                console.log('🔄 Normalizing recipients to allRecipients...');
                 data.allRecipients = data.recipients.map(r => ({
                     wallet: r.wallet,
                     amount: r.wpondAmount || r.amount,
@@ -131,10 +143,15 @@ async function loadDashboardData() {
                     date: r.date,
                     signature: r.signature
                 }));
+                console.log(`✅ Normalized ${data.allRecipients.length} recipients`);
             }
             
             dashboardData = data;
             console.log(`🎯 Using data source: ${source}`);
+            console.log(`📊 Final dashboard data:`, {
+                summary: dashboardData.summary,
+                allRecipientsCount: dashboardData.allRecipients?.length || 0
+            });
             break;
             
         } catch (error) {
@@ -149,6 +166,7 @@ async function loadDashboardData() {
     }
     
     // Update dashboard
+    console.log('🔄 Updating dashboard with loaded data...');
     updateDashboard();
 }
 
