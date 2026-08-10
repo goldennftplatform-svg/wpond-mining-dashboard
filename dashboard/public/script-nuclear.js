@@ -169,16 +169,15 @@ async function loadDashboardData() {
             debugStatus.style.background = '#2d2d5a';
         }
         
-        // Try to load the data file with multiple fallbacks - PRIORITIZE REAL MINING DATA
-        let dataUrl = 'helius-dashboard-data-micro-tx.json';
+        // Try to load the data file with multiple fallbacks - PRIORITIZE LIVE CLAIMS
+        let dataUrl = 'working-mining-data.json';
         let response = null;
         
-        // PRIORITY ORDER: Use original data files and filter out monster claims
+        // PRIORITY ORDER: live refreshed file first (no giant LFS blobs)
         const dataSources = [
-            'working-mining-data.json',              // REAL: Working mining data (25KB) - 25 wallets
-            'mining-claims-data.json',               // FALLBACK: Sample data - 3.1KB
-            'dashboard-data-complete.json',          // FALLBACK: Small working data - 2.0MB
-            'helius-dashboard-data-final.json'       // LAST RESORT: Large data - 1.4MB
+            'working-mining-data.json',              // LIVE: refreshed claim drips
+            'recent-claims-live.json',               // LIVE: recentClaims-only feed
+            'mining-claims-data.json'                // FALLBACK: tiny sample
         ];
         
         for (const source of dataSources) {

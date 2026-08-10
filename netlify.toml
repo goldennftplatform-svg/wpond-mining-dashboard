@@ -1,12 +1,12 @@
 [build]
-  base = "dashboard"
-  publish = "public"
+  # Publish static dashboard only — avoid dashboard/package.json npm install + LFS hell
+  command = "echo 'static publish only'"
+  publish = "dashboard/public"
 
 [build.environment]
   NODE_VERSION = "18"
+  GIT_LFS_SKIP_SMUDGE = "1"
 
-# Existing files in /public are served first.
-# Catch-all is only for missing HTML routes — keep JSON files present in publish dir.
 [[redirects]]
   from = "/*"
   to = "/index.html"
