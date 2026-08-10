@@ -1,10 +1,12 @@
 [build]
-  # Publish static dashboard only — avoid dashboard/package.json npm install + LFS hell
-  command = "echo 'static publish only'"
-  publish = "dashboard/public"
+  # Must match Netlify UI "Base directory = dashboard"
+  base = "dashboard"
+  command = "echo static-publish-only"
+  publish = "public"
 
 [build.environment]
   NODE_VERSION = "18"
+  # Set the same in Netlify UI → Env vars if clone still pulls LFS
   GIT_LFS_SKIP_SMUDGE = "1"
 
 [[redirects]]
