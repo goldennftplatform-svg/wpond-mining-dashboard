@@ -852,18 +852,20 @@ function createRecentWinnersBubbleBoard() {
             return;
         }
 
-    // Filter excluded wallets and sort by date (most recent first)
+    // Prefer live per-claim feed (recentClaims). Fall back to recipient dates.
+    const liveClaims = Array.isArray(dashboardData.recentClaims)
+        ? filterExcludedWallets(dashboardData.recentClaims)
+        : [];
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
     
-    // Sort by date (newest first) and take the last 20 recent recipients
-    const sortedByDate = allRecipients.sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateB - dateA; // Newest first
+    const sortedByDate = (liveClaims.length ? liveClaims : allRecipients).slice().sort((a, b) => {
+        const ta = a.timestamp || Date.parse(a.date) || 0;
+        const tb = b.timestamp || Date.parse(b.date) || 0;
+        return tb - ta; // Newest first
     });
     
-    const claimsToShow = sortedByDate.slice(0, 20); // Show last 20 recent recipients
-    console.log('🔍 Claims to show:', claimsToShow.length);
+    const claimsToShow = sortedByDate.slice(0, 20); // Show last 20 recent claims/recipients
+    console.log('🔍 Claims to show:', claimsToShow.length, liveClaims.length ? '(live recentClaims)' : '(recipient dates)');
     
     // DEBUG: Log the dates we're working with
     console.log('🔍 First 5 dates:', claimsToShow.slice(0, 5).map(c => c.date));
@@ -1162,21 +1164,23 @@ function updateRecentActivity() {
 
         console.log('📊 Processing recent activity with', dashboardData.allRecipients.length, 'recipients');
 
-        // Filter excluded wallets and sort by date (most recent first)
+        const liveClaims = Array.isArray(dashboardData.recentClaims)
+            ? filterExcludedWallets(dashboardData.recentClaims)
+            : [];
         const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-        console.log('✅ Filtered recipients for recent activity:', allRecipients.length);
+        console.log('✅ Filtered recipients for recent activity:', allRecipients.length, 'liveClaims', liveClaims.length);
         
-        if (allRecipients.length === 0) {
+        if (allRecipients.length === 0 && liveClaims.length === 0) {
             console.warn('⚠️ No recipients after filtering - showing no data message');
             recentActivity.innerHTML = '<tr><td colspan="3" class="no-results">No recent activity data available</td></tr>';
             return;
         }
         
-        // Sort by date (newest first) and take the last 10 payouts
-        const sortedByDate = allRecipients.sort((a, b) => {
-            const dateA = new Date(a.date);
-            const dateB = new Date(b.date);
-            return dateB - dateA; // Newest first
+        // Sort by timestamp/date (newest first) and take the last 10 payouts
+        const sortedByDate = (liveClaims.length ? liveClaims : allRecipients).slice().sort((a, b) => {
+            const ta = a.timestamp || Date.parse(a.date) || 0;
+            const tb = b.timestamp || Date.parse(b.date) || 0;
+            return tb - ta; // Newest first
         });
         
         const recentRecipients = sortedByDate.slice(0, 10);
@@ -1186,7 +1190,7 @@ function updateRecentActivity() {
             <tr>
                 <td class="wallet-cell" onclick="copyToClipboard('${recipient.wallet}')">${formatWallet(recipient.wallet)}</td>
                 <td>${formatWpondAmount(recipient.amount)} wPOND</td>
-                <td>${recipient.date}</td>
+                <td>${recipient.date}${recipient.timestamp ? ' ' + new Date(recipient.timestamp * 1000).toLocaleTimeString() : ''}</td>
             </tr>
         `).join('');
         
@@ -1289,12 +1293,22 @@ function createDailyBubbleChart() {
     // Get today's date
     const today = new Date().toISOString().split('T')[0];
     
-    // Filter today's claims
+    // Prefer live recentClaims for "today"
+    const liveClaims = Array.isArray(dashboardData.recentClaims)
+        ? filterExcludedWallets(dashboardData.recentClaims)
+        : [];
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-    const todaysClaims = allRecipients.filter(recipient => recipient.date === today);
+    const todaysClaims = (liveClaims.length ? liveClaims : allRecipients).filter(
+        (recipient) => recipient.date === today
+    );
     
-    // If no today's claims, show recent recipients
-    const claimsToShow = todaysClaims.length > 0 ? todaysClaims : allRecipients.slice(0, 8);
+    // If no today's claims, show newest live/recipient rows (not top-by-amount)
+    const claimsToShow = todaysClaims.length > 0
+        ? todaysClaims
+        : (liveClaims.length ? liveClaims : allRecipients)
+            .slice()
+            .sort((a, b) => (b.timestamp || Date.parse(b.date) || 0) - (a.timestamp || Date.parse(a.date) || 0))
+            .slice(0, 8);
 
     claimsToShow.forEach((recipient, index) => {
         const bubble = document.createElement('div');
@@ -1384,8 +1398,13 @@ function updateDailyStats() {
     // Filter out excluded wallets from all recipients first
     const filteredRecipients = filterExcludedWallets(dashboardData.allRecipients);
     
-    // Get today's claims from filtered recipients
-    const todaysClaims = filteredRecipients.filter(recipient => recipient.date === today);
+    // Prefer live recentClaims for today's stats
+    const liveClaims = Array.isArray(dashboardData.recentClaims)
+        ? filterExcludedWallets(dashboardData.recentClaims)
+        : [];
+    const todaysClaims = (liveClaims.length ? liveClaims : filteredRecipients).filter(
+        (recipient) => recipient.date === today
+    );
     
     // Calculate today's stats
     const todayWinners = new Set(todaysClaims.map(claim => claim.wallet)).size;
@@ -1935,18 +1954,21 @@ function updateTodaysWinners() {
     const todaysWinnersSection = document.getElementById('todays-winners');
     if (!todaysWinnersSection) return;
     
-    if (!dashboardData || !dashboardData.allRecipients) {
+    if (!dashboardData || (!dashboardData.allRecipients && !dashboardData.recentClaims)) {
         console.log('⚠️ No dashboard data available for today\'s winners');
         todaysWinnersSection.innerHTML = '<p>Loading dashboard data...</p>';
         return;
     }
     
-    // Get actual last 10 claims by date (most recent first)
-    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-    const sortedByDate = allRecipients.sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateB - dateA; // Newest first
+    // Prefer live recentClaims; never fake dates onto old leaderboard rows
+    const liveClaims = Array.isArray(dashboardData.recentClaims)
+        ? filterExcludedWallets(dashboardData.recentClaims)
+        : [];
+    const allRecipients = filterExcludedWallets(dashboardData.allRecipients || []);
+    const sortedByDate = (liveClaims.length ? liveClaims : allRecipients).slice().sort((a, b) => {
+        const ta = a.timestamp || Date.parse(a.date) || 0;
+        const tb = b.timestamp || Date.parse(b.date) || 0;
+        return tb - ta; // Newest first
     });
     
     const last10Claims = sortedByDate.slice(0, 10);

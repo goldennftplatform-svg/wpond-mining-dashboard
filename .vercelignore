@@ -1,0 +1,12 @@
+# Too large for Vercel static limits; keep lighter dashboard JSON only
+dashboard/public/helius-dashboard-data-individual.json
+dashboard/public/helius-dashboard-data-final.json
+dashboard/public/dashboard-data-complete.json
+
+# Local / tooling noise
+node_modules
+.git
+data
+*.log
+.env
+.env.*

@@ -7,6 +7,7 @@
     "start": "node wpond-mining-tracker.js report",
     "track": "node wpond-mining-tracker.js",
     "sweep": "node dashboard/daily-tx-sweeper.js",
+    "refresh:claims": "node scripts/refresh-recent-claims.js",
     "helius:smoke": "node scripts/helius-smoke.js",
     "helius:unit": "node scripts/helius-error-unit.js",
     "test": "node scripts/helius-error-unit.js"
