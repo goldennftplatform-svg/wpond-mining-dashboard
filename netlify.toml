@@ -1,12 +1,10 @@
 [build]
-  # Must match Netlify UI "Base directory = dashboard"
   base = "dashboard"
   command = "echo static-publish-only"
   publish = "public"
 
 [build.environment]
   NODE_VERSION = "18"
-  # Set the same in Netlify UI → Env vars if clone still pulls LFS
   GIT_LFS_SKIP_SMUDGE = "1"
 
 [[redirects]]

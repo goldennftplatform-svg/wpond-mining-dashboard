@@ -9,3 +9,5 @@ package-lock.json filter= merge= diff= text
 
 dashboard/public/*.json filter= merge= diff= text
 
+
+vercel.json filter= merge= diff= text

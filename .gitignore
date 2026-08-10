@@ -141,3 +141,7 @@ verify-*.json
 .env.local
 .env.*.local
 !.env.example
+
+!scripts/*.sh
+!scripts/*.py
+!vercel.json
