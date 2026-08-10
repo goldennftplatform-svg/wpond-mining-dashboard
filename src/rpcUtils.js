@@ -1,71 +1,96 @@
-const axios = require('axios');
 const config = require('../config');
+const { getHelius, HeliusError, classifyHeliusError } = require('./heliusClient');
 
+/**
+ * Thin RPC facade.
+ * When HELIUS_API_KEY is set → shared Helius client (retries / 429 cool-down).
+ * Otherwise → single-shot public RPC (no key).
+ */
 class RpcClient {
   constructor(endpoint = config.defaultEndpoint) {
     this.endpoint = endpoint;
     this.requestId = 1;
+    this._helius = null;
+  }
+
+  usesHelius() {
+    return Boolean(config.heliusApiKey);
+  }
+
+  helius() {
+    if (!this._helius) {
+      this._helius = getHelius({
+        apiKey: config.heliusApiKey,
+        maxRetries: config.retry.attempts,
+        timeoutMs: config.timeout,
+        baseDelayMs: config.retry.delay,
+        maxDelayMs: config.retry.maxDelay,
+      });
+    }
+    return this._helius;
   }
 
   /**
-   * Make a direct RPC call to Solana
-   * @param {string} method - RPC method name
-   * @param {Array} params - Method parameters
-   * @returns {Promise<Object>} RPC response
+   * Make a JSON-RPC call
+   * @param {string} method
+   * @param {Array} params
+   * @returns {Promise<any>}
    */
   async rpcCall(method, params = []) {
+    if (this.usesHelius()) {
+      return this.helius().call(method, params);
+    }
+
     const payload = {
       jsonrpc: '2.0',
       id: this.requestId++,
-      method: method,
-      params: params
+      method,
+      params,
     };
 
     try {
-      const response = await axios.post(this.endpoint, payload, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        timeout: config.timeout
-      });
-
-      if (response.data.error) {
-        throw new Error(`RPC Error: ${response.data.error.message}`);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), config.timeout);
+      let response;
+      try {
+        response = await fetch(this.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timer);
       }
 
-      return response.data.result;
+      if (!response.ok) {
+        throw classifyHeliusError(new Error(response.statusText), {
+          status: response.status,
+          method,
+        });
+      }
+
+      const data = await response.json();
+      if (data.error) {
+        throw classifyHeliusError(new Error(data.error.message || 'RPC error'), {
+          method,
+        });
+      }
+      return data.result;
     } catch (error) {
-      if (error.response) {
-        throw new Error(`HTTP Error: ${error.response.status} - ${error.response.statusText}`);
-      }
-      throw error;
+      if (error instanceof HeliusError) throw error;
+      throw classifyHeliusError(error, { method });
     }
   }
 
-  /**
-   * Get token account balance
-   * @param {string} tokenAccountAddress - Token account address
-   * @returns {Promise<Object>} Token balance information
-   */
   async getTokenAccountBalance(tokenAccountAddress) {
     return this.rpcCall('getTokenAccountBalance', [tokenAccountAddress]);
   }
 
-  /**
-   * Get account information
-   * @param {string} accountAddress - Account address
-   * @returns {Promise<Object>} Account information
-   */
   async getAccountInfo(accountAddress) {
     return this.rpcCall('getAccountInfo', [accountAddress, { encoding: 'base64' }]);
   }
 
-  /**
-   * Get program accounts with optional filters
-   * @param {string} programId - Program ID
-   * @param {Array} filters - Optional filters
-   * @returns {Promise<Array>} Program accounts
-   */
   async getProgramAccounts(programId, filters = []) {
     const params = [programId];
     if (filters.length > 0) {
@@ -74,61 +99,50 @@ class RpcClient {
     return this.rpcCall('getProgramAccounts', params);
   }
 
-  /**
-   * Get token accounts by owner
-   * @param {string} ownerAddress - Owner address
-   * @param {string} mintAddress - Optional mint address filter
-   * @returns {Promise<Object>} Token accounts
-   */
   async getTokenAccountsByOwner(ownerAddress, mintAddress = null) {
     const params = [ownerAddress];
-    
+
     if (mintAddress) {
       params.push({ mint: mintAddress });
     } else {
       params.push({ programId: config.programIds.tokenProgram });
     }
-    
+
     params.push({ encoding: 'base64' });
-    
+
     return this.rpcCall('getTokenAccountsByOwner', params);
   }
 
-  /**
-   * Get recent blockhash
-   * @returns {Promise<Object>} Recent blockhash
-   */
   async getRecentBlockhash() {
-    return this.rpcCall('getRecentBlockhash');
+    return this.rpcCall('getLatestBlockhash');
   }
 
-  /**
-   * Get slot
-   * @returns {Promise<number>} Current slot
-   */
   async getSlot() {
     return this.rpcCall('getSlot');
   }
 
-  /**
-   * Set RPC endpoint
-   * @param {string} endpoint - New RPC endpoint
-   */
   setEndpoint(endpoint) {
     this.endpoint = endpoint;
   }
+
+  summarizeStats() {
+    if (this.usesHelius() && this._helius) return this._helius.summarizeStats();
+    return 'Helius not active (public RPC)';
+  }
 }
 
-// Create default instance
 const defaultClient = new RpcClient();
 
-// Export both the class and default instance
 module.exports = {
   RpcClient,
+  HeliusError,
   rpcCall: (method, params) => defaultClient.rpcCall(method, params),
   getTokenAccountBalance: (address) => defaultClient.getTokenAccountBalance(address),
   getAccountInfo: (address) => defaultClient.getAccountInfo(address),
-  getProgramAccounts: (programId, filters) => defaultClient.getProgramAccounts(programId, filters),
-  getTokenAccountsByOwner: (owner, mint) => defaultClient.getTokenAccountsByOwner(owner, mint),
-  setRpcEndpoint: (endpoint) => defaultClient.setEndpoint(endpoint)
-}; 
+  getProgramAccounts: (programId, filters) =>
+    defaultClient.getProgramAccounts(programId, filters),
+  getTokenAccountsByOwner: (owner, mint) =>
+    defaultClient.getTokenAccountsByOwner(owner, mint),
+  setRpcEndpoint: (endpoint) => defaultClient.setEndpoint(endpoint),
+  summarizeRpcStats: () => defaultClient.summarizeStats(),
+};

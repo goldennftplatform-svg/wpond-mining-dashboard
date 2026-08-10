@@ -1,19 +1,28 @@
 const fs = require('fs');
+const config = require('./config');
+const { getHelius, HeliusError, resolveApiKey } = require('./src/heliusClient');
 
 console.log('🎯 REALISTIC & STABLE wPOND DATA PROCESSING\n');
 
+if (!resolveApiKey()) {
+    console.error('❌ HELIUS_API_KEY is not set. Copy .env.example → .env or export the key.');
+    process.exit(1);
+}
+
+const helius = getHelius({
+    maxRetries: config.retry.attempts,
+    timeoutMs: config.timeout,
+    baseDelayMs: config.retry.delay,
+    maxDelayMs: config.retry.maxDelay,
+});
+
 // Configuration - REALISTIC APPROACH
 const CONFIG = {
-    HELIUS_ENDPOINTS: [
-        'https://mainnet.helius-rpc.com/?api-key=a5da9446-ceea-4925-b4bf-3ebb7811ff86',
-        'https://api.helius.xyz/v0/transactions/?api-key=a5da9446-ceea-4925-b4bf-3ebb7811ff86',
-        'https://rpc.helius.xyz/?api-key=a5da9446-ceea-4925-b4bf-3ebb7811ff86'
-    ],
-    WPOND_MINT: '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq',
-    PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT',
+    WPOND_MINT: config.wpond.mint,
+    PAYOUT_WALLET: config.wpond.payoutWallet,
     CHUNK_SIZE: 1000, // Process 1000 signatures at a time (realistic)
     BATCH_SIZE: 25, // Smaller batches within chunks
-    MAX_RETRIES: 3, // Fewer retries for speed
+    MAX_RETRIES: config.retry.attempts,
     DELAY_BETWEEN_BATCHES: 500, // Realistic delay
     SAVE_EVERY: 100, // Save progress every 100 signatures
     MAX_MEMORY_CLAIMS: 5000 // Don't keep more than 5000 claims in memory
@@ -94,46 +103,9 @@ const saveProgress = () => {
     console.log(`💾 Progress saved: Chunk ${currentChunk}, ${totalProcessed}/${allSignatures.length} signatures`);
 };
 
-// Ultra-reliable fetch function with endpoint rotation and rate limit handling
-async function fetchTransaction(signature, maxRetries = CONFIG.MAX_RETRIES) {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        // Rotate between endpoints to reduce rate limiting
-        const endpointIndex = (attempt - 1) % CONFIG.HELIUS_ENDPOINTS.length;
-        const endpoint = CONFIG.HELIUS_ENDPOINTS[endpointIndex];
-        
-        try {
-            console.log(`    🔄 Trying endpoint ${endpointIndex + 1}/${CONFIG.HELIUS_ENDPOINTS.length}`);
-            
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0',
-                    id: 'my-id',
-                    method: 'getTransaction',
-                    params: [signature, { encoding: 'json', maxSupportedTransactionVersion: 0 }]
-                })
-            });
-            
-            if (response.status === 429) {
-                // Rate limited - wait longer and try again
-                console.log(`    ⏳ Rate limited (429), waiting ${5 * attempt} seconds...`);
-                await new Promise(resolve => setTimeout(resolve, 5000 * attempt));
-                continue;
-            }
-            
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
-            if (data.error) throw new Error(`API error: ${data.error.message}`);
-            return data.result;
-        } catch (error) {
-            if (attempt === maxRetries) throw error;
-            // Smart backoff based on error type
-            const waitTime = error.message.includes('429') ? 10000 * attempt : 2000 * attempt;
-            console.log(`    ⏳ Retry ${attempt}/${maxRetries} in ${waitTime/1000}s...`);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
-    }
+// Shared Helius client — classified 429/5xx, endpoint rotate, cool-down
+async function fetchTransaction(signature) {
+    return helius.getTransaction(signature);
 }
 
 // Process wPOND transaction (simplified)
@@ -217,15 +189,23 @@ async function processBatch(signatures, batchNumber) {
             rateLimitCount = 0;
             
         } catch (error) {
-            batchErrors.push({ signature, error: error.message });
-            console.log(`    ❌ Error: ${error.message}`);
-            
-            // Track rate limit errors
-            if (error.message.includes('429')) {
+            const msg = error instanceof HeliusError
+                ? `[${error.code}] ${error.message}`
+                : error.message;
+            batchErrors.push({
+                signature,
+                error: msg,
+                code: error.code || 'UNKNOWN',
+                retryable: Boolean(error.retryable),
+            });
+            console.log(`    ❌ Error: ${msg}`);
+
+            // Client already cools down on 429 streaks; keep a light batch pause
+            if (error.code === 'RATE_LIMIT' || String(msg).includes('429')) {
                 rateLimitCount++;
                 if (rateLimitCount >= 3) {
-                    console.log(`    🚨 Too many rate limits! Taking a 30-second break...`);
-                    await new Promise(resolve => setTimeout(resolve, 30000));
+                    console.log(`    🚨 Batch still hot after client retries — 15s pause`);
+                    await new Promise(resolve => setTimeout(resolve, 15000));
                     rateLimitCount = 0;
                 }
             }
@@ -310,6 +290,7 @@ async function processAllChunks() {
     console.log(`   - Total Claims: ${allClaims.length}`);
     console.log(`   - Total Errors: ${allErrors.length}`);
     console.log(`   - Final Error Rate: ${((allErrors.length / totalProcessed) * 100).toFixed(2)}%`);
+    console.log(`📈 ${helius.summarizeStats()}`);
     
     // Create final dashboard data
     createFinalDashboardData();

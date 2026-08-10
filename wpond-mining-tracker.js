@@ -1,6 +1,6 @@
 const { getTokenBalance, getTokenAccountsByOwner } = require('./src/tokenQueries');
 const { getAccountInfo } = require('./src/programQueries');
-const { rpcCall } = require('./src/rpcUtils');
+const { rpcCall, summarizeRpcStats, HeliusError } = require('./src/rpcUtils');
 const config = require('./config');
 const fs = require('fs').promises;
 const path = require('path');
@@ -58,27 +58,22 @@ class WPondMiningTracker {
   }
 
   /**
-   * Get transaction details with retry logic
+   * Get transaction details (Helius client handles 429/backoff when key is set)
    */
-  async getTransaction(signature, retries = 3) {
-    for (let i = 0; i < retries; i++) {
-      try {
-        const tx = await rpcCall('getTransaction', [
-          signature,
-          { encoding: 'json', maxSupportedTransactionVersion: 0 }
-        ]);
-        return tx;
-      } catch (error) {
-        if (error.message.includes('429')) {
-          console.log(`Rate limited, waiting ${(i + 1) * 2000}ms...`);
-          await this.sleep((i + 1) * 2000);
-          continue;
-        }
-        console.error(`Error getting transaction ${signature}:`, error.message);
-        return null;
-      }
+  async getTransaction(signature) {
+    try {
+      return await rpcCall('getTransaction', [
+        signature,
+        { encoding: 'json', maxSupportedTransactionVersion: 0 }
+      ]);
+    } catch (error) {
+      const msg =
+        error instanceof HeliusError
+          ? `[${error.code}] ${error.message}`
+          : error.message;
+      console.error(`Error getting transaction ${signature}:`, msg);
+      return null;
     }
-    return null;
   }
 
   /**

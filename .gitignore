@@ -78,10 +78,20 @@ temp/
 !dashboard/package*.json
 !dashboard/railway.json
 
-# Scripts - exclude all processing scripts
+# Scripts - exclude loose processing scripts, keep core + dashboard + src
 *.js
 !dashboard/public/*.js
 !dashboard/*.js
+!src/*.js
+!scripts/*.js
+!config.js
+!index.js
+!wpond-mining-tracker.js
+!get-all-data-zero-errors-final.js
+!schedule-updates.js
+!payment-dashboard.js
+!examples.js
+!.env.example
 
 # Other files
 *.html

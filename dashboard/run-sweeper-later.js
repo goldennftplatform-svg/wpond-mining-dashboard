@@ -24,11 +24,13 @@ if (!fs.existsSync('daily-tx-sweeper.js')) {
     process.exit(1);
 }
 
-// Check if we have the API key
-const apiKey = process.env.HELIUS_API_KEY;
+// Load root config (.env) then require key
+require('../config');
+const apiKey = process.env.HELIUS_API_KEY || process.env.HELIUS_KEY;
 if (!apiKey) {
     console.log('❌ HELIUS_API_KEY environment variable not set!');
     console.log('   Set it with: $env:HELIUS_API_KEY="your-api-key"');
+    console.log('   or copy ../.env.example → ../.env');
     process.exit(1);
 }
 

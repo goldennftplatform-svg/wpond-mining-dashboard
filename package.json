@@ -1,3 +1,26 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:a61dc0c5a9bb350ec99d2e40a24bc080ec54b2d3db48a1af1d3dd53709ddbb68
-size 689
+{
+  "name": "wpond-mining-dashboard",
+  "version": "1.1.0",
+  "description": "wPOND mining claims tracker + dashboard with game-day Helius RPC handling",
+  "main": "index.js",
+  "scripts": {
+    "start": "node wpond-mining-tracker.js report",
+    "track": "node wpond-mining-tracker.js",
+    "sweep": "node dashboard/daily-tx-sweeper.js",
+    "helius:smoke": "node scripts/helius-smoke.js",
+    "helius:unit": "node scripts/helius-error-unit.js",
+    "test": "node scripts/helius-error-unit.js"
+  },
+  "keywords": [
+    "solana",
+    "wpond",
+    "helius",
+    "mining",
+    "dashboard"
+  ],
+  "author": "wPOND Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

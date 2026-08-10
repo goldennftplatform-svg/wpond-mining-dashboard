@@ -1,97 +1,65 @@
-# wPOND Dashboard Sweeper - Usage Guide
+# wPOND Dashboard Sweeper — Game Day
 
-## 🚨 Important: Avoid API Conflicts
+## Helius setup
 
-**DO NOT run the sweeper while `get-all-data-zero-errors-final.js` is running!**
+```powershell
+# Repo root
+copy .env.example .env
+# edit .env and set HELIUS_API_KEY=...
 
-Both scripts use the same Helius API key and will cause rate limiting (429 errors) if run simultaneously.
-
-## 📋 How to Use the Sweeper
-
-### Option 1: Run Later (Recommended)
-When your batch script finishes processing:
-
-```bash
-# Set your API key
-$env:HELIUS_API_KEY="e7472550-170d-4be0-ae9f-dccf30e8d5b8"
-
-# Run the sweeper
-npm run sweep-later
+# Or session-only:
+$env:HELIUS_API_KEY="your-api-key"
 ```
 
-### Option 2: Manual Run
-```bash
-# Set your API key
-$env:HELIUS_API_KEY="e7472550-170d-4be0-ae9f-dccf30e8d5b8"
+Do **not** commit `.env`. Keys belong in environment only.
 
-# Run directly
-node daily-tx-sweeper.js
-```
+## Run the sweeper (claims dripping)
 
-### Option 3: Using npm script
-```bash
-# Set your API key first
-$env:HELIUS_API_KEY="e7472550-170d-4be0-ae9f-dccf30e8d5b8"
+From repo root:
 
-# Then run
+```powershell
 npm run sweep
 ```
 
-## 🔄 What the Sweeper Does
+Or from `dashboard/`:
 
-1. **Fetches recent transactions** from the last 24 hours
-2. **Updates dashboard data** with new winners
-3. **Filters out bank/sister wallets** (opt, iWWL)
-4. **Recalculates summary statistics**
-5. **Saves updated data** to `public/helius-dashboard-data.json`
+```powershell
+npm run sweep
+# or
+node daily-tx-sweeper.js
+```
 
-## 📊 Dashboard Updates
+The sweeper now:
 
-After running the sweeper, your dashboard will show:
-- ✅ **Today's Winners** section with recent activity
-- ✅ **Updated summary statistics**
-- ✅ **Fresh recent activity data**
-- ✅ **Current top winners**
+1. Pulls **live** recent signatures from the payout wallet via Helius
+2. Retries 429 / 5xx with backoff, endpoint rotate, and cool-downs
+3. Prints compact error codes: `RATE_LIMIT`, `AUTH`, `TIMEOUT`, `TRANSIENT_HTTP`, …
+4. Updates `public/helius-dashboard-data.json`
 
-## 🚀 Deploy Updates
+## Avoid API pile-ups
 
-After the sweeper runs successfully:
+Do **not** run the sweeper while `get-all-data-zero-errors-final.js` is hammering the same key.
 
-1. **Commit changes** to Git
-2. **Push to GitHub**
-3. **Netlify will auto-deploy** the updated dashboard
+```powershell
+# After the big batch job finishes:
+npm run sweep
+```
 
-## 🐛 Troubleshooting
+## Smoke test
 
-### Rate Limited (429 Error)
-- **Wait for batch script to finish**
-- **Check if other scripts are using the API**
-- **Try again in a few minutes**
+```powershell
+npm run helius:smoke
+```
 
-### API Key Issues
-- **Verify your Helius API key is set**
-- **Check if the key has expired**
-- **Ensure you have sufficient API quota**
+## Troubleshooting
 
-### Data Not Updating
-- **Check the sweeper logs**
-- **Verify file permissions**
-- **Ensure the dashboard data file exists**
+| Symptom | What to do |
+|--------|------------|
+| `AUTH` | Bad/missing `HELIUS_API_KEY` |
+| `RATE_LIMIT` / 429 | Wait; client already cools down. Don’t run two jobs. |
+| `TIMEOUT` | Transient — re-run sweep |
+| No new claims | Confirm payout wallet + mint; check Helius dashboard quota |
 
-## 📁 Files
+## Deploy
 
-- `daily-tx-sweeper.js` - Main sweeper script
-- `run-sweeper-later.js` - Helper script with checks
-- `public/helius-dashboard-data.json` - Dashboard data file
-- `SWEEPER-README.md` - This file
-
-## 🎯 Next Steps
-
-1. **Wait for batch script to complete**
-2. **Run the sweeper** to get fresh data
-3. **Deploy updates** to see recent winners
-4. **Set up automated scheduling** if needed
-
----
-
-**Remember**: The sweeper is ready to go - it just needs the API to not be rate-limited by your batch script!
+After a successful sweep: commit dashboard JSON if you publish it, push, let Netlify deploy.
