@@ -32,8 +32,17 @@ const HOUSE = new Set([
   'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ',
 ]);
 
-const LOOKBACK_SIGS = Number(process.env.CLAIM_LOOKBACK || 150);
-const LOOKBACK_HOURS = Number(process.env.CLAIM_LOOKBACK_HOURS || 72);
+const CLAIM_NORMAL_MIN = 225e6;
+const CLAIM_NORMAL_MAX = 888e6;
+const CLAIM_BIG_MIN = 1.1e9;
+const CLAIM_BIG_MAX = 2.2e9;
+function isHighlightAmount(a) {
+  const n = Number(a) || 0;
+  return (n >= CLAIM_NORMAL_MIN && n <= CLAIM_NORMAL_MAX) || (n >= CLAIM_BIG_MIN && n <= CLAIM_BIG_MAX);
+}
+
+const LOOKBACK_SIGS = Number(process.env.CLAIM_LOOKBACK || 800);
+const LOOKBACK_HOURS = Number(process.env.CLAIM_LOOKBACK_HOURS || 336);
 
 async function enhancedBatch(signatures) {
   const url = `https://api.helius.xyz/v0/transactions/?api-key=${API_KEY}`;
@@ -51,20 +60,27 @@ async function enhancedBatch(signatures) {
   return response.json();
 }
 
-function claimFromTransfer(t, x) {
+function claimFromTransfer(t, x, payerAddr) {
   const to = x.toUserAccount;
   if (!to || HOUSE.has(to)) return null;
   if (x.mint !== MINT) return null;
   if (!(x.tokenAmount > 0)) return null;
+  // Must be paid by the watched mining wallet (skip Jupiter/DEX hops in same tx)
+  const from = x.fromUserAccount || null;
+  if (payerAddr && from && from !== payerAddr) return null;
+  if (!isHighlightAmount(x.tokenAmount)) return null;
+  const amt = x.tokenAmount;
+  const kind = (amt >= CLAIM_BIG_MIN && amt <= CLAIM_BIG_MAX) ? 'big' : 'normal';
   const ts = t.timestamp || 0;
   return {
     wallet: to,
-    amount: x.tokenAmount,
+    amount: amt,
     claimCount: 1,
     date: new Date(ts * 1000).toISOString().split('T')[0],
     timestamp: ts,
     signature: t.signature,
-    from: x.fromUserAccount || null,
+    from: from || payerAddr || null,
+    kind,
   };
 }
 
@@ -94,7 +110,7 @@ async function collectFromAddress(helius, addr) {
     }
     for (const t of txs || []) {
       for (const x of t.tokenTransfers || []) {
-        const claim = claimFromTransfer(t, x);
+        const claim = claimFromTransfer(t, x, addr);
         if (claim) claims.push(claim);
       }
     }

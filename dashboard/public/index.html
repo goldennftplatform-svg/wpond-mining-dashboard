@@ -7,29 +7,76 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>wPOND Mining Rewards Dashboard</title>
-    <link rel="stylesheet" href="styles.css?v=2025-08-12-04-45">
+    <link rel="stylesheet" href="styles.css?v=2026-08-11-REAL-MINERS">
 </head>
-<body>
-    <!-- Floating bubbles background -->
-    <div class="floating-bubble"></div>
-    <div class="floating-bubble"></div>
-    <div class="floating-bubble"></div>
-    <div class="floating-bubble"></div>
-    <div class="floating-bubble"></div>
-    <div class="floating-bubble"></div>
+<body class="claims-off">
+    <div class="atmosphere" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+    <div class="claim-glow" aria-hidden="true"></div>
 
     <div class="container">
-        <header>
-            <h1>wPOND MINING REWARDS</h1>
-            <p class="subtitle">Big Winners Dashboard</p>
+        <header class="desk-header">
+            <div class="desk-brand">
+                <h1>wPOND MINING REWARDS</h1>
+                <p class="subtitle">live miner desk · 225M–888M band · big hits 1.1B–2.2B</p>
+            </div>
+            <div class="claim-facet" id="claimFacet" data-state="off" aria-live="polite">
+                <div class="facet-top">
+                    <span class="facet-lamp" id="facetLamp"></span>
+                    <div class="facet-copy">
+                        <strong id="facetState">OFF</strong>
+                        <span id="facetSub">waiting for band claims</span>
+                    </div>
+                    <div class="facet-temp" id="facetTemp">
+                        <strong id="facetScore">0</strong>
+                        <span>HEAT</span>
+                    </div>
+                </div>
+                <div class="facet-tube" title="Claim activity thermometer">
+                    <div class="facet-mercury" id="facetMercury"></div>
+                    <div class="facet-ticks" aria-hidden="true"></div>
+                </div>
+                <div class="facet-meta">
+                    <span id="facetLast">last claim —</span>
+                    <span id="facetRate">0 / hr</span>
+                </div>
+            </div>
         </header>
 
         <!-- Debug Status -->
-        <div id="debugStatus" style="background: #2d2d5a; padding: 10px; margin: 10px 0; border-radius: 5px; color: #ff69b4;">
+        <div id="debugStatus" style="padding: 10px; margin: 10px 0;">
             Loading dashboard data...
         </div>
-        
 
+        <!-- Paid-out windows -->
+        <section class="payout-desk" aria-label="Mining claims paid out by window">
+            <div class="payout-head">
+                <div>
+                    <h2 class="section-title">MINING CLAIMS PAID OUT</h2>
+                    <p class="band-sub">band only · 225M–888M + big ~1.1B–2B · not infra dumps</p>
+                </div>
+                <div class="period-pills" id="periodPills">
+                    <button type="button" data-period="d30" class="active">30d</button>
+                    <button type="button" data-period="d90">90d</button>
+                    <button type="button" data-period="d180">180d</button>
+                    <button type="button" data-period="d365">365d</button>
+                    <button type="button" data-period="all">ALL</button>
+                </div>
+            </div>
+            <div class="payout-hero">
+                <div>
+                    <em id="periodLabel">Last 30 days</em>
+                    <strong id="periodTotal">—</strong>
+                    <span>wPOND paid to miners</span>
+                </div>
+                <div class="payout-side">
+                    <div><em>Claims</em><strong id="periodClaims">—</strong></div>
+                    <div><em>Miners</em><strong id="periodWallets">—</strong></div>
+                    <div><em>Big hits</em><strong id="periodBig">—</strong></div>
+                </div>
+            </div>
+            <div class="period-strip" id="periodStrip"></div>
+        </section>
 
         <!-- Summary Cards -->
         <div class="summary-grid">
@@ -56,16 +103,18 @@
         </div>
 
         <!-- Top Winners Section -->
-        <div class="top-winners">
-            <h2 class="section-title">ðŸ† TOP wPOND WINNERS</h2>
-            <div class="winners-grid" id="topWinnersGrid">
-                <div class="loading">Loading top winners...</div>
+        <div class="top-winners top-winners--live">
+            <h2 class="section-title">TOP LIVE MINERS</h2>
+            <p class="band-sub">225M–888M claims · big hits ~1.1B–2B · legacy whale junk removed</p>
+            <div class="podium" id="topPodium"></div>
+            <div class="winners-grid winners-grid--live" id="topWinnersGrid">
+                <div class="loading">Loading top miners...</div>
             </div>
         </div>
 
         <!-- Last 10 Claims Section -->
         <div class="todays-winners">
-            <h2 class="section-title">ðŸ… LAST 10 CLAIMS MADE</h2>
+            <h2 class="section-title">LAST 10 CLAIMS MADE</h2>
             <div id="todays-winners">
                 <div class="loading">Loading last 10 claims...</div>
             </div>
@@ -73,7 +122,7 @@
 
         <!-- Recent Winners Bubble Board -->
         <div class="bubble-board-section">
-            <h2 class="section-title">ðŸ• RECENT WINNERS BUBBLE BOARD</h2>
+            <h2 class="section-title">RECENT WINNERS BUBBLE BOARD</h2>
             <div class="bubble-board" id="recentWinnersBubbleBoard">
                 <div class="loading">Loading recent winners bubbles...</div>
             </div>
@@ -81,7 +130,7 @@
 
         <!-- Daily Stats Section -->
         <div class="daily-stats">
-            <h2 class="section-title">ðŸ“… TODAY'S STATS</h2>
+            <h2 class="section-title">TODAY'S STATS</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Today's Winners</h3>
@@ -100,7 +149,7 @@
 
         <!-- Last 10 Payouts Section -->
         <div class="recent-activity">
-            <h2 class="section-title">ðŸ• LAST 10 PAYOUTS</h2>
+            <h2 class="section-title">LAST 10 PAYOUTS</h2>
             <table class="activity-table">
                 <thead>
                     <tr>
@@ -121,8 +170,8 @@
             <button onclick="filterWinners('top10')">Top 10</button>
             <button onclick="filterWinners('top50')">Top 50</button>
             <button onclick="filterWinners('top100')">Top 100</button>
-            <button onclick="filterWinners('topClaimers')">ðŸ”¥ Top Claimers</button>
-            <button onclick="filterWinners('multiClaimers')">âš¡ Multi-Claimers</button>
+            <button onclick="filterWinners('topClaimers')">Top Claimers</button>
+            <button onclick="filterWinners('multiClaimers')">Multi-Claimers</button>
             <button onclick="resetFilters()">Reset</button>
         </div>
 
@@ -131,24 +180,25 @@
             <div class="search-alert-row">
                 <div class="search-section">
                     <input type="text" id="searchInput" placeholder="Enter wallet address...">
-                    <button onclick="searchWallet()">ðŸ” Search</button>
+                    <button onclick="searchWallet()">Search</button>
                 </div>
                 <div class="alert-section">
                     <input type="text" id="alertInput" placeholder="Enter your wallet for payout alerts...">
-                    <button onclick="setPayoutAlert()">ðŸš¨ Set Alert</button>
+                    <button onclick="setPayoutAlert()">Set Alert</button>
                 </div>
             </div>
         </div>
 
         <!-- Winners Table -->
         <div class="winners-table">
-            <h2 class="section-title">ðŸ“Š ALL WINNERS TABLE</h2>
+            <h2 class="section-title">LIVE MINER LEADERBOARD</h2>
+            <p class="band-sub">Ranked by total band claims in the live window</p>
             <table id="winnersTable">
                 <thead>
                     <tr>
                         <th>Rank</th>
                         <th>Wallet</th>
-                        <th>wPOND Amount</th>
+                        <th>Best hit</th>
                         <th>Claims</th>
                         <th>Date</th>
                         <th>Signature</th>
@@ -174,6 +224,6 @@
     </div>
 
     <script src="aggressive-debug.js"></script>
-    <script src="script-nuclear.js?v=2026-08-10-LIVE"></script>
+    <script src="script-nuclear.js?v=2026-08-11-REAL-MINERS"></script>
 </body>
 </html> 

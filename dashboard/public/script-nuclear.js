@@ -7,11 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const debugStatus = document.getElementById('debugStatus');
     if (debugStatus) {
         debugStatus.innerHTML = `
-            <div style="background: #ff0000; color: white; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center;">
-                🚨 NUCLEAR OPTION LOADED! 🚨<br>
-                Fresh Data File: helius-dashboard-data-fresh.json<br>
-                Timestamp: ${new Date().toISOString()}<br>
-                This is the NEW script with banned wallets excluded!
+            <div style="background: #1a2a3a; color: #9fd3ff; padding: 10px; border-radius: 5px; text-align: center;">
+                Highlighting real claims: 225M–888M wPOND (big: ~1.1B–2B)<br>
+                <span style="opacity:0.8;font-size:12px;">${new Date().toISOString()}</span>
             </div>
         `;
     }
@@ -21,102 +19,143 @@ let dashboardData = null;
 
 // Exclude ONLY the truly suspicious trillion-dollar house wallets
 const EXCLUDED_WALLETS = [
-    // ONLY the massive trillion-dollar house wallets that are clearly not real mining
-    '2Ag1QgyyJj2nS6nD6SLbpAUFaWPhaDrmHwrGwWpMqV9K', // 111.9T - house wallet
-    'HwyJtiPXGt29', // 74.7T - house wallet (partial match)
-    '7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok', // 7.5T - house wallet
-    'Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82'  // house wallet
+    "2Ag1QgyyJj2nS6nD6SLbpAUFaWPhaDrmHwrGwWpMqV9K",
+    "HwyJtiPXQ5ZosJQRpUmcmV6E2J9ffKfhqjNcY1R8Gt29",
+    "7VocnjpSyCAvhk3zNVu5DqeGAvxbi8MMxEUvLznDFnok",
+    "Hjzfr1BzWizuasoYJLa5Z7b1GFG9xWJcMSLpqfvctK82",
+    "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
+    "1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL",
+    "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+    "5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt",
+    "9z9H5dA6AejJ1LpXbyENhXog3jfpjVFdDEFbuymHjFSL",
+    "Fk6PvoxW9LcjSg9ix7EJAnrAViHmqoKonX15WDau2NYv",
+    "G5YGpBWvwFo2Ah1HXmCrmMMMPrnmvsaNs7TwW3win4Qw",
+    "CYaXLzjVneHu2tXNN5KtyiithTeiyEZFdniu8nk4wNGi",
+    "HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ"
 ];
 
-// Helper function to filter out excluded wallets - ENHANCED VERSION with amount threshold
-function filterExcludedWallets(recipients) {
-    if (!recipients || !Array.isArray(recipients)) {
-        console.warn('⚠️ filterExcludedWallets: Invalid recipients data');
-        return [];
-    }
-    
-    console.log('🔍 Filtering wallets - Total before filter:', recipients.length);
-    console.log('🚫 Excluded wallets count:', EXCLUDED_WALLETS.length);
-    
-    // DEBUG: Check if any banned wallets exist in the data
-    const bannedFound = EXCLUDED_WALLETS.filter(bannedWallet => 
-        recipients.some(recipient => recipient.wallet === bannedWallet)
+// Only count payouts FROM real mining payers (not Jupiter / DEX / random routers)
+const MINING_PAYERS = new Set([
+    "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT", // OPT
+    "1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL", // sister
+    "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2", // relay
+]);
+const WPOND_MINT = "3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq";
+const HELIUS_KEY = "e7472550-170d-4be0-ae9f-dccf30e8d5b8";
+const SEARCH_LOOKBACK_DAYS = 730;
+
+// Real claim bands (tokens): normal 225M–888M, big ~1.1B–2B
+const CLAIM_NORMAL_MIN = 225e6;
+const CLAIM_NORMAL_MAX = 888e6;
+const CLAIM_BIG_MIN = 1.1e9;
+const CLAIM_BIG_MAX = 2.2e9;
+
+function isHouseWallet(wallet) {
+    return EXCLUDED_WALLETS.includes(wallet);
+}
+
+function isMiningPayer(from) {
+    // Legacy rows without `from` came from OPT/sister/relay crawls — keep them.
+    if (!from) return true;
+    return MINING_PAYERS.has(from);
+}
+
+function classifyClaimAmount(amount) {
+    const a = Number(amount) || 0;
+    if (a >= CLAIM_NORMAL_MIN && a <= CLAIM_NORMAL_MAX) return 'normal';
+    if (a >= CLAIM_BIG_MIN && a <= CLAIM_BIG_MAX) return 'big';
+    return 'other';
+}
+
+function isHighlightClaim(amount) {
+    const k = classifyClaimAmount(amount);
+    return k === 'normal' || k === 'big';
+}
+
+function rowKind(row) {
+    if (!row) return 'other';
+    if ((row.bigClaims || 0) > 0) return 'big';
+    const best = Number(row.maxClaim || row.amount) || 0;
+    return classifyClaimAmount(best);
+}
+
+function filterMinerClaims(claims) {
+    if (!Array.isArray(claims)) return [];
+    return claims.filter((c) =>
+        c &&
+        c.wallet &&
+        !isHouseWallet(c.wallet) &&
+        isHighlightClaim(c.amount) &&
+        isMiningPayer(c.from)
     );
-    
-    if (bannedFound.length > 0) {
-        console.log('🚫 Banned wallets found in data:', bannedFound);
-        console.log('🚫 Banned wallets found count:', bannedFound.length);
-    } else {
-        console.log('✅ No banned wallets found in data');
-    }
-    
-    // DEBUG: Check first few recipients to see wallet format
-    console.log('🔍 First 3 recipients:', recipients.slice(0, 3).map(r => r.wallet));
-    
-    // PROPER FILTERING: Remove only truly suspicious wallets and unrealistic amounts
-    console.log('🔍 FILTERING DEBUG: Starting with', recipients.length, 'recipients');
-    
-    const filtered = recipients.filter(recipient => {
-        if (!recipient || !recipient.wallet) {
-            console.warn('⚠️ Invalid recipient found:', recipient);
-            return false;
-        }
-        
-        // FILTER 1: Remove only the massive trillion-dollar house wallets
-        if (EXCLUDED_WALLETS.includes(recipient.wallet)) {
-            console.log('🚫 House wallet filtered:', recipient.wallet, 'Amount:', recipient.amount);
-            return false;
-        }
-        
-        // FILTER 2: Remove amounts that are too small (under 10M = 1e7 - likely not real mining claims)
-        if (recipient.amount < 1e7) {
-            console.log('🚫 Too small amount filtered:', recipient.wallet, 'Amount:', recipient.amount);
-            return false;
-        }
-        
-        // FILTER 3: Remove amounts that are too large (over 100B = 1e11 - likely inflated/cooked data)
-        if (recipient.amount > 1e11) {
-            console.log('🚫 Monster claim filtered:', recipient.wallet, 'Amount:', recipient.amount, '(over 100B)');
-            return false;
-        }
-        
-        // KEEP all legitimate mining claims (10M - 4.5B range)
-        return true;
+}
+
+function filterExcludedWallets(recipients) {
+    if (!recipients || !Array.isArray(recipients)) return [];
+    return recipients.filter((recipient) => {
+        if (!recipient || !recipient.wallet) return false;
+        if (isHouseWallet(recipient.wallet)) return false;
+        // Leaderboard rows may be aggregates — keep if total or avg looks like real claims
+        const a = Number(recipient.amount) || 0;
+        if (isHighlightClaim(a)) return true;
+        const claims = Math.max(Number(recipient.claimCount) || 1, 1);
+        const avg = a / claims;
+        if (isHighlightClaim(avg)) return true;
+        // Drop dust / admin junk outside bands; also drop absurd house-scale
+        if (a > 100e9) return false;
+        return false;
     });
-    
-    console.log('🔍 FILTERING DEBUG: After filtering,', filtered.length, 'recipients remain');
-    console.log('🔍 FILTERING DEBUG: Sample filtered amounts:', filtered.slice(0, 5).map(r => ({ wallet: r.wallet, amount: r.amount })));
-    
-    console.log('✅ Wallets after filter:', filtered.length);
-    console.log('🚫 Wallets excluded:', recipients.length - filtered.length);
-    
-    // Verify filtering worked
-    const stillBanned = filtered.some(r => EXCLUDED_WALLETS.includes(r.wallet));
-    const stillHouseWallets = filtered.some(r => r.amount > 1e11);
-    const stillTooSmall = filtered.some(r => r.amount < 1e7);
-    
-    if (stillBanned) {
-        console.error('❌ FILTERING FAILED - banned wallets still present!');
-    } else {
-        console.log('✅ Filtering successful - no banned wallets remain');
-    }
-    
-    if (stillHouseWallets) {
-        console.error('❌ FILTERING FAILED - house wallets still present!');
-    } else {
-        console.log('✅ Filtering successful - no house wallets remain');
-    }
-    
-    if (stillTooSmall) {
-        console.error('❌ FILTERING FAILED - too small amounts still present!');
-    } else {
-        console.log('✅ Filtering successful - no too small amounts remain');
-    }
-    
-    return filtered;
 }
 
 // VERIFICATION FUNCTION: Check if any excluded wallets are still visible
+
+function getLiveMinerLeaderboard() {
+    const claims = Array.isArray(dashboardData?.recentClaims)
+        ? filterMinerClaims(dashboardData.recentClaims)
+        : [];
+    if (claims.length) {
+        const by = new Map();
+        for (const c of claims) {
+            if (!c?.wallet || c.wallet.length < 32) continue;
+            if (!by.has(c.wallet)) {
+                by.set(c.wallet, {
+                    wallet: c.wallet,
+                    amount: 0,
+                    claimCount: 0,
+                    maxClaim: 0,
+                    bigClaims: 0,
+                    normalClaims: 0,
+                    date: c.date,
+                    timestamp: c.timestamp || 0,
+                    signature: c.signature,
+                    kind: 'normal'
+                });
+            }
+            const row = by.get(c.wallet);
+            row.amount += c.amount;
+            row.claimCount += 1;
+            row.maxClaim = Math.max(row.maxClaim, c.amount);
+            const k = c.kind || classifyClaimAmount(c.amount);
+            if (k === 'big') row.bigClaims += 1;
+            else row.normalClaims += 1;
+            if ((c.timestamp || 0) >= (row.timestamp || 0)) {
+                row.date = c.date;
+                row.timestamp = c.timestamp || 0;
+                row.signature = c.signature;
+            }
+            row.kind = rowKind(row);
+        }
+        return [...by.values()].sort((a, b) => b.maxClaim - a.maxClaim || b.amount - a.amount);
+    }
+    if (Array.isArray(dashboardData?.topMiners) && dashboardData.topMiners.length) {
+        return dashboardData.topMiners.slice().map((r) => ({ ...r, kind: rowKind(r) }));
+    }
+    return filterExcludedWallets(dashboardData?.allRecipients || [])
+        .filter((r) => r && r.wallet && r.wallet.length >= 32)
+        .map((r) => ({ ...r, kind: rowKind(r) }))
+        .sort((a, b) => (b.maxClaim || b.amount) - (a.maxClaim || a.amount));
+}
+
 function verifyExcludedWalletsFiltered() {
     console.log('🔍 VERIFYING EXCLUDED WALLETS ARE FILTERED OUT...');
     
@@ -166,7 +205,7 @@ async function loadDashboardData() {
         console.log('🔍 Loading dashboard data...');
         if (debugStatus) {
             debugStatus.textContent = '🔍 Loading dashboard data...';
-            debugStatus.style.background = '#2d2d5a';
+            debugStatus.style.background = '#06140c';
         }
         
         // Try to load the data file with multiple fallbacks - PRIORITIZE LIVE CLAIMS
@@ -206,6 +245,28 @@ async function loadDashboardData() {
         }
         
         const data = await response.json();
+        // Merge full band archive when present (powers 30/90/180/365/all paid-out)
+        try {
+            const archRes = await fetch('band-claims-archive.json?v=' + Date.now(), { cache: 'no-store' });
+            if (archRes.ok) {
+                const arch = await archRes.json();
+                if (Array.isArray(arch.claims) && arch.claims.length) {
+                    const byKey = new Map();
+                    for (const c of [...(data.recentClaims || []), ...arch.claims]) {
+                        if (!c?.signature || !c?.wallet) continue;
+                        byKey.set(`${c.signature}:${c.wallet}`, c);
+                    }
+                    const merged = [...byKey.values()].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    data.archiveClaims = merged;
+                    data.periods = arch.summary?.periods || computePeriodsFromClaims(filterMinerClaims(merged));
+                    data.summary = { ...(data.summary || {}), periods: data.periods };
+                    // Keep recentClaims for live boards; period desk uses archive/periods
+                    console.log('✅ Band archive merged:', merged.length, 'claims');
+                }
+            }
+        } catch (e) {
+            console.log('archive merge skipped', e.message);
+        }
         console.log('✅ Data loaded successfully from:', dataUrl);
         console.log('✅ Data keys:', Object.keys(data));
         console.log('✅ Data summary:', data.summary);
@@ -303,7 +364,7 @@ async function loadDashboardData() {
         console.log('🔄 Updating dashboard...');
         if (debugStatus) {
             debugStatus.textContent = '🔄 Updating dashboard...';
-            debugStatus.style.background = '#2d2d5a';
+            debugStatus.style.background = '#06140c';
         }
         
         // Update summary stats with null checks
@@ -323,6 +384,11 @@ async function loadDashboardData() {
         if (totalWpondEl) totalWpondEl.textContent = formatWpondAmount(data.summary?.totalWpond || 0);
         if (biggestWinnerEl) biggestWinnerEl.textContent = formatWpondAmount(data.summary?.biggestAmount || 0);
         if (averageClaimEl) averageClaimEl.textContent = formatWpondAmount(data.summary?.averageAmount || 0);
+
+        // Live claim facet (ON when band claims are fresh)
+        updateClaimFacet(data);
+        // Paid-out windows (30/90/180/365/all)
+        updatePeriodDesk(data);
         
         // Update dashboard functions with proper delays to prevent conflicts
         console.log('🔄 Starting dashboard updates with delays...');
@@ -614,7 +680,7 @@ function createBubbleChart() {
             width: ${size}px;
             height: ${size}px;
             border-radius: 50%;
-            background: radial-gradient(circle, #ff69b4 0%, #ff1493 70%);
+            background: radial-gradient(circle, #34d399 0%, #6ee7b7 70%);
             border: 3px solid #000;
             display: flex;
             align-items: center;
@@ -627,7 +693,7 @@ function createBubbleChart() {
             animation-delay: ${delay}s;
             z-index: 1;
             box-shadow: 4px 4px 0px #000, 8px 8px 0px rgba(255, 105, 180, 0.3);
-            font-family: 'Press Start 2P', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         `;
 
         // Add hover effects with 8-bit theme
@@ -635,14 +701,14 @@ function createBubbleChart() {
             bubble.style.transform = 'scale(1.05) translateY(-2px)';
             bubble.style.boxShadow = '6px 6px 0px #000, 12px 12px 0px rgba(255, 105, 180, 0.5)';
             bubble.style.zIndex = '10';
-            bubble.style.background = 'linear-gradient(135deg, #ff1493, #ff69b4)';
+            bubble.style.background = 'linear-gradient(135deg, #6ee7b7, #34d399)';
         });
 
         bubble.addEventListener('mouseleave', () => {
             bubble.style.transform = 'scale(1) translateY(0px)';
             bubble.style.boxShadow = '4px 4px 0px #000, 8px 8px 0px rgba(255, 105, 180, 0.3)';
             bubble.style.zIndex = '1';
-            bubble.style.background = 'linear-gradient(135deg, #ff69b4, #ff1493)';
+            bubble.style.background = 'linear-gradient(135deg, #34d399, #6ee7b7)';
         });
 
         // Add click event for blockchain check
@@ -730,12 +796,12 @@ function createTopWinnersBubbleBoard() {
 
         // Create color variation based on position (top to bottom)
         const colorVariation = Math.min(0.3, (top / 100) * 0.3); // 0 to 0.3 variation
-        const basePink = '#ff69b4';
-        const darkerPink = '#ff1493';
+        const baseGreen = '#34d399';
+        const darkerGreen = '#6ee7b7';
         
         // Adjust colors based on position
-        const adjustedBasePink = adjustColorBrightness(basePink, -colorVariation * 100);
-        const adjustedDarkerPink = adjustColorBrightness(darkerPink, -colorVariation * 100);
+        const adjustedBasePink = adjustColorBrightness(baseGreen, -colorVariation * 100);
+        const adjustedDarkerPink = adjustColorBrightness(darkerGreen, -colorVariation * 100);
 
         bubble.style.cssText = `
             position: absolute;
@@ -755,7 +821,7 @@ function createTopWinnersBubbleBoard() {
             animation-delay: ${delay}s;
             z-index: 1;
             box-shadow: 2px 2px 0px #000, 4px 4px 0px rgba(255, 105, 180, 0.2);
-            font-family: 'Press Start 2P', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         `;
 
         // Add hover effects with 8-bit theme
@@ -839,8 +905,8 @@ function createRecentWinnersBubbleBoard() {
                     left: 50%;
                     transform: translate(-50%, -50%);
                     text-align: center;
-                    color: #ff69b4;
-                    font-family: 'Press Start 2P', monospace;
+                    color: #34d399;
+                    font-family: 'IBM Plex Mono', monospace;
                     font-size: 14px;
                 ">
                     <div style="margin-bottom: 10px;">⚠️</div>
@@ -853,7 +919,7 @@ function createRecentWinnersBubbleBoard() {
 
     // Prefer live per-claim feed (recentClaims). Fall back to recipient dates.
     const liveClaims = Array.isArray(dashboardData.recentClaims)
-        ? filterExcludedWallets(dashboardData.recentClaims)
+        ? filterMinerClaims(dashboardData.recentClaims)
         : [];
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
     
@@ -880,8 +946,8 @@ function createRecentWinnersBubbleBoard() {
                 left: 50%;
                 transform: translate(-50%, -50%);
                 text-align: center;
-                color: #ff69b4;
-                font-family: 'Press Start 2P', monospace;
+                color: #34d399;
+                font-family: 'IBM Plex Mono', monospace;
                 font-size: 14px;
             ">
                 <div style="margin-bottom: 10px;">🕐</div>
@@ -905,7 +971,7 @@ function createRecentWinnersBubbleBoard() {
         bubble.className = 'recent-bubble';
         
         // Calculate bubble size based on wPOND amount (smaller, max 80px)
-        const size = Math.max(40, Math.min(80, 40 + (claim.amount / 1e9) * 8));
+        const size = Math.max(48, Math.min(96, 48 + ((Math.min(claim.amount, 2e9) - 225e6) / (2e9 - 225e6)) * 48));
         
         // Position in a grid-like pattern with NO overlap - smaller bubbles need more space
         const row = Math.floor(index / 5); // 5 columns instead of 4
@@ -918,13 +984,13 @@ function createRecentWinnersBubbleBoard() {
 
         // Create color variation based on position (top to bottom) with blue hue
         const colorVariation = Math.min(0.3, (top / 100) * 0.3); // 0 to 0.3 variation
-        const basePink = '#ff69b4';
-        const darkerPink = '#ff1493';
+        const baseGreen = '#34d399';
+        const darkerGreen = '#6ee7b7';
         const blueHue = '#4a90e2'; // Add blue hue
         
         // Adjust colors based on position with blue tint
-        const adjustedBasePink = adjustColorBrightness(basePink, -colorVariation * 100);
-        const adjustedDarkerPink = adjustColorBrightness(darkerPink, -colorVariation * 100);
+        const adjustedBasePink = adjustColorBrightness(baseGreen, -colorVariation * 100);
+        const adjustedDarkerPink = adjustColorBrightness(darkerGreen, -colorVariation * 100);
         const adjustedBlue = adjustColorBrightness(blueHue, -colorVariation * 50);
 
         bubble.style.cssText = `
@@ -945,7 +1011,7 @@ function createRecentWinnersBubbleBoard() {
             animation-delay: ${delay}s;
             z-index: 1;
             box-shadow: 2px 2px 0px #000, 4px 4px 0px rgba(74, 144, 226, 0.2);
-            font-family: 'Press Start 2P', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         `;
 
         // Add hover effects with 8-bit theme
@@ -1006,8 +1072,8 @@ function createRecentWinnersBubbleBoard() {
                     left: 50%;
                     transform: translate(-50%, -50%);
                     text-align: center;
-                    color: #ff0000;
-                    font-family: 'Press Start 2P', monospace;
+                    color: #fb7185;
+                    font-family: 'IBM Plex Mono', monospace;
                     font-size: 14px;
                 ">
                     <div style="margin-bottom: 10px;">❌</div>
@@ -1052,12 +1118,12 @@ function showNotification(message, type = 'info') {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: linear-gradient(135deg, #ff69b4, #ff1493);
+        background: linear-gradient(135deg, #34d399, #6ee7b7);
         border: 3px solid #000;
         color: #000;
         padding: 15px 20px;
         border-radius: 0;
-        font-family: 'Press Start 2P', monospace;
+        font-family: 'IBM Plex Mono', monospace;
         font-size: 12px;
         z-index: 1000;
         box-shadow: 4px 4px 0px #000;
@@ -1116,26 +1182,45 @@ function updateTopWinners() {
         return;
     }
 
-    // Use allRecipients instead of topWinners, sort by amount (highest first), take top 10
-    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-    
-    // Sort by amount (highest first) for proper ranking
-    const sortedByAmount = allRecipients.sort((a, b) => b.amount - a.amount);
-    const topWinners = sortedByAmount.slice(0, 10);
-    
-    console.log('🔍 Top 10 winners found:', topWinners.length);
-    console.log('🔍 Top 3 amounts:', topWinners.slice(0, 3).map(w => ({ amount: w.amount, date: w.date })));
-    
-    winnersGrid.innerHTML = topWinners.map((winner, index) => `
-        <div class="winner-card ${index === 0 ? 'top-winner' : ''}" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
-            <div class="rank-icon">${getRankIcon(index + 1)}</div>
+    const board = getLiveMinerLeaderboard();
+    const topWinners = board.slice(0, 10);
+    const podiumEl = document.getElementById('topPodium');
+    const podium = topWinners.slice(0, 3);
+
+    if (podiumEl) {
+        podiumEl.innerHTML = podium.map((winner, index) => {
+            const rank = index + 1;
+            const showAmt = winner.maxClaim || winner.amount;
+            const kind = rowKind(winner);
+            const safe = JSON.stringify(winner).replace(/"/g, '&quot;');
+            return `
+            <div class="podium-card rank-${rank}" onclick="showWinnerDetails(${safe})">
+                <div class="podium-rank">#${rank}</div>
+                <div class="podium-wallet">${formatWallet(winner.wallet)}</div>
+                <div class="podium-amount">${formatWpondAmount(showAmt)}</div>
+                <div class="podium-meta">best hit · ${winner.claimCount || 1} claim${(winner.claimCount||1)>1?'s':''}</div>
+                <span class="kind-pill ${kind}">${kind === 'big' ? 'BIG HIT' : 'MINER'}</span>
+            </div>`;
+        }).join('');
+    }
+
+    winnersGrid.innerHTML = topWinners.slice(3).map((winner, index) => {
+        const rank = index + 4;
+        const showAmt = winner.maxClaim || winner.amount;
+        const kind = rowKind(winner);
+        const safe = JSON.stringify(winner).replace(/"/g, '&quot;');
+        return `
+        <div class="winner-card live-miner ${rank === 4 ? 'top-winner' : ''}" style="animation-delay:${index * 0.05}s" onclick="showWinnerDetails(${safe})">
+            <div class="rank-icon">${getRankIcon(rank)}</div>
             <div class="winner-wallet">${formatWallet(winner.wallet)}</div>
-            <div class="winner-amount">${formatWpondAmount(winner.amount)} wPOND</div>
+            <div class="winner-amount">${formatWpondAmount(showAmt)} wPOND</div>
+            <div class="winner-claims">${winner.claimCount || 1} band claim${(winner.claimCount||1)>1?'s':''} · total ${formatWpondAmount(winner.amount)}</div>
             <div class="winner-date">${winner.date}</div>
-        </div>
-    `).join('');
-    
-    console.log('✅ Top winners updated successfully');
+            <span class="kind-pill ${kind}">${kind === 'big' ? 'BIG HIT' : 'MINER'}</span>
+        </div>`;
+    }).join('') || '<div class="loading">Podium locked — more miners loading…</div>';
+
+    console.log('✅ Live miner top board:', topWinners.length);
 }
 
 // Get rank icon
@@ -1164,7 +1249,7 @@ function updateRecentActivity() {
         console.log('📊 Processing recent activity with', dashboardData.allRecipients.length, 'recipients');
 
         const liveClaims = Array.isArray(dashboardData.recentClaims)
-            ? filterExcludedWallets(dashboardData.recentClaims)
+            ? filterMinerClaims(dashboardData.recentClaims)
             : [];
         const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
         console.log('✅ Filtered recipients for recent activity:', allRecipients.length, 'liveClaims', liveClaims.length);
@@ -1204,61 +1289,87 @@ function updateRecentActivity() {
 // Update all winners table
 function updateAllWinners() {
     const winnersTableBody = document.getElementById('winnersTableBody');
-    if (!dashboardData || !dashboardData.allRecipients) return;
-
-    const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
-    winnersTableBody.innerHTML = allRecipients.map((winner, index) => `
-        <tr onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
+    if (!dashboardData) return;
+    const allRecipients = getLiveMinerLeaderboard();
+    winnersTableBody.innerHTML = allRecipients.map((winner, index) => {
+        const showAmt = winner.maxClaim || winner.amount;
+        const kind = rowKind(winner);
+        return `
+        <tr class="live-row" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
             <td>${index + 1}</td>
-            <td class="wallet-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.wallet}')" title="Click to copy wallet">${formatWallet(winner.wallet)}</td>
-            <td>${formatWpondAmount(winner.amount)} wPOND</td>
-            <td class="claims-cell">${winner.claimCount || 1} 🔥</td>
-            <td>${winner.date}</td>
-            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.signature || 'N/A'}')" title="Click to copy signature">${(winner.signature || 'N/A').substring(0, 8)}...</td>
-        </tr>
-    `).join('');
+            <td class="wallet-cell">${formatWallet(winner.wallet)}</td>
+            <td>${formatWpondAmount(showAmt)} <span class="kind-pill ${kind}">${kind === 'big' ? 'BIG' : 'MINER'}</span>${(winner.claimCount || 1) > 1 ? `<div class="amt-sub">total ${formatWpondAmount(winner.amount)}</div>` : ''}</td>
+            <td>${winner.claimCount || 1}${(winner.claimCount || 1) > 1 ? ' 🔥' : ''}</td>
+            <td>${winner.date || ''}</td>
+            <td>${winner.signature ? formatWallet(winner.signature) : ''}</td>
+        </tr>`;
+    }).join('');
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function shortHash(value, head = 6, tail = 6) {
+    const s = String(value || '');
+    if (s.length <= head + tail + 3) return s;
+    return `${s.slice(0, head)}…${s.slice(-tail)}`;
+}
+
+function detailRow(label, bodyHtml) {
+    return `<div class="detail-row"><span class="detail-label">${label}</span><div class="detail-value">${bodyHtml}</div></div>`;
+}
+
+function copyChip(full, label) {
+    const safe = escapeHtml(full);
+    const shown = escapeHtml(shortHash(full, 8, 8));
+    return `<button type="button" class="copy-chip" title="${safe}" onclick="copyToClipboard('${safe}')"><code>${shown}</code><span>copy</span></button>`;
 }
 
 // Show winner details modal
 function showWinnerDetails(winner) {
     const modal = document.getElementById('winnerModal');
     const details = document.getElementById('winnerDetails');
-    
+    if (!modal || !details || !winner) return;
+
+    const amount = winner.maxClaim || winner.amount;
+    const kind = rowKind(winner);
+    const kindLabel = kind === 'big' ? 'BIG HIT' : 'MINER';
+
     details.innerHTML = `
-        <h3>🏆 Winner Details</h3>
-        <p><strong>Wallet:</strong> <span class="wallet-cell" onclick="copyToClipboard('${winner.wallet}')">${winner.wallet}</span></p>
-        <p><strong>Total wPOND:</strong> ${formatWpondAmount(winner.amount)}</p>
-        <p><strong>Claims:</strong> ${winner.claimCount}</p>
-        <p><strong>Claim Date:</strong> ${winner.date}</p>
-        <p><strong>Signature:</strong> <span class="signature-cell" onclick="copyToClipboard('${winner.signature}')">${winner.signature}</span></p>
+        <div class="detail-head">
+            <p class="detail-kicker">miner record</p>
+            <h3>Winner Details</h3>
+            <span class="kind-pill ${escapeHtml(kind)}">${kindLabel}</span>
+        </div>
+        <div class="detail-grid">
+            ${detailRow('Wallet', winner.wallet ? copyChip(winner.wallet, 'wallet') : '—')}
+            ${detailRow('Best hit', `<strong class="detail-amount">${escapeHtml(formatWpondAmount(amount))}</strong> wPOND`)}
+            ${detailRow('Window total', `<strong>${escapeHtml(formatWpondAmount(winner.amount))}</strong> wPOND`)}
+            ${detailRow('Claims', `<strong>${escapeHtml(winner.claimCount || 1)}</strong>`)}
+            ${detailRow('Date', `<strong>${escapeHtml(winner.date || '—')}</strong>`)}
+            ${detailRow('Signature', winner.signature ? copyChip(winner.signature, 'sig') : '—')}
+        </div>
     `;
-    
-    modal.style.display = 'block';
+
+    modal.style.display = 'flex';
 }
 
-// Copy wallet to clipboard
+// Copy wallet/signature to clipboard
 function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        // Show notification
+    const value = String(text || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    navigator.clipboard.writeText(value).then(() => {
         const notification = document.createElement('div');
-        notification.textContent = 'Wallet copied to clipboard!';
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            z-index: 10000;
-            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
-        `;
+        notification.className = 'cash-notification';
+        notification.textContent = 'Copied';
         document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.remove();
-        }, 2000);
-    });
+        setTimeout(() => notification.remove(), 1600);
+    }).catch(() => {});
 }
 
 // Close modal
@@ -1294,7 +1405,7 @@ function createDailyBubbleChart() {
     
     // Prefer live recentClaims for "today"
     const liveClaims = Array.isArray(dashboardData.recentClaims)
-        ? filterExcludedWallets(dashboardData.recentClaims)
+        ? filterMinerClaims(dashboardData.recentClaims)
         : [];
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients);
     const todaysClaims = (liveClaims.length ? liveClaims : allRecipients).filter(
@@ -1330,7 +1441,7 @@ function createDailyBubbleChart() {
             width: ${size}px;
             height: ${size}px;
             border-radius: 0;
-            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            background: linear-gradient(135deg, #34d399, #6ee7b7);
             border: 2px solid #000;
             display: flex;
             align-items: center;
@@ -1344,7 +1455,7 @@ function createDailyBubbleChart() {
             z-index: 1;
             box-shadow: 3px 3px 0px #000, 6px 6px 0px rgba(255, 105, 180, 0.3);
             image-rendering: pixelated;
-            font-family: 'Press Start 2P', monospace;
+            font-family: 'IBM Plex Mono', monospace;
         `;
 
         // Add hover effects with 8-bit theme
@@ -1352,14 +1463,14 @@ function createDailyBubbleChart() {
             bubble.style.transform = 'scale(1.05) translateY(-2px)';
             bubble.style.boxShadow = '4px 4px 0px #000, 8px 8px 0px rgba(255, 105, 180, 0.5)';
             bubble.style.zIndex = '10';
-            bubble.style.background = 'linear-gradient(135deg, #ff1493, #ff69b4)';
+            bubble.style.background = 'linear-gradient(135deg, #6ee7b7, #34d399)';
         });
 
         bubble.addEventListener('mouseleave', () => {
             bubble.style.transform = 'scale(1) translateY(0px)';
             bubble.style.boxShadow = '3px 3px 0px #000, 6px 6px 0px rgba(255, 105, 180, 0.3)';
             bubble.style.zIndex = '1';
-            bubble.style.background = 'linear-gradient(135deg, #ff69b4, #ff1493)';
+            bubble.style.background = 'linear-gradient(135deg, #34d399, #6ee7b7)';
         });
 
         // Add click event for blockchain check
@@ -1399,7 +1510,7 @@ function updateDailyStats() {
     
     // Prefer live recentClaims for today's stats
     const liveClaims = Array.isArray(dashboardData.recentClaims)
-        ? filterExcludedWallets(dashboardData.recentClaims)
+        ? filterMinerClaims(dashboardData.recentClaims)
         : [];
     const todaysClaims = (liveClaims.length ? liveClaims : filteredRecipients).filter(
         (recipient) => recipient.date === today
@@ -1440,20 +1551,20 @@ function filterWinners(filterType) {
 
     switch (filterType) {
         case 'all':
-            filteredWinners = filterExcludedWallets(dashboardData.allRecipients);
+            filteredWinners = getLiveMinerLeaderboard();
             break;
         case 'top10':
-            filteredWinners = filterExcludedWallets(dashboardData.allRecipients).slice(0, 10);
+            filteredWinners = getLiveMinerLeaderboard().slice(0, 10);
             break;
         case 'top50':
-            filteredWinners = filterExcludedWallets(dashboardData.allRecipients).slice(0, 50);
+            filteredWinners = getLiveMinerLeaderboard().slice(0, 50);
             break;
         case 'top100':
-            filteredWinners = filterExcludedWallets(dashboardData.allRecipients).slice(0, 100);
+            filteredWinners = getLiveMinerLeaderboard().slice(0, 100);
             break;
         case 'topClaimers':
             // Show top claimers (wallets with most claims) - calculate from actual data
-            const topClaimersData = filterExcludedWallets(dashboardData.allRecipients);
+            const topClaimersData = getLiveMinerLeaderboard();
             const topWalletClaimCounts = {};
             
             // Count claims per wallet
@@ -1495,7 +1606,7 @@ function filterWinners(filterType) {
             break;
         case 'multiClaimers':
             // Show wallets with multiple claims (2 or more) - deduplicate and show total amounts
-            const multiClaimersData = filterExcludedWallets(dashboardData.allRecipients);
+            const multiClaimersData = getLiveMinerLeaderboard();
             const multiWalletTotals = {};
             const multiWalletClaimCounts = {};
             
@@ -1526,7 +1637,7 @@ function filterWinners(filterType) {
             console.log(`   - Sample multi-claimer:`, filteredWinners[0]);
             break;
         default:
-            filteredWinners = filterExcludedWallets(dashboardData.allRecipients);
+            filteredWinners = getLiveMinerLeaderboard();
     }
 
     console.log(`🔍 Filter '${filterType}' applied - showing ${filteredWinners.length} winners`);
@@ -1542,16 +1653,19 @@ function updateFilteredWinnersTable(winners) {
         return;
     }
     
-    winnersTableBody.innerHTML = winners.map((winner, index) => `
-        <tr onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
+    winnersTableBody.innerHTML = winners.map((winner, index) => {
+        const showAmt = winner.maxClaim || winner.amount;
+        const kind = rowKind(winner);
+        return `
+        <tr class="live-row" onclick="showWinnerDetails(${JSON.stringify(winner).replace(/"/g, '&quot;')})">
             <td>${index + 1}</td>
-            <td class="wallet-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.wallet}')" title="Click to copy wallet">${formatWallet(winner.wallet)}</td>
-            <td>${formatWpondAmount(winner.amount)} wPOND</td>
-            <td class="claims-cell">${winner.claimCount || 1} 🔥</td>
-            <td>${winner.date}</td>
-            <td class="signature-cell" onclick="event.stopPropagation(); copyToClipboard('${winner.signature || 'N/A'}')" title="Click to copy signature">${(winner.signature || 'N/A').substring(0, 8)}...</td>
-        </tr>
-    `).join('');
+            <td class="wallet-cell">${formatWallet(winner.wallet)}</td>
+            <td>${formatWpondAmount(showAmt)} <span class="kind-pill ${kind}">${kind === 'big' ? 'BIG' : 'MINER'}</span>${(winner.claimCount || 1) > 1 ? `<div class="amt-sub">total ${formatWpondAmount(winner.amount)}</div>` : ''}</td>
+            <td>${winner.claimCount || 1}${(winner.claimCount || 1) > 1 ? ' 🔥' : ''}</td>
+            <td>${winner.date || ''}</td>
+            <td>${winner.signature ? formatWallet(winner.signature) : ''}</td>
+        </tr>`;
+    }).join('');
 }
 
 // Reset all filters
@@ -1561,26 +1675,144 @@ function resetFilters() {
     filterWinners('all');
 }
 
-// Wallet search functionality
+// Aggregate claim rows for one wallet
+function aggregateWalletClaims(wallet, claims) {
+    const mine = (claims || []).filter(
+        (c) => c && c.wallet && c.wallet.toLowerCase() === wallet.toLowerCase()
+    );
+    if (!mine.length) return null;
+    const row = {
+        wallet,
+        amount: 0,
+        claimCount: 0,
+        maxClaim: 0,
+        bigClaims: 0,
+        normalClaims: 0,
+        date: mine[0].date,
+        timestamp: mine[0].timestamp || 0,
+        signature: mine[0].signature,
+        kind: 'normal',
+        claims: mine.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+    };
+    for (const c of mine) {
+        row.amount += Number(c.amount) || 0;
+        row.claimCount += 1;
+        row.maxClaim = Math.max(row.maxClaim, Number(c.amount) || 0);
+        const k = c.kind || classifyClaimAmount(c.amount);
+        if (k === 'big') row.bigClaims += 1;
+        else row.normalClaims += 1;
+        if ((c.timestamp || 0) >= (row.timestamp || 0)) {
+            row.date = c.date;
+            row.timestamp = c.timestamp || 0;
+            row.signature = c.signature;
+        }
+    }
+    row.kind = rowKind(row);
+    return row;
+}
+
+function findWalletLocally(walletAddress) {
+    const w = walletAddress.trim();
+    if (!w) return null;
+
+    const pools = [
+        filterMinerClaims(dashboardData?.archiveClaims || []),
+        filterMinerClaims(dashboardData?.recentClaims || []),
+    ];
+    for (const pool of pools) {
+        const row = aggregateWalletClaims(w, pool);
+        if (row) return row;
+    }
+
+    const recipients = [
+        ...(dashboardData?.allRecipients || []),
+        ...(dashboardData?.topMiners || []),
+        ...getLiveMinerLeaderboard(),
+    ];
+    const hit = recipients.find((r) => r?.wallet && r.wallet.toLowerCase() === w.toLowerCase());
+    return hit ? { ...hit, kind: rowKind(hit) } : null;
+}
+
+async function fetchWalletMiningHistory(walletAddress) {
+    const cutoff = Math.floor(Date.now() / 1000) - SEARCH_LOOKBACK_DAYS * 86400;
+    const found = [];
+    let before = null;
+    for (let page = 0; page < 25; page++) {
+        let url = `https://api.helius.xyz/v0/addresses/${walletAddress}/transactions?api-key=${HELIUS_KEY}&limit=100`;
+        if (before) url += `&before=${before}`;
+        const response = await fetch(url);
+        if (!response.ok) break;
+        const txs = await response.json();
+        if (!Array.isArray(txs) || !txs.length) break;
+        let reachedCutoff = false;
+        for (const tx of txs) {
+            const ts = tx.timestamp || 0;
+            if (ts && ts < cutoff) {
+                reachedCutoff = true;
+                continue;
+            }
+            for (const t of tx.tokenTransfers || []) {
+                if (t.mint !== WPOND_MINT) continue;
+                if (t.toUserAccount !== walletAddress) continue;
+                if (!isMiningPayer(t.fromUserAccount)) continue;
+                const amt = Number(t.tokenAmount) || 0;
+                if (!isHighlightClaim(amt)) continue;
+                found.push({
+                    wallet: walletAddress,
+                    amount: amt,
+                    claimCount: 1,
+                    date: new Date(ts * 1000).toISOString().split('T')[0],
+                    timestamp: ts,
+                    signature: tx.signature,
+                    from: t.fromUserAccount || null,
+                    kind: classifyClaimAmount(amt)
+                });
+            }
+        }
+        before = txs[txs.length - 1]?.signature;
+        if (reachedCutoff || txs.length < 100) break;
+    }
+    return aggregateWalletClaims(walletAddress, found);
+}
+
+// Wallet search — local archive first, then live 2y chain lookup
 async function searchWallet() {
-    const searchInput = document.getElementById('searchInput').value.trim();
-    if (!searchInput) {
+    const searchInput = document.getElementById('searchInput');
+    const raw = (searchInput?.value || '').trim();
+    if (!raw) {
         alert('Please enter a wallet address to search');
         return;
     }
+    if (!isValidSolanaAddress(raw)) {
+        alert('Invalid Solana wallet address');
+        return;
+    }
 
-    // Simple wallet search
-    const walletAddress = searchInput;
-    
-    // Search in our local data
-    const recipient = dashboardData.allRecipients.find(r => 
-        r.wallet.toLowerCase() === walletAddress.toLowerCase()
-    );
+    const btn = searchInput?.parentElement?.querySelector('button');
+    const prev = btn?.textContent;
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Searching…';
+    }
 
-    if (recipient) {
-        showWinnerDetails(recipient);
-    } else {
-        alert('Wallet not found in our data. Please check the address and try again.');
+    try {
+        let recipient = findWalletLocally(raw);
+        if (!recipient) {
+            recipient = await fetchWalletMiningHistory(raw);
+        }
+        if (recipient) {
+            showWinnerDetails(recipient);
+        } else {
+            alert('No mining payouts (225M–888M / 1.1B–2.2B from OPT/sister/relay) found for this wallet in the last 2 years.');
+        }
+    } catch (e) {
+        console.error('searchWallet', e);
+        alert('Search failed — try again in a moment.');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = prev || 'Search';
+        }
     }
 }
 
@@ -1646,13 +1878,13 @@ function showSearchResult(result) {
     
     const content = document.createElement('div');
     content.style.cssText = `
-        background: linear-gradient(135deg, #ff69b4, #ff1493);
+        background: linear-gradient(135deg, #34d399, #6ee7b7);
         border: 3px solid #000;
         padding: 30px;
         border-radius: 8px;
         text-align: center;
         color: #000;
-        font-family: 'Press Start 2P', monospace;
+        font-family: 'IBM Plex Mono', monospace;
         max-width: 400px;
         box-shadow: 8px 8px 0px #000;
     `;
@@ -1673,10 +1905,10 @@ function showSearchResult(result) {
         </div>
         <button onclick="this.parentElement.parentElement.remove()" style="
             background: #000;
-            color: #ff69b4;
-            border: 2px solid #ff69b4;
+            color: #34d399;
+            border: 2px solid #34d399;
             padding: 10px 20px;
-            font-family: 'Press Start 2P', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 10px;
             cursor: pointer;
             border-radius: 4px;
@@ -1748,14 +1980,14 @@ function updateAlertStatus() {
                     <span>🔔</span>
                     <span>Monitoring ${alerts.length} wallet(s)</span>
                     <button onclick="clearAllAlerts()" style="
-                        background: #ff1493;
+                        background: #6ee7b7;
                         color: #000;
                         border: 1px solid #000;
                         padding: 4px 8px;
                         font-size: 10px;
                         cursor: pointer;
                         border-radius: 4px;
-                        font-family: 'Press Start 2P', monospace;
+                        font-family: 'IBM Plex Mono', monospace;
                     ">CLEAR ALL</button>
                 </div>
             `;
@@ -1846,13 +2078,13 @@ function showCashNotification(walletAddress) {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: linear-gradient(135deg, #ff69b4, #ff1493);
+        background: linear-gradient(135deg, #34d399, #6ee7b7);
         border: 4px solid #000;
         padding: 30px;
         border-radius: 8px;
         text-align: center;
         color: #000;
-        font-family: 'Press Start 2P', monospace;
+        font-family: 'IBM Plex Mono', monospace;
         z-index: 1000;
         box-shadow: 8px 8px 0px #000, 0 0 50px rgba(255, 105, 180, 0.8);
         animation: cashNotificationPulse 0.5s ease-in-out;
@@ -1866,10 +2098,10 @@ function showCashNotification(walletAddress) {
         <div style="font-size: 12px; margin-bottom: 20px;">🚀 RACE TO CLAIM YOUR COINS! 🚀</div>
         <button onclick="this.parentElement.remove()" style="
             background: #000;
-            color: #ff69b4;
-            border: 2px solid #ff69b4;
+            color: #34d399;
+            border: 2px solid #34d399;
             padding: 10px 20px;
-            font-family: 'Press Start 2P', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 10px;
             cursor: pointer;
             border-radius: 4px;
@@ -1961,7 +2193,7 @@ function updateTodaysWinners() {
     
     // Prefer live recentClaims; never fake dates onto old leaderboard rows
     const liveClaims = Array.isArray(dashboardData.recentClaims)
-        ? filterExcludedWallets(dashboardData.recentClaims)
+        ? filterMinerClaims(dashboardData.recentClaims)
         : [];
     const allRecipients = filterExcludedWallets(dashboardData.allRecipients || []);
     const sortedByDate = (liveClaims.length ? liveClaims : allRecipients).slice().sort((a, b) => {
@@ -1992,57 +2224,242 @@ function updateTodaysWinners() {
     `;
 }
 
+let _facetLastSig = null;
+let _facetFlashTimer = null;
+let _selectedPeriod = 'd30';
+let _periodSourceClaims = [];
+
+const PERIOD_META = {
+    d30: { label: 'Last 30 days', short: '30d' },
+    d90: { label: 'Last 90 days', short: '90d' },
+    d180: { label: 'Last 180 days', short: '180d' },
+    d365: { label: 'Last 365 days', short: '365d' },
+    all: { label: 'All time (loaded)', short: 'ALL' },
+};
+
+function computePeriodsFromClaims(claims) {
+    const now = Date.now() / 1000;
+    const windows = [
+        ['d30', 30],
+        ['d90', 90],
+        ['d180', 180],
+        ['d365', 365],
+        ['all', null],
+    ];
+    const out = {};
+    for (const [key, days] of windows) {
+        const cut = days == null ? 0 : now - days * 86400;
+        const subset = (claims || []).filter((c) => (c.timestamp || 0) >= cut);
+        out[key] = {
+            days,
+            claims: subset.length,
+            wallets: new Set(subset.map((c) => c.wallet)).size,
+            totalWpond: subset.reduce((s, c) => s + (Number(c.amount) || 0), 0),
+            bigClaims: subset.filter((c) => (c.kind || classifyClaimAmount(c.amount)) === 'big').length,
+            normalClaims: subset.filter((c) => (c.kind || classifyClaimAmount(c.amount)) === 'normal').length,
+        };
+    }
+    return out;
+}
+
+function renderSelectedPeriod(periods) {
+    const p = periods?.[_selectedPeriod] || {};
+    const meta = PERIOD_META[_selectedPeriod] || PERIOD_META.d30;
+    const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+    set('periodLabel', meta.label);
+    set('periodTotal', formatWpondAmount(p.totalWpond || 0));
+    set('periodClaims', (p.claims || 0).toLocaleString());
+    set('periodWallets', (p.wallets || 0).toLocaleString());
+    set('periodBig', (p.bigClaims || 0).toLocaleString());
+
+    document.querySelectorAll('#periodPills button').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.period === _selectedPeriod);
+    });
+    document.querySelectorAll('#periodStrip .period-chip').forEach((chip) => {
+        chip.classList.toggle('active', chip.dataset.period === _selectedPeriod);
+    });
+}
+
+function updatePeriodDesk(data) {
+    const archive = Array.isArray(data?.archiveClaims) ? filterMinerClaims(data.archiveClaims) : [];
+    const recent = Array.isArray(data?.recentClaims) ? filterMinerClaims(data.recentClaims) : [];
+    const claims = archive.length ? archive : recent;
+    // Prefer precomputed periods from backfill; else compute from loaded claims
+    const periods = data?.periods || data?.summary?.periods || computePeriodsFromClaims(claims);
+    _periodSourceClaims = claims;
+
+    const strip = document.getElementById('periodStrip');
+    if (strip) {
+        strip.innerHTML = Object.keys(PERIOD_META).map((key) => {
+            const p = periods[key] || {};
+            const meta = PERIOD_META[key];
+            return `<button type="button" class="period-chip ${key === _selectedPeriod ? 'active' : ''}" data-period="${key}">
+                <em>${meta.short}</em>
+                <strong>${formatWpondAmount(p.totalWpond || 0)}</strong>
+                <span>${(p.claims || 0).toLocaleString()} claims</span>
+            </button>`;
+        }).join('');
+        strip.querySelectorAll('.period-chip').forEach((chip) => {
+            chip.addEventListener('click', () => {
+                _selectedPeriod = chip.dataset.period;
+                renderSelectedPeriod(periods);
+            });
+        });
+    }
+
+    const pills = document.getElementById('periodPills');
+    if (pills && !pills.dataset.bound) {
+        pills.dataset.bound = '1';
+        pills.querySelectorAll('button').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                _selectedPeriod = btn.dataset.period;
+                const latest = dashboardData?.periods || dashboardData?.summary?.periods || computePeriodsFromClaims(
+                    Array.isArray(dashboardData?.recentClaims) ? filterMinerClaims(dashboardData.recentClaims) : _periodSourceClaims
+                );
+                renderSelectedPeriod(latest);
+            });
+        });
+    }
+
+    renderSelectedPeriod(periods);
+}
+
+function claimAgeMinutes(claim) {
+    if (!claim) return Infinity;
+    if (claim.timestamp) return Math.max(0, (Date.now() / 1000 - Number(claim.timestamp)) / 60);
+    if (claim.date) {
+        const t = Date.parse(claim.date);
+        if (!Number.isNaN(t)) return Math.max(0, (Date.now() - t) / 60000);
+    }
+    return Infinity;
+}
+
+function formatAgeLabel(mins) {
+    if (!Number.isFinite(mins)) return '—';
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${Math.round(mins)}m ago`;
+    if (mins < 60 * 24) return `${Math.round(mins / 60)}h ago`;
+    return `${Math.round(mins / (60 * 24))}d ago`;
+}
+
+function updateClaimFacet(data) {
+    const facet = document.getElementById('claimFacet');
+    if (!facet) return;
+
+    const claims = Array.isArray(data?.recentClaims)
+        ? filterMinerClaims(data.recentClaims)
+        : [];
+    const newest = claims.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0];
+    const ageMin = claimAgeMinutes(newest);
+    const hourAgo = Date.now() / 1000 - 3600;
+    const lastHour = claims.filter((c) => (c.timestamp || 0) >= hourAgo).length;
+
+    let state = 'off';
+    let label = 'OFF';
+    let sub = 'no fresh band claims';
+    let heat = 4;
+
+    if (ageMin <= 20) {
+        state = 'on';
+        label = 'ON';
+        sub = 'claims flowing · desk live';
+        heat = Math.min(100, 70 + lastHour * 8 + Math.max(0, 20 - ageMin));
+    } else if (ageMin <= 180) {
+        state = 'warm';
+        label = 'WARM';
+        sub = 'recent hits · cooling';
+        heat = Math.min(72, 35 + lastHour * 6);
+    } else if (ageMin <= 60 * 24) {
+        state = 'cool';
+        label = 'COOL';
+        sub = 'quiet window · standing by';
+        heat = Math.min(34, 12 + Math.max(0, 24 - ageMin / 60));
+    } else {
+        state = 'off';
+        label = 'OFF';
+        sub = claims.length ? 'stale feed · waiting' : 'waiting for band claims';
+        heat = claims.length ? 8 : 3;
+    }
+
+    facet.dataset.state = state;
+    document.body.classList.remove('claims-on', 'claims-warm', 'claims-cool', 'claims-off');
+    document.body.classList.add(`claims-${state}`);
+
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
+    setText('facetState', label);
+    setText('facetSub', sub);
+    setText('facetScore', String(Math.round(heat)));
+    setText('facetLast', `last claim ${formatAgeLabel(ageMin)}`);
+    setText('facetRate', `${lastHour} / hr`);
+
+    const mercury = document.getElementById('facetMercury');
+    if (mercury) mercury.style.width = `${Math.max(4, heat)}%`;
+
+    const newestSig = newest?.signature || null;
+    if (newestSig && _facetLastSig && newestSig !== _facetLastSig && state === 'on') {
+        facet.classList.add('facet-flash');
+        clearTimeout(_facetFlashTimer);
+        _facetFlashTimer = setTimeout(() => facet.classList.remove('facet-flash'), 1200);
+    }
+    if (newestSig) _facetLastSig = newestSig;
+}
+
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
     loadSavedAlerts();
     
-    // Add enter key support for search
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                searchWallet();
-            }
+            if (e.key === 'Enter') searchWallet();
         });
     }
     
-    // Add enter key support for alert
     const alertInput = document.getElementById('alertInput');
     if (alertInput) {
         alertInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                setPayoutAlert();
-            }
+            if (e.key === 'Enter') setPayoutAlert();
         });
     }
     
-    // Add global functions for debugging
     window.verifyFiltering = verifyExcludedWalletsFiltered;
     window.reloadDashboard = loadDashboardData;
     window.showExcludedWallets = () => console.log('🚫 Excluded wallets:', EXCLUDED_WALLETS);
+    window.updateClaimFacet = updateClaimFacet;
     
-    console.log('🔧 Global debug functions available:');
-    console.log('  - verifyFiltering() - Check if excluded wallets are filtered');
-    console.log('  - reloadDashboard() - Reload dashboard data');
-    console.log('  - showExcludedWallets() - Show list of excluded wallets');
-    
-    // AUTO-REFRESH: Check for new micro-tx data every 30 seconds
-    console.log('🔄 Auto-refresh enabled: Checking for new micro-tx data every 30 seconds');
+    console.log('🔄 Claim facet watch enabled (20s)');
     setInterval(() => {
-        checkForNewMicroTxData();
-    }, 30000);
+        watchLiveClaimFeed();
+    }, 20000);
 });
 
-// AUTO-REFRESH: Check if new micro-tx data is available
-async function checkForNewMicroTxData() {
+async function watchLiveClaimFeed() {
     try {
-        const response = await fetch('helius-dashboard-data-micro-tx.json?v=' + Date.now());
-        if (response.ok) {
-            console.log('🆕 New micro-tx data detected! Auto-refreshing dashboard...');
-            loadDashboardData();
+        const response = await fetch('recent-claims-live.json?v=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) {
+            if (dashboardData) updateClaimFacet(dashboardData);
+            return;
         }
+        const live = await response.json();
+        const claims = Array.isArray(live.recentClaims) ? live.recentClaims : [];
+        const newestSig = claims[0]?.signature || null;
+        if (newestSig && _facetLastSig && newestSig !== _facetLastSig) {
+            console.log('🆕 Fresh band claim detected — reloading board');
+            loadDashboardData();
+            return;
+        }
+        updateClaimFacet({
+            recentClaims: claims,
+            summary: live.summary,
+        });
     } catch (error) {
-        // File not ready yet, continue waiting
+        if (dashboardData) updateClaimFacet(dashboardData);
     }
 } 
