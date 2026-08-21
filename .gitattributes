@@ -1,13 +1,9 @@
-*.json filter=lfs diff=lfs merge=lfs -text
-
-# Keep npm manifests as normal git text (not LFS)
+# All JSON stays as normal git text (LFS quota killed the old data archive)
 package.json filter= merge= diff= text
 package-lock.json filter= merge= diff= text
 **/package.json filter= merge= diff= text
 **/package-lock.json filter= merge= diff= text
 
-
 dashboard/public/*.json filter= merge= diff= text
-
 
 vercel.json filter= merge= diff= text
