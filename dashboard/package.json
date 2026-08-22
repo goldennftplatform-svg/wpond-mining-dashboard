@@ -1,3 +1,14 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:72278b9ac80a38c465a4b640580afcddfa54a24ca6ffe05dca1b6d7d1a0fee2e
-size 666
+{
+  "name": "wpond-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local dev servers for the wPOND mining dashboard (static site; deps not needed for deploy)",
+  "scripts": {
+    "start": "node working-server.js",
+    "serve": "node http-server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
