@@ -1,8 +1,17 @@
 {
   "summary": {
-    "dateGenerated": "2026-08-23T06:01:25.644Z",
+    "dateGenerated": "2026-08-23T06:12:32.465Z",
     "liveClaimsInWindow": 159,
-    "lookbackHours": 336
+    "lookbackHours": 336,
+    "botStats": {
+      "humanShareOfWindowPct": 70.3,
+      "humanClaimsInWindow": 91,
+      "botClaimsInWindow": 68,
+      "humanWpondInWindow": 56230341510.394,
+      "botWpondInWindow": 23797127166.143,
+      "suspectedBotWalletsInWindow": 4,
+      "knownBotRegistrySize": 4
+    }
   },
   "recentClaims": [
     {
@@ -13,7 +22,9 @@
       "timestamp": 1787460889,
       "signature": "5B3pYJTNc8JVBskf8wiHXYcvrFuURBXhNrLxTscDmJrXu5Bzxv6Lug6y6Ntg1RZk9UtsbtoNbukTGnoQ9uYtzgTu",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -23,7 +34,9 @@
       "timestamp": 1787460873,
       "signature": "2JsfR81h6LRVjB9MdgDNkKJgFFqrhWJ5H1bsbL5w3egtTsV9cHU2ht3ucRQBPGzwUxbukhA77nPmVGDabkozHLkH",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "Cgh9L9rVR7H3iNC1vrZHyxPsMfMknsfkZxqLqPmmfu7c",
@@ -33,7 +46,9 @@
       "timestamp": 1787459928,
       "signature": "2GSTGbYccmhGzByTC7mPfpYuFG4RUra7kV1JC2rWxLUGZ7DB6ZXHcMJVhv4ZeKbUcG2k77zAocKoknrQTXLALVEx",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -43,7 +58,9 @@
       "timestamp": 1787459576,
       "signature": "26BZY4NoZWTFKkEjJk4nUQckMBwfRj8cibQvxhK8JJ6qvoVnW9Zo16RoHPyF1HtZ432aTa29kMfi4LoFXa4BK4cQ",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -53,7 +70,9 @@
       "timestamp": 1787458421,
       "signature": "RQXTtcohsx4Kgb6f6AvpUuh4W5KAj1bCxVBKt1SLjk7tiYR7hW8rks1YvLQ93XqS28gYWnEjaqNUtY7v9ZCYNEV",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -63,7 +82,9 @@
       "timestamp": 1787457046,
       "signature": "4RehiSEwFUpFzhrokUit28QoL5A8sQ3B4m2rrcfKdFjmSjC1ynvAkA5nhyTyRCxVJqWkdFbRWa57FeAr2Kvche6Z",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -73,7 +94,9 @@
       "timestamp": 1787455784,
       "signature": "6V4jVKa5pxrW6ica8ypFwmk8wUgMVkKiNNFv6jVXtknXXSyExU8REjuf8PqJtHJwTM1vs4WA11qVEjhjKiioukN",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -83,7 +106,9 @@
       "timestamp": 1787454475,
       "signature": "3kFa7CD6N36hv4RQNiM7RygYk1hRiTVw1BpqGyYByt6ANGTQYipE3x3HWWH9LN3soc2Rfg6RqVYSWgs3QopiGxEL",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -93,7 +118,9 @@
       "timestamp": 1787453123,
       "signature": "4WKhYjwrH7NU7BtffVMDLw4dqVvYmiHCXyEDhRpiwaSZYVR8DG24zMVzzqQaypuMsuYEVkNoChWqBt5cSHqoWine",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "ETUdaF4ZxhVh9a6bQAaHRviU6eHW2JTPxMRiyaQaoHa6",
@@ -103,7 +130,9 @@
       "timestamp": 1787451955,
       "signature": "b1FtNx3TbWLdxsjg4WCNZWZni1VeMkLgwnjhtyTsxhyeentRu1amWPLJMKyF7AsGTuVqjSGzLPcQydVB3dnXqN8",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn",
@@ -113,7 +142,9 @@
       "timestamp": 1787451758,
       "signature": "3NvjLjWHLy8pwnWcJcVE5efE5pP79TKdkUFbNYuWXPHGyXxfzPVVgrTtEcKwyoyZzxtfJuZCbTKPMxWcAogSG7NX",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -123,7 +154,9 @@
       "timestamp": 1787450510,
       "signature": "2rNoZrWhp5xwSpUbHqPx9Yng8GpFA1MJFFDrcWGpxdjRSv8RrST1bxAaCM7tnhhYTZNsMNeLWLpdEs5MwD5bG9qE",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn",
@@ -133,7 +166,9 @@
       "timestamp": 1787450139,
       "signature": "5TmK8BkmJo5caTCkmHGJygoW1t7vB2wHPuV5XybfbUitpSLyBaWJZujV3pVWqCavNcxwzbrRcCdscpSSBSGVg6kc",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "8jDuQE4r8uBf8syPapMsDTN214cBT4x8Ds1AU1o2Zzxz",
@@ -143,7 +178,9 @@
       "timestamp": 1787450027,
       "signature": "26nXdDLwmCMiYBNk9Dzg67iXMaHFEWVsWHMZfEYn1NErNje7fTWcAyDfi3cdLomcpqyrPA5KdqeGpw8gFyQeywuz",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "SxLdgJD59f8hAJ4fZF1oUHc2BmFLH8gM5uUxQTFcM3V",
@@ -153,7 +190,9 @@
       "timestamp": 1787449326,
       "signature": "kBov5voVqaGJRVywJBPhkaYHbgnFmJ9SVitwZj5qVCaLQndxVb2RkTcML4NYVMq9urf5v258FTgnPcnr23v9CTG",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -163,7 +202,9 @@
       "timestamp": 1787449204,
       "signature": "4jUUMkrXxhuM4GfznznxvVBgWzURw3tDteMzddHvYdxQ5uk9LPkygbVrevFAg9hnmZyFdRSt8Ps493GZeL5i9g9t",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "9uGsPcu2a2hJ8XE7U1iqsof54GVTDBjMRoksLRGvTEzQ",
@@ -173,7 +214,9 @@
       "timestamp": 1787448872,
       "signature": "2B2E76TLAmq5KbCw4MXXGaELy8chaH48WutuRMgq7mmpw4PN7yWLWAkVpx5oXc4Bw9BXcD7qAYq1KEFE7xFHxnGy",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "C62nFmXqqnf6M4AEp2nKE5n9Rg5VmuXiE6GwpKMTaDkC",
@@ -183,7 +226,9 @@
       "timestamp": 1787448773,
       "signature": "4kcRKaFq1osLS9eg9Q9YtRmYihrHqxq1awQdgSasdm3x8jtceATT3RSwMqYfGMtkeRnLDpc57mnAnZ8SJQf3m57P",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "big"
+      "kind": "big",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "J1Y9MSEp5o1tEbWb8vNnYkzXV5zrHTHtiAhjdGoKKJPx",
@@ -193,7 +238,9 @@
       "timestamp": 1787448723,
       "signature": "5wpZHAeUpzrEG8hodf6xCq7BNS8TY3MZTNiA4Q7vn7BkR9XsSXWA3SW86RtLtQ8V8X2yxUTTack3UCWaQ2DctZ61",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "big"
+      "kind": "big",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "EjsRYaiBHagHV4x9XgU6mYdaKe9vnu5LVCTqdixc8yL",
@@ -203,7 +250,9 @@
       "timestamp": 1787448701,
       "signature": "3DakiETpjkTeo7SdmZvb2ETVkTVksqzxfmvejYB2D76HfTdYso5yNaQk7Fvz3QDUkhNqUoZ74YzvjV25xCATQD2E",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "5YW8to7YnCckiLv5atuYwTLtTnXMdooLGyeRjxnNU1K1",
@@ -213,7 +262,9 @@
       "timestamp": 1787448647,
       "signature": "5fjmHFZhAMw2Srseioxqsj17ZUXquwZyGtpH9cteiu3nSkRogGhDqnAiwbZijfsDQyexYdGJZVc5VuigE3Jg8NDn",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "BSfQT2AmdxQfpsGQANrcYEUcwta5PWuTfBkHxqsZ3Gz8",
@@ -223,7 +274,9 @@
       "timestamp": 1787448616,
       "signature": "4ihDZg8ZULjQCcuRG3fM5Mx3jvAJfNWsJbqu6qde6qqbUAQRbjgpNiHAvzFnCeutKtBSmYHPsCWek419LiwH3DLy",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "HxjwdF326ZunmUwC1iXhfgL3ku78YsksN6n7Rfxzwr6b",
@@ -233,7 +286,9 @@
       "timestamp": 1787448616,
       "signature": "5su53KhSMHPbMq4yiLkVXqX1Y9NGc6DatxwyZ4rgqGoWpzU79YAn9DSTAcw3pxyQF5tRnLTH6VaS6sVk1W8cf2Ey",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "HxjwdF326ZunmUwC1iXhfgL3ku78YsksN6n7Rfxzwr6b",
@@ -243,47 +298,9 @@
       "timestamp": 1787448616,
       "signature": "3GdfUGzVMNYBt5YQw7b32S9CgvgBJHTgxdzMQ9Kf6Q9jGXvyyEk32rEV1MgoaMSUyvp5Sx1SoK7suGX4LgZhzAK4",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
-      "wallet": "R32xAccFis3YzBzGwZ1C4QkGiehLxSao7gDmErA3kjk",
-      "amount": 355703485.526,
-      "claimCount": 1,
-      "date": "2026-08-23",
-      "timestamp": 1787448616,
-      "signature": "4fsacb9vDdLoc4BrEJRepAuiEub2dyS5vSfS3sZsz6FVHZ77CaxLNwPYMUB9wMvgwqvU5923FhCyVY6gBNCx3nyj",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
-      "wallet": "4XBqViD1XYF1qHrErrsXBzDrCapvP9fEFX4LPjXZi9YU",
-      "amount": 353930427.262,
-      "claimCount": 1,
-      "date": "2026-08-23",
-      "timestamp": 1787448616,
-      "signature": "4W3XWFrCjtaffyChFAPBTX3idR3sMydRzJhLa99NQjRgBz5jWho2Z99C1mAXCD3zUs8WZHQn1PS3RijCTHsZi1wY",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
-      "wallet": "GENGaRWBoyiD43UjrV4iFCS2WdN3HMZU6Gsajffy2iQH",
-      "amount": 355205725.088,
-      "claimCount": 1,
-      "date": "2026-08-23",
-      "timestamp": 1787448616,
-      "signature": "2erQd5tzpRSmuR6H6fYP5PLp2BzayHa4DejXP4SUfQSZQYL4Nf3gCR69THb5NkP2YxG4gk2thUP2vZdEQmoVrNBp",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
-      "wallet": "CQwT1byuHgjKnL6vzmuNaAywKfDBVxDmFVgsQDBWxcWt",
-      "amount": 354303325.487,
-      "claimCount": 1,
-      "date": "2026-08-23",
-      "timestamp": 1787448616,
-      "signature": "5QnW3ja4YDHyuaDZWQi155ULkHoxBxRfNxpyECnhTBuKPmwz1e5R3giduCiAh1VzUx8xHYiAvDUYg9TBmyyLuQGN",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "HxjwdF326ZunmUwC1iXhfgL3ku78YsksN6n7Rfxzwr6b",
@@ -293,7 +310,9 @@
       "timestamp": 1787448616,
       "signature": "5erQvZ16sV29EB69ukmWfYoSbc6J6uxPKH11GD3TQxTj7t9sx8VkVAXBj9xfjfLJCWEg22MCxmyQA1ztMNE2apn",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "ESuvjvsQtjuxC4XGsDeMhx8Wp5yjQcCFGncGhupcJbg8",
@@ -303,37 +322,45 @@
       "timestamp": 1787448616,
       "signature": "5RuNrLCqJrJ8wUamSveTHq2hKTZEseJ9an3P1GQViNUAdzKGUh6ynqEt5ewkBMZnaXLEYdsjsH7S4rikXXNBDCnk",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
-      "wallet": "HvFdDWS3RqymRAVx1ZdoL2RjiC38r5dtt19Z8op5jqDK",
-      "amount": 355488278.755,
+      "wallet": "R32xAccFis3YzBzGwZ1C4QkGiehLxSao7gDmErA3kjk",
+      "amount": 355703485.526,
       "claimCount": 1,
       "date": "2026-08-23",
       "timestamp": 1787448616,
-      "signature": "5JALVP48bni4Vp9Xcya8UEoBcYzLuidK5C8mNkGmJS1SDVLoAvx6dD4PmiWmsYPuqp3TMoW28JGo7fX2Zw1Mcodx",
+      "signature": "4fsacb9vDdLoc4BrEJRepAuiEub2dyS5vSfS3sZsz6FVHZ77CaxLNwPYMUB9wMvgwqvU5923FhCyVY6gBNCx3nyj",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
-      "wallet": "DtvmxrTACskMG2W8a6KXgSemUfvyNVeQTgfpJoGvMVKx",
-      "amount": 355599943.19,
+      "wallet": "4XBqViD1XYF1qHrErrsXBzDrCapvP9fEFX4LPjXZi9YU",
+      "amount": 353930427.262,
       "claimCount": 1,
       "date": "2026-08-23",
       "timestamp": 1787448616,
-      "signature": "3TvoHTFQGwNsSsB89jXkSXqfMnmPZ991xR5dQb1CEEu79VLtyyDXjozWaaz4Y2oTeRpbztwnc3oStWepH66ZZCvW",
+      "signature": "4W3XWFrCjtaffyChFAPBTX3idR3sMydRzJhLa99NQjRgBz5jWho2Z99C1mAXCD3zUs8WZHQn1PS3RijCTHsZi1wY",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
-      "wallet": "UUAhspPgUdGuXUnokmxERH1VvNGNh1ouN3mfcbfV8yd",
-      "amount": 355709296.976,
+      "wallet": "GENGaRWBoyiD43UjrV4iFCS2WdN3HMZU6Gsajffy2iQH",
+      "amount": 355205725.088,
       "claimCount": 1,
       "date": "2026-08-23",
       "timestamp": 1787448616,
-      "signature": "2fBFuBShpJFTymT3LZoMftnxVLXRegsiiFdXLNVc3aWUekNfbqUiiXbiV9KsdXh2Q3NL1VsXDEktHCvosEzAnFjH",
+      "signature": "2erQd5tzpRSmuR6H6fYP5PLp2BzayHa4DejXP4SUfQSZQYL4Nf3gCR69THb5NkP2YxG4gk2thUP2vZdEQmoVrNBp",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "HxjwdF326ZunmUwC1iXhfgL3ku78YsksN6n7Rfxzwr6b",
@@ -343,37 +370,21 @@
       "timestamp": 1787448616,
       "signature": "41v6Lzu42ysMrcbHJhiJd673AV59LZS4mCEphpFAyZXfmp61PkFbuHbzPsT1XFyzs37jdmfbBfqyMYi3wXR311wh",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
-      "wallet": "6AGp6zbGNuyZpmzeswv9KCNU15Rf37UQDqDqFAeHmS8d",
-      "amount": 355709296.334,
+      "wallet": "DtvmxrTACskMG2W8a6KXgSemUfvyNVeQTgfpJoGvMVKx",
+      "amount": 355599943.19,
       "claimCount": 1,
       "date": "2026-08-23",
       "timestamp": 1787448616,
-      "signature": "5brNjk8jTTs2Z9aK5nCPUaqjHfR3D3QL5SUvqm4T3NaSBpXfuasCqARARPggZcEJDh7JhwgybaBJn2cvTX3VLGLZ",
+      "signature": "3TvoHTFQGwNsSsB89jXkSXqfMnmPZ991xR5dQb1CEEu79VLtyyDXjozWaaz4Y2oTeRpbztwnc3oStWepH66ZZCvW",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
-      "wallet": "7dGrdJRYtsNR8UYxZ3TnifXGjGc9eRYLq9sELwYpuuUu",
-      "amount": 355861884.032,
-      "claimCount": 1,
-      "date": "2026-08-23",
-      "timestamp": 1787448616,
-      "signature": "5Eg85L5URAZpicT1JLhZPT6oSWtM4XsDUmfPum5ZPJ9inCwpNpbCSMeWxFRHiXeDkmajMFvcSZQwxmMzrSprgiv1",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
-      "wallet": "7dGrdJRYtsNR8UYxZ3TnifXGjGc9eRYLq9sELwYpuuUu",
-      "amount": 355861884.032,
-      "claimCount": 1,
-      "date": "2026-08-23",
-      "timestamp": 1787448616,
-      "signature": "2vQCqMd1PNkvKXRUM82kv2rYTYGcZV97cs1cWNURacmRMwLVtrLo1qUHwDdxLPfyv1Lr2WyAF1t2wFRtEu15hGuk",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "7tUACGesjJ8tF32HVS69PWXyXsJpPt3zbpdYhYMjYsVH",
@@ -383,7 +394,9 @@
       "timestamp": 1787448616,
       "signature": "2JmyfQ51PPHqYvLn6jEafoaCnqdTPTJbkjqtRNiPAMGNMBP9qwFAuD1836WbEtHrBt9mMZ3Qg6qESzUsLoRM1sbL",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "7dGrdJRYtsNR8UYxZ3TnifXGjGc9eRYLq9sELwYpuuUu",
@@ -393,7 +406,81 @@
       "timestamp": 1787448616,
       "signature": "3yaY658VLX8YBxUEKA9DW4UGvg4w3FSjUP17ty5NsJXPLsc4kqgUWVpyjEUmZoN9qt6Hav7PZfBWViygZnCw2p4K",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
+    },
+    {
+      "wallet": "6AGp6zbGNuyZpmzeswv9KCNU15Rf37UQDqDqFAeHmS8d",
+      "amount": 355709296.334,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787448616,
+      "signature": "5brNjk8jTTs2Z9aK5nCPUaqjHfR3D3QL5SUvqm4T3NaSBpXfuasCqARARPggZcEJDh7JhwgybaBJn2cvTX3VLGLZ",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
+    },
+    {
+      "wallet": "7dGrdJRYtsNR8UYxZ3TnifXGjGc9eRYLq9sELwYpuuUu",
+      "amount": 355861884.032,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787448616,
+      "signature": "2vQCqMd1PNkvKXRUM82kv2rYTYGcZV97cs1cWNURacmRMwLVtrLo1qUHwDdxLPfyv1Lr2WyAF1t2wFRtEu15hGuk",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
+    },
+    {
+      "wallet": "HvFdDWS3RqymRAVx1ZdoL2RjiC38r5dtt19Z8op5jqDK",
+      "amount": 355488278.755,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787448616,
+      "signature": "5JALVP48bni4Vp9Xcya8UEoBcYzLuidK5C8mNkGmJS1SDVLoAvx6dD4PmiWmsYPuqp3TMoW28JGo7fX2Zw1Mcodx",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
+    },
+    {
+      "wallet": "CQwT1byuHgjKnL6vzmuNaAywKfDBVxDmFVgsQDBWxcWt",
+      "amount": 354303325.487,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787448616,
+      "signature": "5QnW3ja4YDHyuaDZWQi155ULkHoxBxRfNxpyECnhTBuKPmwz1e5R3giduCiAh1VzUx8xHYiAvDUYg9TBmyyLuQGN",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
+    },
+    {
+      "wallet": "7dGrdJRYtsNR8UYxZ3TnifXGjGc9eRYLq9sELwYpuuUu",
+      "amount": 355861884.032,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787448616,
+      "signature": "5Eg85L5URAZpicT1JLhZPT6oSWtM4XsDUmfPum5ZPJ9inCwpNpbCSMeWxFRHiXeDkmajMFvcSZQwxmMzrSprgiv1",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
+    },
+    {
+      "wallet": "UUAhspPgUdGuXUnokmxERH1VvNGNh1ouN3mfcbfV8yd",
+      "amount": 355709296.976,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787448616,
+      "signature": "2fBFuBShpJFTymT3LZoMftnxVLXRegsiiFdXLNVc3aWUekNfbqUiiXbiV9KsdXh2Q3NL1VsXDEktHCvosEzAnFjH",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -403,7 +490,9 @@
       "timestamp": 1787447955,
       "signature": "3HL3DAXDtDioJrk8HBvR6y5UNkHqp7Np9Vk6gWs4DVomwqnUrsZfG9kecfEta9wxUWnpvqDpaY76kZtHyv2VCoPv",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -413,7 +502,9 @@
       "timestamp": 1787446680,
       "signature": "5Rae9zEMD52phL7tstuvADEKR525fqbEuhzdjcdeX5urDnjH8zS8kuFYAy5iLbWkvE62kKpPBpTwXdGhmJdTF92U",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -423,7 +514,9 @@
       "timestamp": 1787443494,
       "signature": "fkkbRC9AyqvrLGGX7wDqkQXEUdhSR5eUipouuW32wHQ9gmicWxL73XLShPG1XFxNHveTawQnCaDNrmjrbacKroQ",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -433,7 +526,9 @@
       "timestamp": 1787442180,
       "signature": "2TcSGDYL5XbxgHEds6Ted3tXry4rsznfmhJ3R7Z84gjLNMSwQ3fS5eM4iWU8KzhfW9sr1XRxueda6uSqW86FuxJN",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -443,7 +538,9 @@
       "timestamp": 1787440952,
       "signature": "5riiPUuyyubRso5TkRWAP9vcMd3ZiTizYNDC59WShUu38YLAaaCFAtVpJBbbbzKpVTkW9r5K4YjC2tfqDVVJuapH",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -453,7 +550,9 @@
       "timestamp": 1787439697,
       "signature": "2m1geXUgembrESpxgkTTBgtyVmDKrsoL6HMWKUdB5mA3HFjn5E4Ng3rnthXTpQ9NzG9M8tT11rUsQPXTScDirH98",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -463,7 +562,9 @@
       "timestamp": 1787438380,
       "signature": "2perGkaCJCHF86Y6oBtGtB1qDcPpB7E9PMQMFMmuJzSRZPvyC5mCuo6oQn7JxfVzYugUn299s12xZJt55NMaZzAd",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -473,7 +574,9 @@
       "timestamp": 1787437088,
       "signature": "2oT7ZFZjNJvYswXdZJs1PxbVS3RqEmbR43mTaXy9TFET65JQkdRA8LPbNLk5KSLPoMuWvVAnSAtnh3D3f5nUDoXS",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -483,7 +586,9 @@
       "timestamp": 1787435797,
       "signature": "WVBs12A8retbUMDpA7crdpXkiH2o6GUS1b69JCNTx5om3TeozvkJAJMYjt2SXpMnQ11xTkNiuHYfFh3BsnPFEm8",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -493,7 +598,9 @@
       "timestamp": 1787434550,
       "signature": "3k9GKcDZudnekic7gJ5BKHEHxtWWxuiX6WhhgW84rjxLaQtG6GUXA2ZmWD7K4jSCmZz7gbmRHY7XYNm4fRipAVhJ",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "Ap1rBBRohz1R6fo4KovMuBM5th397PqWhN8Auss43aMS",
@@ -503,7 +610,9 @@
       "timestamp": 1787433939,
       "signature": "4B4D7jyXLRNzzW9t3WeQyd46e23CAWynmb28gSHFQMrcNjVtt4iveJjugv25zA4ErQZqs4Kn1UQcWAGU7pysYYc1",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -513,7 +622,9 @@
       "timestamp": 1787433349,
       "signature": "3KNYZsFWc8tU6KJTpZYeY11BxM63zYds1ELLFPevwKWmwRjinWvVpywRGFUoQNAkRZQss16jGiNr3kP2SutpGgXX",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -523,7 +634,9 @@
       "timestamp": 1787432009,
       "signature": "3Vw3N1vbfrjfM9a87u3eapLih61zQkzkL8Bk1JxZx52J17tQD1fJixbB5qAowf33XQ94hKMb9Pf2xuyKakaLJg98",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "F7p3dFrjRTbtRp8FRF6qHLomXbKRBzpvBLjtQcfcgmNe",
@@ -533,7 +646,9 @@
       "timestamp": 1787431909,
       "signature": "HVp9W3rQGXGcujJnSJ36BPCH58ymMmmRpvHyrCNVPkrMNbKrKBoE4yWi6ABqAsm4Tay79Mu3nMh8bDvG8gnEZcY",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -543,7 +658,9 @@
       "timestamp": 1787430903,
       "signature": "1PKwy72ZuG1JocPAFFgGi48Wa8LW2UDkDp98gQXT7nMEJUUeaCYuy8LqxAfAGT5qYUqxD4Yxkc8t3oaKAbSb4FM",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "8jDuQE4r8uBf8syPapMsDTN214cBT4x8Ds1AU1o2Zzxz",
@@ -553,7 +670,9 @@
       "timestamp": 1787430108,
       "signature": "2GS3mqgoKG7nDSZZsLPw6AxUYLysvmedmp83NcrSvNYVhbUMNG9R3XsnP7hfioHygqiKAtppgC79y6fRWYmUoapQ",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -563,7 +682,9 @@
       "timestamp": 1787429647,
       "signature": "dQA9Y2HqpATDzQfdtG7YQ61JgEsaveDrPYm9k7W1HpVvyS8mJvcuBLejWkCqX3ux4cVnq7yFdJVoBtBWUPzLEtc",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -573,7 +694,9 @@
       "timestamp": 1787428409,
       "signature": "xe7WHUghuSEKK9yLpY3kmqcn78oHL3ApPYtwi3tZanhPsuyRGupTm41xg6Uiy2exGZbjcxGDRms3SCxKPXCn2TG",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "ADd3M8FyNAXcbV6ofAgfPSFZpXJcSXmJa8hPWTddd6by",
@@ -583,7 +706,9 @@
       "timestamp": 1787428118,
       "signature": "4wsJ7UhR2AE7bry6FsY4b2unQwPamw8wipwbjEkVTd4vif1WWg6FaA75k5uKJhuEK5UbXSNvw5ox7N4ARtbevAAY",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -593,7 +718,9 @@
       "timestamp": 1787427163,
       "signature": "39uqFRsmyqKzz5sWjy9nr28HLkHNtKjiu9CyQ9uRcPqt7Msi7kp6cJnpAr7v4EokKuCRDhcNvvUtpUUsExtzfsBW",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "GP8StUXNYSZjPikyRsvkTbvRV1GBxMErb59cpeCJnDf1",
@@ -603,7 +730,9 @@
       "timestamp": 1787426852,
       "signature": "5mMcwxmXazLhe3AdK77bgP312hBpGp7cu1LpJSyrzvEAhgLKbbpUVVWtneTWvAVRkgKg3vveWrB7RVsFammkN8gz",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "5H27ysudU7kPvNuvFjeRLKXncq2rm3bhZMNJudDgQEb6",
@@ -613,7 +742,9 @@
       "timestamp": 1787426824,
       "signature": "5uxa34QETJQ5MnALVcyqw2YfCYxsAGoREWFru91LzvCQwSBfGRMpGcQ6cDMXrGDrTqksbG3e4yDnFsCtfWbLfbMV",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "5H27ysudU7kPvNuvFjeRLKXncq2rm3bhZMNJudDgQEb6",
@@ -623,7 +754,9 @@
       "timestamp": 1787426817,
       "signature": "5ZinDTva5LoZY2mH23Y8F4UBGwCLk4tTP26RWSDAcDf676ir83kyU5XGTsV7wnPu13Mh2DpkqvZgbNESDNgsQs8L",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -633,7 +766,9 @@
       "timestamp": 1787425895,
       "signature": "64dZeMcCPWgKFUNbGc1jhwQLJTyBAYv8pPtcfJJpw3JyKtfjLYMSqXD6296543Tk9JNMtNXt25NRNNwqvdHnbj7b",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -643,7 +778,9 @@
       "timestamp": 1787424679,
       "signature": "61kpBTbDfFZrCwQnEsYH9BqysPuQs2QgnX7Y1rAossfYMaRbkP5uVr8PSKpgFEvaphfrABZDScJKGhV9Arbbh7kK",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -653,7 +790,9 @@
       "timestamp": 1787423429,
       "signature": "FxRpLaAecAij6ibnUPu5KPXUNWiAx2brs56u1s3VfeeZ73R3hV2PmSXCV47tGYYRVDeL4LwJm38jsprZNcvrYW9",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "CFWDxsz2uXFRXELdY2yMfCwtBRZLFjsoGT2igTbucaic",
@@ -663,7 +802,9 @@
       "timestamp": 1787422851,
       "signature": "58EdEwTcgakvSEX4vCtDMP8r6P4N2MduKufXafkdarZ28EXDurvx4ji1UnwbVKMHrh2sNkANvfnejeYadLuzhWys",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "big"
+      "kind": "big",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -673,7 +814,9 @@
       "timestamp": 1787422197,
       "signature": "3SKnvBtQDiexophSB3hyr1rKufEcCxg95gDwTpBqBsiNDAuFJ9FhToJd1zjwBYgAmSZHDEnZS3DB94BDoD8o4cG5",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -683,7 +826,9 @@
       "timestamp": 1787420963,
       "signature": "2rTUN1cguv3geVN8oNCxiPHSoCvseVw83nGHnZv7wfgNUiGUMu2ye5UuvbvXbot1ZjbXGV5SGjePH1TZMbzRp1vG",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -693,7 +838,9 @@
       "timestamp": 1787419746,
       "signature": "5gtDyPbhsXPLX35efFhtoLAGtuApCVUwbxUSZJhfsryYpkW7fcbHxBamP17x93SPsELCysuNoeawQSSXe7xKwmXP",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "7iix67542j5PwwcSVR6sqiVXAKrp5MVNRvqKUUAPKidg",
@@ -703,7 +850,9 @@
       "timestamp": 1787418669,
       "signature": "2Qrn47KUNK8GgygJ7iVjfrGiXCZmCSzWSLLBkDe7yQQZ11mViaowfpa4W9cQy2ekP86cvffJP48qHtuMj9p6Kzsp",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "big"
+      "kind": "big",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -713,7 +862,9 @@
       "timestamp": 1787418479,
       "signature": "4B5x63CL36Xo1BcD5HCMLvGuYG9GWnr1jsJiSZvbBWcJ569AatTqTQpbqAKXxaZW4RtShKWKgtP7xdRPb1eK5aei",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -723,7 +874,9 @@
       "timestamp": 1787417307,
       "signature": "5dyjuEMpkYMmWV8cpemczzTUoHPTXjXaqqhqqSSe5av6GXFoDui9AC1iZ7VM1Zj1CshoFqsnLRQ3HEVb1NsrGdPK",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "7P9njNn7tBhve4EbpB2A3RAYk8uG2GwXkSTfXcNUj65k",
@@ -733,7 +886,9 @@
       "timestamp": 1787415846,
       "signature": "SZ9LN4RcA1B2jvsdcGPtUkRba8NDrYF6yhmdoFryPWpcF63LcTtqTSA68iwwmuWUYcQ4zaEVjNzHoqKFbN3Hpmn",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn",
@@ -743,7 +898,9 @@
       "timestamp": 1787415263,
       "signature": "22LzhZ76auKbAZDFPcZvapKQsh6khma4UwDXr9bT2HuM38VFStJuj5CTLyXCoXUzicT9BPgeSsyD73vrfYHBdtNV",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -753,7 +910,9 @@
       "timestamp": 1787414428,
       "signature": "FXMn4b4t6dFQ3FAgdWxNy7axQe9SfZqnVA5wdnqH7VinbETTAr9vJ3WTkc71AN3YrhSzd5r3myDV8oFnzi3UrGA",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "5YW8to7YnCckiLv5atuYwTLtTnXMdooLGyeRjxnNU1K1",
@@ -763,7 +922,9 @@
       "timestamp": 1787413702,
       "signature": "46DR82NeiMG3DAdEdidEsGBLwCEzQj92AgKHuuUHqf4Lh2fRFo8rH4XNUbJpGQv6ce3qdFecpwHvV3g8sGiYcXzQ",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "FmT1NkvzuBmnLJuducJozvLHaRf69QqpY6zspMXmRsji",
@@ -773,7 +934,9 @@
       "timestamp": 1787412449,
       "signature": "4g5k2bN12eX3rEquzx6tis6rRfrVvCScijD7jbfFihoNr8vEiZEyMpWFpuJen1A8BbqfJukkQAu7UtDcZqeCRYcu",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "big"
+      "kind": "big",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "FmT1NkvzuBmnLJuducJozvLHaRf69QqpY6zspMXmRsji",
@@ -783,7 +946,9 @@
       "timestamp": 1787410683,
       "signature": "286dsc72i2AFvAVKyNjHZgn2pG3QrFyx87Gfqg7eeB18GAcLrgFpyJiwPJGz1ncq1nFwPvkLEPCNnFFAyyYtTbov",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "big"
+      "kind": "big",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "DSbfE4psNRFsgpKrA4NooUsN5kEfDn7UwTUyWmR9FrNF",
@@ -793,7 +958,9 @@
       "timestamp": 1787405000,
       "signature": "4FVHyZGev8eSxCvawNshnNAQ2Cm39eH2uapRwBgH8CmYLSZxk7VkuX8ubqvWa8fnzaNgeJjZftbZxkYkNKNxQaFM",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "7CBKdBfnnBKpwzGftRsPEaBnXeNMEafp35TuxcLdy96J",
@@ -803,7 +970,9 @@
       "timestamp": 1787401906,
       "signature": "2Dh2swykEs13Bp8Sq59DdYmwb4gmgPzgvamAXJpCdgpGuayJGWGZpTw6ZbAqy8ThevGnsc7y2LVFivSXQvCH1YcT",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "big"
+      "kind": "big",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "Fi9YHuZdjLsCjPKKugdsPComrAo66n3bCSH4ZhgkVZkH",
@@ -813,7 +982,9 @@
       "timestamp": 1787401398,
       "signature": "4WSnEmU4W6Wfi1YkTBzdhwTd99dVgojJ8xCCxzzxHXJquqq3akN7ndxcVn1gFgtrusHE4Fgpjkd8b2JC7bmL5hW8",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "HU23r7UoZbqTUuh3vA7emAGztFtqwTeVips789vqxxBw",
@@ -823,7 +994,9 @@
       "timestamp": 1787390149,
       "signature": "3nRpHA8AzYQhjE9HC1VYjxMWSkgXBZMYQL7P96UwpLeczGYxDHGUEq6kBgj6mVL3gY4xKBnSD8nt38Su5jHnKNJV",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "9nnLbotNTcUhvbrsA6Mdkx45Sm82G35zo28AqUvjExn8",
@@ -833,7 +1006,9 @@
       "timestamp": 1787384390,
       "signature": "rfc8jw5wFn752bDohygd4GLb6TZu9f6EbXRehaRSagJZTNioXd8ujmfEv4LiJPTtUyfceZ44k2gFATgCGepercS",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -843,7 +1018,9 @@
       "timestamp": 1787384275,
       "signature": "3ingcnCoK5hRexmCnNvLjuHENik1EkWdBPvensX5knDCHMPMSxQ9uFb23YieJuS9rjpM8ogGP1pPV5P65YAsxn3d",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "Hhxj2Uvm1iWBdXRcnaJfFE3s3PsfR4Tf62tXy7WtojoX",
@@ -853,7 +1030,9 @@
       "timestamp": 1787384038,
       "signature": "32KnLLedjZk8tS9sHXWS5NbDtwhJE4TMmeGdrYhC9q7kiTDjJwExGNoUESMLYf55ktEAGsF14nFP71kfNtAMwayf",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -863,7 +1042,9 @@
       "timestamp": 1787383032,
       "signature": "2k5k2C4hCQ83bgjceiNn4N8Xc4pWsGEfmcsYL6GgorjzbhGLHp5L4SEm75vox6iKW9M7gvVq6QzK8CuzvhKL6TtK",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM",
@@ -873,7 +1054,9 @@
       "timestamp": 1787381908,
       "signature": "8GaspwdRhkS9r2Y18NuGsDmxwFdpM6bxuwmYo5fES5zhBxSg6jLx6F4uk7qAGyPCP5viaD5uhRMfLiDxHjk6xh6",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "big"
+      "kind": "big",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "CFWDxsz2uXFRXELdY2yMfCwtBRZLFjsoGT2igTbucaic",
@@ -883,7 +1066,9 @@
       "timestamp": 1787381045,
       "signature": "2y63So3wxky4jQL4oCpCaP2gqGJSmTS8c4uL5zDe1NsJQG6jnMbwhQAsE1oBnwNWnXijmxARcCMvMcCh8v8qfoa5",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -893,7 +1078,9 @@
       "timestamp": 1787380475,
       "signature": "1hqMEeN6EGY8kWzoYrp9xDr3LYMPbPRQQJ2UfPUsQCdzzFnj4XFxvj1cjcsTfnbhSUcYWbcqXdve1BwSav5RPYE",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "EdZgU9bT8eJVYKygQk6ryLW78YriTgT511GUXtRmYTQR",
@@ -903,7 +1090,9 @@
       "timestamp": 1787380051,
       "signature": "5ZL1qPomB2RXTgRyLcTZrT9ShgPog3hmcfjeMaBvjQR9YaVMFUMyh3Zf7LZg5XuA3axMD4Dm2kQn5onCG2us9B5J",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -913,7 +1102,9 @@
       "timestamp": 1787379231,
       "signature": "5998GDCwz8S85LzNkNwJ26DB3NU9pNh1JdUwXwUZVxqAhKzqcvwBfH77ytNTUmVFSybQPJqQP6e3eM8SCUuJX8CL",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "F7p3dFrjRTbtRp8FRF6qHLomXbKRBzpvBLjtQcfcgmNe",
@@ -923,7 +1114,9 @@
       "timestamp": 1787378306,
       "signature": "4PwELVqiFaJGDEcDRCSJbsmWxotXvWmbcqJrt4VQsjKwkN7Jn9objaJNSo8fw2G3sV2VwaMtfCrxEsh7ssxd6NEz",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -933,7 +1126,9 @@
       "timestamp": 1787378007,
       "signature": "4TPjtpnT8KPSjcW1deSJVXWKdRqn9eYPTe8m3LicM8d5cwJ3PYrVJCvg4vjkHD31jnV1v1gtCp795xG3NQD5wP7e",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -943,7 +1138,9 @@
       "timestamp": 1787376703,
       "signature": "4etJCoikBjX5n2HB4EKFm6Jq6LxJDxkBqi6tDC4aVdHJKms3AwsHH7g4z5fpaA3rezeKCYSqSmXeRkJmoaJHZLsb",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
@@ -953,7 +1150,9 @@
       "timestamp": 1787374072,
       "signature": "5bxhgpkcXkvcAfhaSNwt5Ns3soGBuXzXGoMNMxCn3Skfa8KQVcZ8wREv5GLUXBrc7AxV1H5khvozpW23tovBzX6C",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "3Tvj33EGJXctM8P5UWPuN61BvzHDGtx1uUffgKkt2cxV",
@@ -963,7 +1162,9 @@
       "timestamp": 1787373488,
       "signature": "2QECm1vVM7GAuXJ9As5HuqUyjJqi5VWVrPj4iNPjXNao5cJiR4rrtEXRV2B4dkc9FG2kTWH4qwzJLnGBKsCDzLQR",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "3Tvj33EGJXctM8P5UWPuN61BvzHDGtx1uUffgKkt2cxV",
@@ -973,7 +1174,9 @@
       "timestamp": 1787373471,
       "signature": "4n3HZeA6xWKrMXDjJys7fNcA46QEeVAcjRQUeQxP45zUp4RpxKTWhLgG8vVfL5Ad3xSm2CnpTC4R4Qo88RLtAcAS",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "3Tvj33EGJXctM8P5UWPuN61BvzHDGtx1uUffgKkt2cxV",
@@ -983,7 +1186,9 @@
       "timestamp": 1787373344,
       "signature": "5QCrcVyWmPYY6VqENstQAT7jcTSLC7krgkv5UdLyS3zfckvG6FChNn7FpSRMh9iMfNbe668jHEoCLVjH9gWfpYqz",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "3Tvj33EGJXctM8P5UWPuN61BvzHDGtx1uUffgKkt2cxV",
@@ -993,7 +1198,9 @@
       "timestamp": 1787373312,
       "signature": "3z1KULVcYmwYJwFXpehzAJL8bCVaXC641U9y3QzcXfSzLfbtNW7sqL3cWFHaJt9GRTr5XQFvUTWuL1pohFZGtigB",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     },
     {
       "wallet": "3Tvj33EGJXctM8P5UWPuN61BvzHDGtx1uUffgKkt2cxV",
@@ -1003,7 +1210,9 @@
       "timestamp": 1787373271,
       "signature": "4frLtSjJFW12Ff9qM39AeNvFd6GMKyRg29d5qhYCwkEpwnR54qjmJwEJGN49mPMhgoaHHfH1AByQY95jPPMvS93w",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
+      "kind": "normal",
+      "botSuspected": true,
+      "botReason": "known-bot"
     }
   ]
 }
