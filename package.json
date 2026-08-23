@@ -21,6 +21,10 @@
   ],
   "author": "wPOND Team",
   "license": "MIT",
+  "dependencies": {
+    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.95.8"
+  },
   "engines": {
     "node": ">=18.0.0"
   }
