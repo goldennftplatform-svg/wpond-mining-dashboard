@@ -44,6 +44,50 @@ function isHighlightAmount(a) {
 const LOOKBACK_SIGS = Number(process.env.CLAIM_LOOKBACK || 800);
 const LOOKBACK_HOURS = Number(process.env.CLAIM_LOOKBACK_HOURS || 336);
 
+const KNOWN_BOTS = new Set([
+  '2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5',
+  '3Tvj33EGJXctM8P5UWPuN61BvzHDGtx1uUffgKkt2cxV',
+  'HxjwdF326ZunmUwC1iXhfgL3ku78YsksN6n7Rfxzwr6b',
+  'ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn',
+]);
+const CADENCE_MIN_CLAIMS = Number(process.env.BOT_CADENCE_MIN_CLAIMS || 5);
+const CADENCE_MAX_MEDIAN_GAP_SEC = Number(process.env.BOT_CADENCE_MEDIAN_GAP || 2700);
+
+function tagBotActivity(unique) {
+  const byWallet = new Map();
+  for (const c of unique) {
+    if (!byWallet.has(c.wallet)) byWallet.set(c.wallet, []);
+    byWallet.get(c.wallet).push(Number(c.timestamp) || 0);
+  }
+  const flaggedByCadence = new Set();
+  for (const [wallet, ts] of byWallet) {
+    if (ts.length < CADENCE_MIN_CLAIMS) continue;
+    const sorted = [...ts].sort((a, b) => a - b);
+    const gaps = [];
+    for (let i = 1; i < sorted.length; i++) {
+      const g = sorted[i] - sorted[i - 1];
+      if (g > 0) gaps.push(g);
+    }
+    if (!gaps.length) continue;
+    gaps.sort((a, b) => a - b);
+    const median = gaps[Math.floor(gaps.length / 2)];
+    if (median <= CADENCE_MAX_MEDIAN_GAP_SEC) flaggedByCadence.add(wallet);
+  }
+  for (const c of unique) {
+    if (KNOWN_BOTS.has(c.wallet)) {
+      c.botSuspected = true;
+      c.botReason = 'known-bot';
+    } else if (flaggedByCadence.has(c.wallet)) {
+      c.botSuspected = true;
+      c.botReason = 'machine-cadence';
+    } else {
+      c.botSuspected = false;
+      c.botReason = null;
+    }
+  }
+  return { knownBotWallets: KNOWN_BOTS.size, flaggedByCadence: [...flaggedByCadence] };
+}
+
 async function enhancedBatch(signatures) {
   const url = `https://api.helius.xyz/v0/transactions/?api-key=${API_KEY}`;
   const response = await fetch(url, {
@@ -121,6 +165,7 @@ async function collectFromAddress(helius, addr) {
 }
 
 function aggregateLive(unique) {
+  const botByWallet = new Map(unique.map((c) => [c.wallet, Boolean(c.botSuspected)]));
   const byWallet = new Map();
   for (const c of unique) {
     if (!byWallet.has(c.wallet)) {
@@ -131,6 +176,7 @@ function aggregateLive(unique) {
         date: c.date,
         timestamp: c.timestamp,
         signature: c.signature,
+        botSuspected: botByWallet.get(c.wallet) || false,
       });
     }
     const row = byWallet.get(c.wallet);
@@ -194,6 +240,14 @@ function buildPayload(unique) {
   const totalWpond = allRecipients.reduce((s, r) => s + (r.amount || 0), 0);
   const totalClaims = allRecipients.reduce((s, r) => s + (r.claimCount || 0), 0);
 
+  const botClaimsInWindow = unique.filter((c) => c.botSuspected);
+  const humanClaimsInWindow = unique.filter((c) => !c.botSuspected);
+  const botWpond = botClaimsInWindow.reduce((s, c) => s + (c.amount || 0), 0);
+  const humanWpond = humanClaimsInWindow.reduce((s, c) => s + (c.amount || 0), 0);
+  const windowTotal = botWpond + humanWpond;
+  const botWalletSet = new Set(botClaimsInWindow.map((c) => c.wallet));
+  const humanSharePct = windowTotal ? Math.round((humanWpond / windowTotal) * 1000) / 10 : null;
+
   return {
     summary: {
       totalClaims,
@@ -206,6 +260,15 @@ function buildPayload(unique) {
       description: `Live claims last ${LOOKBACK_HOURS}h merged with leaderboard`,
       liveClaimsInWindow: unique.length,
       liveRecipientsInWindow: liveRecipients.length,
+      botStats: {
+        humanShareOfWindowPct: humanSharePct,
+        humanClaimsInWindow: humanClaimsInWindow.length,
+        botClaimsInWindow: botClaimsInWindow.length,
+        humanWpondInWindow: humanWpond,
+        botWpondInWindow: botWpond,
+        suspectedBotWalletsInWindow: botWalletSet.size,
+        knownBotRegistrySize: KNOWN_BOTS.size,
+      },
     },
     recentClaims,
     allRecipients,
@@ -229,13 +292,17 @@ async function main() {
   }
 
   const unique = dedupe(all);
+  const botReport = tagBotActivity(unique);
   const data = buildPayload(unique);
 
   console.log('\nLive summary');
   console.log(`  liveClaims=${data.summary.liveClaimsInWindow} recipients=${data.summary.totalRecipients}`);
+  const bs = data.summary.botStats;
+  console.log(`  human share of window: ${bs.humanShareOfWindowPct}% (${bs.humanClaimsInWindow} human vs ${bs.botClaimsInWindow} bot txs)`);
+  console.log(`  bot wallets in window: ${bs.suspectedBotWalletsInWindow} (cadence-flagged: ${botReport.flaggedByCadence.length})`);
   console.log('  newest recentClaims:');
   for (const c of data.recentClaims.slice(0, 10)) {
-    console.log(`  - ${c.date} ${c.wallet.slice(0, 6)}...${c.wallet.slice(-4)} ${c.amount}`);
+    console.log(`  - ${c.date} ${c.wallet.slice(0, 6)}...${c.wallet.slice(-4)} ${c.amount} ${c.botSuspected ? `[BOT:${c.botReason}]` : '[human]'}`);
   }
 
   if (!data.recentClaims.length) {
@@ -252,6 +319,7 @@ async function main() {
           dateGenerated: data.summary.dateGenerated,
           liveClaimsInWindow: data.summary.liveClaimsInWindow,
           lookbackHours: LOOKBACK_HOURS,
+          botStats: data.summary.botStats,
         },
         recentClaims: data.recentClaims,
       },
