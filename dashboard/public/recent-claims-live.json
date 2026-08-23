@@ -1,14 +1,14 @@
 {
   "summary": {
-    "dateGenerated": "2026-08-23T18:11:47.913Z",
-    "liveClaimsInWindow": 10,
+    "dateGenerated": "2026-08-23T18:46:43.994Z",
+    "liveClaimsInWindow": 9,
     "lookbackHours": 336,
     "botStats": {
-      "humanShareOfWindowPct": 79.8,
+      "humanShareOfWindowPct": 88.8,
       "humanClaimsInWindow": 8,
-      "botClaimsInWindow": 2,
+      "botClaimsInWindow": 1,
       "humanWpondInWindow": 3555350000,
-      "botWpondInWindow": 901000000,
+      "botWpondInWindow": 450500000,
       "suspectedBotWalletsInWindow": 1,
       "knownBotRegistrySize": 4
     }
@@ -121,18 +121,6 @@
       "kind": "normal",
       "botSuspected": false,
       "botReason": null
-    },
-    {
-      "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
-      "amount": 450500000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786299229,
-      "signature": "43zjckraBNZXf1nmXTQb2hjUUpBdLkdhe2CVzYDZW42o4qAq5yggUHm9VBcky2fd1ZFffjCCEKH8AMYTAxodAfTf",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": true,
-      "botReason": "known-bot"
     }
   ]
 }
