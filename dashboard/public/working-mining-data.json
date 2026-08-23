@@ -1,20 +1,20 @@
 {
   "summary": {
-    "totalClaims": 17,
-    "totalWpond": 7983950000,
-    "totalRecipients": 16,
+    "totalClaims": 13,
+    "totalWpond": 6041650000,
+    "totalRecipients": 12,
     "biggestAmount": 901000000,
     "biggestWinner": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
-    "averageAmount": 469644117.64705884,
-    "dateGenerated": "2026-08-23T17:00:31.292Z",
+    "averageAmount": 464742307.6923077,
+    "dateGenerated": "2026-08-23T17:32:18.298Z",
     "description": "Live claims last 336h merged with leaderboard",
-    "liveClaimsInWindow": 17,
-    "liveRecipientsInWindow": 16,
+    "liveClaimsInWindow": 13,
+    "liveRecipientsInWindow": 12,
     "botStats": {
-      "humanShareOfWindowPct": 88.7,
-      "humanClaimsInWindow": 15,
+      "humanShareOfWindowPct": 85.1,
+      "humanClaimsInWindow": 11,
       "botClaimsInWindow": 2,
-      "humanWpondInWindow": 7082950000,
+      "humanWpondInWindow": 5140650000,
       "botWpondInWindow": 901000000,
       "suspectedBotWalletsInWindow": 1,
       "knownBotRegistrySize": 4
@@ -176,54 +176,6 @@
       "kind": "normal",
       "botSuspected": false,
       "botReason": null
-    },
-    {
-      "wallet": "ETUdaF4ZxhVh9a6bQAaHRviU6eHW2JTPxMRiyaQaoHa6",
-      "amount": 482600000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786295912,
-      "signature": "ZT8UsZTuSv2AUcoiQP2qyeZ6Sn6gBTHsT9E3xLFfJBnErafuzpNJmt5NJ4MfkcmCPNLAbkibkPtZowHixaVnCfx",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": false,
-      "botReason": null
-    },
-    {
-      "wallet": "HyBurp6VQKBmo8fNeWWHhL6oPNiTJrH2kDV6e2GG9isL",
-      "amount": 487300000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786295903,
-      "signature": "5BBaCkp8jmf3KpceCErVzQGi17mW6Jf1pXNtLg9fUVLXvYaH7BrKJTFQsnujKm1SBzSbJuqB2YdbVnVcEAGDg4ae",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": false,
-      "botReason": null
-    },
-    {
-      "wallet": "UBzmd6oEM9GNv6unCCq4QAX67v7CiQQWcrkTtJS4DAr",
-      "amount": 443300000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786295219,
-      "signature": "3CQg4mQAxPA9Uv74cS2upWHdYqmzqRRwcwJxHETENJQu5HRKnnEZCCRc8vQJJfeffnEPzJhXJv13ihQeymSsVSV8",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": false,
-      "botReason": null
-    },
-    {
-      "wallet": "FANm2osuckWQfVmsCJGvN1WBC3cTzPaa3PWQ7vQBJMwj",
-      "amount": 529100000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786295210,
-      "signature": "oiWDi8wSXLhF3NAxBkqhC5cc9dsVaShfwSQQPet1bdHrNh3i1NBDZC7WzKkKqdGG1FeJbo7f3J49phW6v3wAVwP",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": false,
-      "botReason": null
     }
   ],
   "allRecipients": [
@@ -255,30 +207,12 @@
       "botSuspected": false
     },
     {
-      "wallet": "FANm2osuckWQfVmsCJGvN1WBC3cTzPaa3PWQ7vQBJMwj",
-      "amount": 529100000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786295210,
-      "signature": "oiWDi8wSXLhF3NAxBkqhC5cc9dsVaShfwSQQPet1bdHrNh3i1NBDZC7WzKkKqdGG1FeJbo7f3J49phW6v3wAVwP",
-      "botSuspected": false
-    },
-    {
       "wallet": "81dYzKXsFbdpMWUax44pqrWLsS943hNEeBkQR1uEC6VU",
       "amount": 489800000,
       "claimCount": 1,
       "date": "2026-08-11",
       "timestamp": 1786425491,
       "signature": "5TwKvVbQLRhZDm3D6G8wga6JkREfb4YJLtTXX1HBLPW9wqxmMqh8ZoXJZgmtmD1JjB1CWuRdE9ZZeZroiVkZPLVp",
-      "botSuspected": false
-    },
-    {
-      "wallet": "HyBurp6VQKBmo8fNeWWHhL6oPNiTJrH2kDV6e2GG9isL",
-      "amount": 487300000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786295903,
-      "signature": "5BBaCkp8jmf3KpceCErVzQGi17mW6Jf1pXNtLg9fUVLXvYaH7BrKJTFQsnujKm1SBzSbJuqB2YdbVnVcEAGDg4ae",
       "botSuspected": false
     },
     {
@@ -297,15 +231,6 @@
       "date": "2026-08-11",
       "timestamp": 1786425312,
       "signature": "2hEQtX3PgCJQrrCh1fEYcyPzHfusxkpy3KTAuXxKTaUznEkfeMXR7B6tkSYCtLfsrt2gQPwM5TnJjQrnZ31xZ9qR",
-      "botSuspected": false
-    },
-    {
-      "wallet": "ETUdaF4ZxhVh9a6bQAaHRviU6eHW2JTPxMRiyaQaoHa6",
-      "amount": 482600000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786295912,
-      "signature": "ZT8UsZTuSv2AUcoiQP2qyeZ6Sn6gBTHsT9E3xLFfJBnErafuzpNJmt5NJ4MfkcmCPNLAbkibkPtZowHixaVnCfx",
       "botSuspected": false
     },
     {
@@ -333,15 +258,6 @@
       "date": "2026-08-11",
       "timestamp": 1786425525,
       "signature": "3fqucLVfJJiKyUDQu4bFBLPx49ZEQUZiMj7jzmggBrK7KM6sidbLoDCbGBD7KviA9jfkTp9AG23jjUvXqdRkue11",
-      "botSuspected": false
-    },
-    {
-      "wallet": "UBzmd6oEM9GNv6unCCq4QAX67v7CiQQWcrkTtJS4DAr",
-      "amount": 443300000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786295219,
-      "signature": "3CQg4mQAxPA9Uv74cS2upWHdYqmzqRRwcwJxHETENJQu5HRKnnEZCCRc8vQJJfeffnEPzJhXJv13ihQeymSsVSV8",
       "botSuspected": false
     },
     {
