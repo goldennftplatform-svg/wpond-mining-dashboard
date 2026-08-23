@@ -1,6 +1,6 @@
 {
   "summary": {
-    "dateGenerated": "2026-08-23T05:00:33.870Z",
+    "dateGenerated": "2026-08-23T05:20:39.638Z",
     "liveClaimsInWindow": 159,
     "lookbackHours": 336
   },
@@ -216,26 +216,6 @@
       "kind": "normal"
     },
     {
-      "wallet": "HxjwdF326ZunmUwC1iXhfgL3ku78YsksN6n7Rfxzwr6b",
-      "amount": 311133703.457,
-      "claimCount": 1,
-      "date": "2026-08-23",
-      "timestamp": 1787448616,
-      "signature": "5erQvZ16sV29EB69ukmWfYoSbc6J6uxPKH11GD3TQxTj7t9sx8VkVAXBj9xfjfLJCWEg22MCxmyQA1ztMNE2apn",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
-      "wallet": "ESuvjvsQtjuxC4XGsDeMhx8Wp5yjQcCFGncGhupcJbg8",
-      "amount": 355758908.73,
-      "claimCount": 1,
-      "date": "2026-08-23",
-      "timestamp": 1787448616,
-      "signature": "5RuNrLCqJrJ8wUamSveTHq2hKTZEseJ9an3P1GQViNUAdzKGUh6ynqEt5ewkBMZnaXLEYdsjsH7S4rikXXNBDCnk",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
       "wallet": "BSfQT2AmdxQfpsGQANrcYEUcwta5PWuTfBkHxqsZ3Gz8",
       "amount": 354044328.268,
       "claimCount": 1,
@@ -262,6 +242,26 @@
       "date": "2026-08-23",
       "timestamp": 1787448616,
       "signature": "3GdfUGzVMNYBt5YQw7b32S9CgvgBJHTgxdzMQ9Kf6Q9jGXvyyEk32rEV1MgoaMSUyvp5Sx1SoK7suGX4LgZhzAK4",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal"
+    },
+    {
+      "wallet": "HxjwdF326ZunmUwC1iXhfgL3ku78YsksN6n7Rfxzwr6b",
+      "amount": 311133703.457,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787448616,
+      "signature": "5erQvZ16sV29EB69ukmWfYoSbc6J6uxPKH11GD3TQxTj7t9sx8VkVAXBj9xfjfLJCWEg22MCxmyQA1ztMNE2apn",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal"
+    },
+    {
+      "wallet": "ESuvjvsQtjuxC4XGsDeMhx8Wp5yjQcCFGncGhupcJbg8",
+      "amount": 355758908.73,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787448616,
+      "signature": "5RuNrLCqJrJ8wUamSveTHq2hKTZEseJ9an3P1GQViNUAdzKGUh6ynqEt5ewkBMZnaXLEYdsjsH7S4rikXXNBDCnk",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
       "kind": "normal"
     },
