@@ -145,3 +145,8 @@ verify-*.json
 !scripts/*.sh
 !scripts/*.py
 !vercel.json
+
+# Tracker archive (committed daily by CI)
+!data/*.json
+!data/daily/*.json
+
