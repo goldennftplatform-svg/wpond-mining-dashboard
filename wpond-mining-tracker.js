@@ -278,7 +278,8 @@ class WPondMiningTracker {
    */
   async getIncrementalUpdates() {
     console.log('🔄 Getting incremental updates...');
-    
+
+    await this.initializeDataDir();
     const lastProcessed = await this.getLastProcessed();
     const masterData = await this.loadMasterData();
     

@@ -41,6 +41,7 @@ jobs:
         run: |
           git config user.name "wpond-bot"
           git config user.email "wpond-bot@users.noreply.github.com"
+          mkdir -p data
           git add -A data dashboard/public
           if git diff --cached --quiet; then
             echo "No new claims to commit"
