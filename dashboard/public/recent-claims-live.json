@@ -1,10 +1,20 @@
 {
   "summary": {
-    "dateGenerated": "2026-08-23T02:27:31.893Z",
-    "liveClaimsInWindow": 150,
+    "dateGenerated": "2026-08-23T02:49:36.573Z",
+    "liveClaimsInWindow": 151,
     "lookbackHours": 336
   },
   "recentClaims": [
+    {
+      "wallet": "2NL8sV5sfRTs8WF4FhA6v9DssSZvUBqFHwr7LQE5b2p5",
+      "amount": 298003549.46,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787453123,
+      "signature": "4WKhYjwrH7NU7BtffVMDLw4dqVvYmiHCXyEDhRpiwaSZYVR8DG24zMVzzqQaypuMsuYEVkNoChWqBt5cSHqoWine",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal"
+    },
     {
       "wallet": "ETUdaF4ZxhVh9a6bQAaHRviU6eHW2JTPxMRiyaQaoHa6",
       "amount": 648993106.882,
@@ -126,6 +136,16 @@
       "kind": "normal"
     },
     {
+      "wallet": "BSfQT2AmdxQfpsGQANrcYEUcwta5PWuTfBkHxqsZ3Gz8",
+      "amount": 354044328.268,
+      "claimCount": 1,
+      "date": "2026-08-23",
+      "timestamp": 1787448616,
+      "signature": "4ihDZg8ZULjQCcuRG3fM5Mx3jvAJfNWsJbqu6qde6qqbUAQRbjgpNiHAvzFnCeutKtBSmYHPsCWek419LiwH3DLy",
+      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
+      "kind": "normal"
+    },
+    {
       "wallet": "HxjwdF326ZunmUwC1iXhfgL3ku78YsksN6n7Rfxzwr6b",
       "amount": 311120966.321,
       "claimCount": 1,
@@ -162,16 +182,6 @@
       "date": "2026-08-23",
       "timestamp": 1787448616,
       "signature": "5RuNrLCqJrJ8wUamSveTHq2hKTZEseJ9an3P1GQViNUAdzKGUh6ynqEt5ewkBMZnaXLEYdsjsH7S4rikXXNBDCnk",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
-      "wallet": "BSfQT2AmdxQfpsGQANrcYEUcwta5PWuTfBkHxqsZ3Gz8",
-      "amount": 354044328.268,
-      "claimCount": 1,
-      "date": "2026-08-23",
-      "timestamp": 1787448616,
-      "signature": "4ihDZg8ZULjQCcuRG3fM5Mx3jvAJfNWsJbqu6qde6qqbUAQRbjgpNiHAvzFnCeutKtBSmYHPsCWek419LiwH3DLy",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
       "kind": "normal"
     },
@@ -992,16 +1002,6 @@
       "date": "2026-08-22",
       "timestamp": 1787371043,
       "signature": "xmCoVgUNSa4Z3R4dVyQS2kUwAv1Xarp4bcR2EDdwt66HAoxFx2Dc1XDZmVcPGxMbCNfKDJx68bG6bN2dZ3xmxfc",
-      "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
-      "kind": "normal"
-    },
-    {
-      "wallet": "3Tvj33EGJXctM8P5UWPuN61BvzHDGtx1uUffgKkt2cxV",
-      "amount": 562838929.612,
-      "claimCount": 1,
-      "date": "2026-08-22",
-      "timestamp": 1787370898,
-      "signature": "44qhhs9zCqtDjazxf9rQpnGeAK97MJ7cPTxFkkrsz5gUayYs2DjggmLYA7HefzSmihoKZ5Ex4gUoJzbNFoQRFEH9",
       "from": "HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2",
       "kind": "normal"
     }
