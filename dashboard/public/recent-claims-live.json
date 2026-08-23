@@ -1,13 +1,13 @@
 {
   "summary": {
-    "dateGenerated": "2026-08-23T17:32:18.298Z",
-    "liveClaimsInWindow": 13,
+    "dateGenerated": "2026-08-23T17:54:32.128Z",
+    "liveClaimsInWindow": 10,
     "lookbackHours": 336,
     "botStats": {
-      "humanShareOfWindowPct": 85.1,
-      "humanClaimsInWindow": 11,
+      "humanShareOfWindowPct": 79.8,
+      "humanClaimsInWindow": 8,
       "botClaimsInWindow": 2,
-      "humanWpondInWindow": 5140650000,
+      "humanWpondInWindow": 3555350000,
       "botWpondInWindow": 901000000,
       "suspectedBotWalletsInWindow": 1,
       "knownBotRegistrySize": 4
@@ -133,42 +133,6 @@
       "kind": "normal",
       "botSuspected": true,
       "botReason": "known-bot"
-    },
-    {
-      "wallet": "E3wXtWJgEJyvaf2uqcjGk9twhZPpDnEwcQEyJNpdgmES",
-      "amount": 561100000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786297842,
-      "signature": "5HUuyoiVsuYTbtJeRq4UVMzgQMxWjAH83AuZi8VGVwTzsgrYvAewDrqDJDQofQDG7JiExiVWfe7HoRSa88YwtJ3z",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": false,
-      "botReason": null
-    },
-    {
-      "wallet": "EVbJgqZzrMEABwkbP3sC58t6t2NW8bx5qRAQHweEoNUY",
-      "amount": 463100000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786297834,
-      "signature": "3M1Nwq2Unv7SGtFYUuUMCtseBqSAE9vzW2xJGMYyjDsCGMN7tmrF1K3HzGAij1antYZxowEeyLhqgAHoCXECxcxx",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": false,
-      "botReason": null
-    },
-    {
-      "wallet": "9U7gjBR9xY2YCZqKJUGHWSXhAaqZF5A5yjxeiJeovyBx",
-      "amount": 561100000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786297170,
-      "signature": "4Z1KuCvQJcfW5EFTacQiFQXg4nwG722LH6jmryYFXh6pTQqSS9fKDTJTPuJTT2XNvKHLR8KETAyDgnxbKoWDXarx",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": false,
-      "botReason": null
     }
   ]
 }
