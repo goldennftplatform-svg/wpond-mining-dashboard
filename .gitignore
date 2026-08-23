@@ -150,3 +150,7 @@ verify-*.json
 !data/*.json
 !data/daily/*.json
 
+# CI-generated dashboard data feeds
+!dashboard/public/helius-dashboard-data.json
+!dashboard/public/helius-dashboard-data-fresh.json
+
