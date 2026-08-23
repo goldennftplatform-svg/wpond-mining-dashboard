@@ -1,13 +1,13 @@
 {
   "summary": {
-    "dateGenerated": "2026-08-23T16:42:45.389Z",
-    "liveClaimsInWindow": 18,
+    "dateGenerated": "2026-08-23T17:00:31.292Z",
+    "liveClaimsInWindow": 17,
     "lookbackHours": 336,
     "botStats": {
-      "humanShareOfWindowPct": 89.3,
-      "humanClaimsInWindow": 16,
+      "humanShareOfWindowPct": 88.7,
+      "humanClaimsInWindow": 15,
       "botClaimsInWindow": 2,
-      "humanWpondInWindow": 7533450000,
+      "humanWpondInWindow": 7082950000,
       "botWpondInWindow": 901000000,
       "suspectedBotWalletsInWindow": 1,
       "knownBotRegistrySize": 4
@@ -213,18 +213,6 @@
       "date": "2026-08-09",
       "timestamp": 1786295210,
       "signature": "oiWDi8wSXLhF3NAxBkqhC5cc9dsVaShfwSQQPet1bdHrNh3i1NBDZC7WzKkKqdGG1FeJbo7f3J49phW6v3wAVwP",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": false,
-      "botReason": null
-    },
-    {
-      "wallet": "CZo6XfBjfLWY3YcxR54W8idiH6TE1TcugKnsq1NQPtbV",
-      "amount": 450500000,
-      "claimCount": 1,
-      "date": "2026-08-09",
-      "timestamp": 1786294634,
-      "signature": "63FnTrYLwxmQVaBAFEn2pyKgVgMi8MAF4mnZTcwDuQXqwh5Prh5xcVbe5qQHGX2GdAQFU3mK4ZUkedYoBDWRraEi",
       "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
       "kind": "normal",
       "botSuspected": false,
