@@ -14,12 +14,8 @@ const OUT_RECENT = path.join(ROOT, 'dashboard', 'public', 'recent-claims-live.js
 const MINT = process.env.WPOND_MINT || '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq';
 const API_KEY = resolveApiKey();
 
-const WATCH = [
-  'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT',
-  '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL',
-  'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2',
-  '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt',
-];
+const PAYOUT_WALLET = process.env.PAYOUT_WALLET || 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT';
+const WATCH = [PAYOUT_WALLET];
 
 const HOUSE = new Set([
   ...WATCH,
@@ -206,36 +202,8 @@ function dedupe(all) {
 
 function buildPayload(unique) {
   const liveRecipients = aggregateLive(unique);
-  let allRecipients = liveRecipients;
-  let recentClaims = unique.slice(0, 100);
-
-  if (fs.existsSync(OUT)) {
-    try {
-      const prev = JSON.parse(fs.readFileSync(OUT, 'utf8'));
-      const merged = new Map(
-        (prev.allRecipients || [])
-          .filter((r) => r.wallet && !HOUSE.has(r.wallet))
-          .map((r) => [r.wallet, { ...r }])
-      );
-      for (const r of liveRecipients) {
-        if (!merged.has(r.wallet)) {
-          merged.set(r.wallet, { ...r });
-        } else {
-          const row = merged.get(r.wallet);
-          row.amount = (row.amount || 0) + r.amount;
-          row.claimCount = (row.claimCount || 0) + r.claimCount;
-          if ((r.timestamp || 0) >= (row.timestamp || 0)) {
-            row.date = r.date;
-            row.timestamp = r.timestamp;
-            row.signature = r.signature;
-          }
-        }
-      }
-      allRecipients = [...merged.values()].sort((a, b) => b.amount - a.amount);
-    } catch (e) {
-      console.warn('history merge skipped:', e.message);
-    }
-  }
+  const allRecipients = liveRecipients;
+  const recentClaims = unique.slice(0, 100);
 
   const totalWpond = allRecipients.reduce((s, r) => s + (r.amount || 0), 0);
   const totalClaims = allRecipients.reduce((s, r) => s + (r.claimCount || 0), 0);
@@ -306,8 +274,7 @@ async function main() {
   }
 
   if (!data.recentClaims.length) {
-    console.error('No live miner claims found — refusing to publish empty recent feed');
-    process.exit(2);
+    console.log('No payouts from the payout wallet in window — publishing empty payout feed (truth mode)');
   }
 
   fs.writeFileSync(OUT, JSON.stringify(data, null, 2));
