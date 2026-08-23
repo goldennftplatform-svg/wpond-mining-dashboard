@@ -51,6 +51,7 @@ jobs:
           rm -rf docs
           mkdir docs
           cp -r dashboard/public/. docs/
+          touch docs/.nojekyll
 
       - name: Commit fresh data
         run: |
