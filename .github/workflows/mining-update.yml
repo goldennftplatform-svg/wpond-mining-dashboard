@@ -65,3 +65,10 @@ jobs:
             git commit -m "Auto-update mining claims $(date -u +%Y-%m-%dT%H:%MZ)"
             git push
           fi
+
+      - name: Deploy to Vercel (production)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_2kg7mzJJGcCFLSNb9RRNv8bn
+          VERCEL_PROJECT_ID: prj_fj1juk1TaQp33AhxWAznLbK1ZuFF
+        run: npx vercel deploy --prod --yes --token="$VERCEL_TOKEN"
