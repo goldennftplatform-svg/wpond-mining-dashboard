@@ -14,13 +14,13 @@ console.log('🚀 DAILY wPOND SWEEPER — Helius streamlined\n');
 const CONFIG = {
   WPOND_MINT: config.wpond.mint,
   // Keep sweeper payout address consistent with prior dashboard filter set
-  PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT',
+  PAYOUT_WALLET: 'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT',
   BATCH_SIZE: 10,
   DELAY_BETWEEN_BATCHES: 800,
   LOOKBACK_SIGNATURES: 80,
   DASHBOARD_DATA_FILE: path.join(__dirname, 'public', 'helius-dashboard-data.json'),
   EXCLUDED_WALLETS: [
-    'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8pS53opT',
+    'AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT',
     '1orFCnFfgwPzSgUaoK6Wr3MjgXZ7mtk8NGz9Hh4iWWL',
     '5KXZCyUaqHJ1T2wbcMXvLt9jYR87tDJS2Bf71gxYSZNt',
     'HdM9481g5mXApUUsMSMxwVcRVcTde7nqLjGsgqMMf4P2',

@@ -2,8 +2,8 @@ name: wPOND daily claim update
 
 on:
   schedule:
-    # every 6 hours at :17 past (UTC)
-    - cron: "17 3,9,15,21 * * *"
+    # every 15 minutes (GitHub Actions floor is 5; 15 keeps delays rare)
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -36,6 +36,13 @@ jobs:
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: node schedule-updates.js force
+
+      - name: Sweeper (helius-dashboard-data for alt pages)
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          node dashboard/daily-tx-sweeper.js
+          cp dashboard/public/helius-dashboard-data.json dashboard/public/helius-dashboard-data-fresh.json
 
       - name: Commit fresh data
         run: |
