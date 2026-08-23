@@ -79,16 +79,51 @@ function rowKind(row) {
     return classifyClaimAmount(best);
 }
 
+let showBotTraffic = localStorage.getItem('gt_show_bots') === '1';
+let botHiddenStats = { count: 0, wpond: 0 };
+
 function filterMinerClaims(claims) {
     if (!Array.isArray(claims)) return [];
-    return claims.filter((c) =>
-        c &&
-        c.wallet &&
-        !isHouseWallet(c.wallet) &&
-        isHighlightClaim(c.amount) &&
-        isMiningPayer(c.from)
-    );
+    const kept = [];
+    let hiddenCount = 0;
+    let hiddenWpond = 0;
+    for (const c of claims) {
+        if (!c || !c.wallet || isHouseWallet(c.wallet) || !isHighlightClaim(c.amount) || !isMiningPayer(c.from)) continue;
+        if (!showBotTraffic && c.botSuspected) {
+            hiddenCount += 1;
+            hiddenWpond += Number(c.amount) || 0;
+            continue;
+        }
+        kept.push(c);
+    }
+    if (!showBotTraffic) {
+        botHiddenStats.count = hiddenCount;
+        botHiddenStats.wpond = hiddenWpond;
+    } else {
+        botHiddenStats.count = 0;
+        botHiddenStats.wpond = 0;
+    }
+    return kept;
 }
+
+(function injectBotToggle() {
+    const boot = () => {
+        if (document.getElementById('botToggleBtn')) return;
+        const btn = document.createElement('button');
+        btn.id = 'botToggleBtn';
+        btn.style.cssText = 'position:fixed;bottom:14px;right:14px;z-index:9999;padding:8px 12px;border-radius:10px;border:1px solid #444;background:#161616;color:#eee;font:600 12px system-ui;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.5)';
+        const label = () => showBotTraffic ? '🤖 Bot traffic shown — click to hide' : '👤 Humans only — click to show bot traffic';
+        btn.textContent = label();
+        btn.onclick = () => {
+            showBotTraffic = !showBotTraffic;
+            localStorage.setItem('gt_show_bots', showBotTraffic ? '1' : '0');
+            location.reload();
+        };
+        document.body.appendChild(btn);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else setTimeout(boot, 300);
+})();
 
 function filterExcludedWallets(recipients) {
     if (!recipients || !Array.isArray(recipients)) return [];
