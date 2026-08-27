@@ -1,25 +1,69 @@
 {
   "summary": {
-    "totalClaims": 0,
-    "totalWpond": 0,
-    "totalRecipients": 0,
-    "biggestAmount": 0,
-    "biggestWinner": "",
-    "averageAmount": 0,
-    "dateGenerated": "2026-08-27T05:24:17.270Z",
+    "totalClaims": 2,
+    "totalWpond": 726650000,
+    "totalRecipients": 2,
+    "biggestAmount": 417400000,
+    "biggestWinner": "97hSoC4at9wiCfyg2VRRv9BZSNmtLydjyxqzoaoKGEXy",
+    "averageAmount": 363325000,
+    "dateGenerated": "2026-08-27T16:35:59.072Z",
     "description": "Live claims last 336h merged with leaderboard",
-    "liveClaimsInWindow": 0,
-    "liveRecipientsInWindow": 0,
+    "liveClaimsInWindow": 2,
+    "liveRecipientsInWindow": 2,
     "botStats": {
-      "humanShareOfWindowPct": null,
-      "humanClaimsInWindow": 0,
+      "humanShareOfWindowPct": 100,
+      "humanClaimsInWindow": 2,
       "botClaimsInWindow": 0,
-      "humanWpondInWindow": 0,
+      "humanWpondInWindow": 726650000,
       "botWpondInWindow": 0,
       "suspectedBotWalletsInWindow": 0,
       "knownBotRegistrySize": 4
     }
   },
-  "recentClaims": [],
-  "allRecipients": []
+  "recentClaims": [
+    {
+      "wallet": "86cV9BCHVhB4Yyh5dGhu1pt1rP2npvD32ZvRcLaRVXPo",
+      "amount": 309250000,
+      "claimCount": 1,
+      "date": "2026-08-21",
+      "timestamp": 1787283194,
+      "signature": "3Nf5cmx4f6hGviLyUAPoGBmjj7fnXhVLpoXe4KzP8GKAi9LVZfNah9NQxJuzzNMLnNkChtGi5XdhurFKTYgRPffA",
+      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
+    },
+    {
+      "wallet": "97hSoC4at9wiCfyg2VRRv9BZSNmtLydjyxqzoaoKGEXy",
+      "amount": 417400000,
+      "claimCount": 1,
+      "date": "2026-08-19",
+      "timestamp": 1787126305,
+      "signature": "3563ChzizaDLaLq1KDpvqQpQhEN78m5VuyZtumVXfMynzbshwoiXEiER49C2VVsSnsaJAGcXMYti3U3Zj8pZ26PF",
+      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
+      "kind": "normal",
+      "botSuspected": false,
+      "botReason": null
+    }
+  ],
+  "allRecipients": [
+    {
+      "wallet": "97hSoC4at9wiCfyg2VRRv9BZSNmtLydjyxqzoaoKGEXy",
+      "amount": 417400000,
+      "claimCount": 1,
+      "date": "2026-08-19",
+      "timestamp": 1787126305,
+      "signature": "3563ChzizaDLaLq1KDpvqQpQhEN78m5VuyZtumVXfMynzbshwoiXEiER49C2VVsSnsaJAGcXMYti3U3Zj8pZ26PF",
+      "botSuspected": false
+    },
+    {
+      "wallet": "86cV9BCHVhB4Yyh5dGhu1pt1rP2npvD32ZvRcLaRVXPo",
+      "amount": 309250000,
+      "claimCount": 1,
+      "date": "2026-08-21",
+      "timestamp": 1787283194,
+      "signature": "3Nf5cmx4f6hGviLyUAPoGBmjj7fnXhVLpoXe4KzP8GKAi9LVZfNah9NQxJuzzNMLnNkChtGi5XdhurFKTYgRPffA",
+      "botSuspected": false
+    }
+  ]
 }
