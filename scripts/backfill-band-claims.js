@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Resumable backfill of band mining claims from OPT (+ sister/relay).
- * Bands: 225M–888M normal, 1.1B–2.2B big.
+ * Bands: 100M-888M normal, 1.1B-2.2B big.
  * Writes dashboard/public/band-claims-archive.json + refreshes period totals
  * into working-mining-data.json.
  */
@@ -17,7 +17,7 @@ const OUT_RECENT = path.join(PUBLIC, 'recent-claims-live.json');
 const CHECKPOINT = path.join(ROOT, 'data', 'band-backfill-checkpoint.json');
 
 const MINT = process.env.WPOND_MINT || '3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq';
-const NORMAL_MIN = 225e6;
+const NORMAL_MIN = 100e6;
 const NORMAL_MAX = 888e6;
 const BIG_MIN = 1.1e9;
 const BIG_MAX = 2.2e9;
@@ -284,7 +284,7 @@ function publish(allClaims) {
   const archive = {
     summary: {
       dateGenerated: new Date().toISOString(),
-      description: 'Band mining claims archive (225M–888M / 1.1B–2.2B)',
+      description: 'Band mining claims archive (100M-888M / 1.1B-2.2B)',
       totalClaims: claims.length,
       totalWpond: claims.reduce((s, c) => s + c.amount, 0),
       periods,

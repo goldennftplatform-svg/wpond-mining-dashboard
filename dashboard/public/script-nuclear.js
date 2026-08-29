@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (debugStatus) {
         debugStatus.innerHTML = `
             <div style="background: #1a2a3a; color: #9fd3ff; padding: 10px; border-radius: 5px; text-align: center;">
-                Highlighting real claims: 225M–888M wPOND (big: ~1.1B–2B)<br>
+                Highlighting real claims: 100M-888M wPOND (big: ~1.1B-2B)<br>
                 <span style="opacity:0.8;font-size:12px;">${new Date().toISOString()}</span>
             </div>
         `;
@@ -44,8 +44,8 @@ const WPOND_MINT = "3JgFwoYV74f6LwWjQWnr3YDPFnmBdwQfNyubv99jqUoq";
 const HELIUS_KEY = "e7472550-170d-4be0-ae9f-dccf30e8d5b8";
 const SEARCH_LOOKBACK_DAYS = 730;
 
-// Real claim bands (tokens): normal 225M–888M, big ~1.1B–2B
-const CLAIM_NORMAL_MIN = 225e6;
+// Real claim bands (tokens): normal 100M-888M, big ~1.1B-2B
+const CLAIM_NORMAL_MIN = 100e6;
 const CLAIM_NORMAL_MAX = 888e6;
 const CLAIM_BIG_MIN = 1.1e9;
 const CLAIM_BIG_MAX = 2.2e9;
@@ -1006,7 +1006,7 @@ function createRecentWinnersBubbleBoard() {
         bubble.className = 'recent-bubble';
         
         // Calculate bubble size based on wPOND amount (smaller, max 80px)
-        const size = Math.max(48, Math.min(96, 48 + ((Math.min(claim.amount, 2e9) - 225e6) / (2e9 - 225e6)) * 48));
+        const size = Math.max(48, Math.min(96, 48 + ((Math.min(claim.amount, 2e9) - CLAIM_NORMAL_MIN) / (2e9 - CLAIM_NORMAL_MIN)) * 48));
         
         // Position in a grid-like pattern with NO overlap - smaller bubbles need more space
         const row = Math.floor(index / 5); // 5 columns instead of 4
@@ -1838,7 +1838,7 @@ async function searchWallet() {
         if (recipient) {
             showWinnerDetails(recipient);
         } else {
-            alert('No mining payouts (225M–888M / 1.1B–2.2B from OPT/sister/relay) found for this wallet in the last 2 years.');
+            alert('No mining payouts (100M-888M / 1.1B-2.2B from OPT/sister/relay) found for this wallet in the last 2 years.');
         }
     } catch (e) {
         console.error('searchWallet', e);
@@ -2497,4 +2497,4 @@ async function watchLiveClaimFeed() {
     } catch (error) {
         if (dashboardData) updateClaimFacet(dashboardData);
     }
-} 
+}

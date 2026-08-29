@@ -28,7 +28,7 @@ const HOUSE = new Set([
   'HvYahPhM2ANz4cWKDmN8NCDP4aFbdrsRdrPNJEk8KQpQ',
 ]);
 
-const CLAIM_NORMAL_MIN = 225e6;
+const CLAIM_NORMAL_MIN = 100e6;
 const CLAIM_NORMAL_MAX = 888e6;
 const CLAIM_BIG_MIN = 1.1e9;
 const CLAIM_BIG_MAX = 2.2e9;
