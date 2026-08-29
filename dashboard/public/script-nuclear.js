@@ -81,6 +81,12 @@ function rowKind(row) {
 
 let showBotTraffic = localStorage.getItem('gt_show_bots') === '1';
 let botHiddenStats = { count: 0, wpond: 0 };
+const AUTOMATED_RELAY_WALLETS = new Set([
+    // Three relay-only outliers account for 3,731 claims and 974/975 archived big hits.
+    'JD38n7ynKYcgPpF7k1BhXEeREu1KqptU93fVGy3S624k',
+    'JD25qVdtd65FoiXNmR89JjmoJdYk9sjYQeSTZAALFiMy',
+    'JD1dHSqYkrXvqUVL8s6gzL1yB7kpYymsHfwsGxgwp55h',
+]);
 
 function filterMinerClaims(claims) {
     if (!Array.isArray(claims)) return [];
@@ -89,7 +95,8 @@ function filterMinerClaims(claims) {
     let hiddenWpond = 0;
     for (const c of claims) {
         if (!c || !c.wallet || isHouseWallet(c.wallet) || !isHighlightClaim(c.amount) || !isMiningPayer(c.from)) continue;
-        if (!showBotTraffic && c.botSuspected) {
+        const automatedTraffic = c.botSuspected || AUTOMATED_RELAY_WALLETS.has(c.wallet);
+        if (!showBotTraffic && automatedTraffic) {
             hiddenCount += 1;
             hiddenWpond += Number(c.amount) || 0;
             continue;
