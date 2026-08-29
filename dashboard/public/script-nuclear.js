@@ -144,10 +144,7 @@ function filterExcludedWallets(recipients) {
 
 // VERIFICATION FUNCTION: Check if any excluded wallets are still visible
 
-function getLiveMinerLeaderboard() {
-    const claims = Array.isArray(dashboardData?.recentClaims)
-        ? filterMinerClaims(dashboardData.recentClaims)
-        : [];
+function aggregateMinerClaims(claims, sortByTotal = false) {
     if (claims.length) {
         const by = new Map();
         for (const c of claims) {
@@ -180,8 +177,19 @@ function getLiveMinerLeaderboard() {
             }
             row.kind = rowKind(row);
         }
-        return [...by.values()].sort((a, b) => b.maxClaim - a.maxClaim || b.amount - a.amount);
+        return [...by.values()].sort((a, b) => sortByTotal
+            ? b.amount - a.amount || b.maxClaim - a.maxClaim
+            : b.maxClaim - a.maxClaim || b.amount - a.amount);
     }
+    return [];
+}
+
+function getLiveMinerLeaderboard() {
+    const claims = Array.isArray(dashboardData?.recentClaims)
+        ? filterMinerClaims(dashboardData.recentClaims)
+        : [];
+    const live = aggregateMinerClaims(claims);
+    if (live.length) return live;
     if (Array.isArray(dashboardData?.topMiners) && dashboardData.topMiners.length) {
         return dashboardData.topMiners.slice().map((r) => ({ ...r, kind: rowKind(r) }));
     }
@@ -189,6 +197,18 @@ function getLiveMinerLeaderboard() {
         .filter((r) => r && r.wallet && r.wallet.length >= 32)
         .map((r) => ({ ...r, kind: rowKind(r) }))
         .sort((a, b) => (b.maxClaim || b.amount) - (a.maxClaim || a.amount));
+}
+
+function getHistoricalMinerLeaderboard() {
+    const claims = Array.isArray(dashboardData?.archiveClaims)
+        ? filterMinerClaims(dashboardData.archiveClaims)
+        : [];
+    const historical = aggregateMinerClaims(claims, true);
+    if (historical.length) return historical;
+    return filterExcludedWallets(dashboardData?.allRecipients || [])
+        .filter((r) => r && r.wallet && r.wallet.length >= 32)
+        .map((r) => ({ ...r, kind: rowKind(r) }))
+        .sort((a, b) => b.amount - a.amount);
 }
 
 function verifyExcludedWalletsFiltered() {
@@ -292,10 +312,27 @@ async function loadDashboardData() {
                         byKey.set(`${c.signature}:${c.wallet}`, c);
                     }
                     const merged = [...byKey.values()].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    const historicalClaims = filterMinerClaims(merged);
+                    const historicalLeaderboard = aggregateMinerClaims(historicalClaims, true);
+                    const biggest = historicalClaims.reduce((best, claim) =>
+                        !best || claim.amount > best.amount ? claim : best, null);
+                    const totalWpond = historicalClaims.reduce((sum, claim) => sum + (Number(claim.amount) || 0), 0);
                     data.archiveClaims = merged;
-                    data.periods = arch.summary?.periods || computePeriodsFromClaims(filterMinerClaims(merged));
-                    data.summary = { ...(data.summary || {}), periods: data.periods };
-                    // Keep recentClaims for live boards; period desk uses archive/periods
+                    data.periods = computePeriodsFromClaims(historicalClaims);
+                    data.allRecipients = historicalLeaderboard;
+                    data.summary = {
+                        ...(data.summary || {}),
+                        totalClaims: historicalClaims.length,
+                        totalWpond,
+                        totalRecipients: historicalLeaderboard.length,
+                        biggestAmount: biggest?.amount || 0,
+                        biggestWinner: biggest?.wallet || '',
+                        averageAmount: historicalClaims.length ? totalWpond / historicalClaims.length : 0,
+                        archiveStartDate: historicalClaims[historicalClaims.length - 1]?.date || null,
+                        archiveEndDate: historicalClaims[0]?.date || null,
+                        periods: data.periods,
+                    };
+                    // Keep recentClaims for live boards; historical views use archiveClaims.
                     console.log('✅ Band archive merged:', merged.length, 'claims');
                 }
             }
@@ -1325,7 +1362,7 @@ function updateRecentActivity() {
 function updateAllWinners() {
     const winnersTableBody = document.getElementById('winnersTableBody');
     if (!dashboardData) return;
-    const allRecipients = getLiveMinerLeaderboard();
+    const allRecipients = getHistoricalMinerLeaderboard();
     winnersTableBody.innerHTML = allRecipients.map((winner, index) => {
         const showAmt = winner.maxClaim || winner.amount;
         const kind = rowKind(winner);
@@ -1586,20 +1623,20 @@ function filterWinners(filterType) {
 
     switch (filterType) {
         case 'all':
-            filteredWinners = getLiveMinerLeaderboard();
+            filteredWinners = getHistoricalMinerLeaderboard();
             break;
         case 'top10':
-            filteredWinners = getLiveMinerLeaderboard().slice(0, 10);
+            filteredWinners = getHistoricalMinerLeaderboard().slice(0, 10);
             break;
         case 'top50':
-            filteredWinners = getLiveMinerLeaderboard().slice(0, 50);
+            filteredWinners = getHistoricalMinerLeaderboard().slice(0, 50);
             break;
         case 'top100':
-            filteredWinners = getLiveMinerLeaderboard().slice(0, 100);
+            filteredWinners = getHistoricalMinerLeaderboard().slice(0, 100);
             break;
         case 'topClaimers':
             // Show top claimers (wallets with most claims) - calculate from actual data
-            const topClaimersData = getLiveMinerLeaderboard();
+            const topClaimersData = getHistoricalMinerLeaderboard();
             const topWalletClaimCounts = {};
             
             // Count claims per wallet
@@ -1641,7 +1678,7 @@ function filterWinners(filterType) {
             break;
         case 'multiClaimers':
             // Show wallets with multiple claims (2 or more) - deduplicate and show total amounts
-            const multiClaimersData = getLiveMinerLeaderboard();
+            const multiClaimersData = getHistoricalMinerLeaderboard();
             const multiWalletTotals = {};
             const multiWalletClaimCounts = {};
             
@@ -1672,7 +1709,7 @@ function filterWinners(filterType) {
             console.log(`   - Sample multi-claimer:`, filteredWinners[0]);
             break;
         default:
-            filteredWinners = getLiveMinerLeaderboard();
+            filteredWinners = getHistoricalMinerLeaderboard();
     }
 
     console.log(`🔍 Filter '${filterType}' applied - showing ${filteredWinners.length} winners`);
@@ -2322,8 +2359,7 @@ function updatePeriodDesk(data) {
     const archive = Array.isArray(data?.archiveClaims) ? filterMinerClaims(data.archiveClaims) : [];
     const recent = Array.isArray(data?.recentClaims) ? filterMinerClaims(data.recentClaims) : [];
     const claims = archive.length ? archive : recent;
-    // Prefer precomputed periods from backfill; else compute from loaded claims
-    const periods = data?.periods || data?.summary?.periods || computePeriodsFromClaims(claims);
+    const periods = computePeriodsFromClaims(claims);
     _periodSourceClaims = claims;
 
     const strip = document.getElementById('periodStrip');
@@ -2351,9 +2387,7 @@ function updatePeriodDesk(data) {
         pills.querySelectorAll('button').forEach((btn) => {
             btn.addEventListener('click', () => {
                 _selectedPeriod = btn.dataset.period;
-                const latest = dashboardData?.periods || dashboardData?.summary?.periods || computePeriodsFromClaims(
-                    Array.isArray(dashboardData?.recentClaims) ? filterMinerClaims(dashboardData.recentClaims) : _periodSourceClaims
-                );
+                const latest = computePeriodsFromClaims(_periodSourceClaims);
                 renderSelectedPeriod(latest);
             });
         });
