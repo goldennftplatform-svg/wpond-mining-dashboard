@@ -1,20 +1,20 @@
 {
   "summary": {
-    "totalClaims": 4,
-    "totalWpond": 1119750000,
-    "totalRecipients": 4,
-    "biggestAmount": 417400000,
-    "biggestWinner": "97hSoC4at9wiCfyg2VRRv9BZSNmtLydjyxqzoaoKGEXy",
-    "averageAmount": 279937500,
-    "dateGenerated": "2026-09-02T06:24:53.972Z",
+    "totalClaims": 3,
+    "totalWpond": 702350000,
+    "totalRecipients": 3,
+    "biggestAmount": 309250000,
+    "biggestWinner": "86cV9BCHVhB4Yyh5dGhu1pt1rP2npvD32ZvRcLaRVXPo",
+    "averageAmount": 234116666.66666666,
+    "dateGenerated": "2026-09-02T11:31:12.623Z",
     "description": "Live claims last 336h merged with leaderboard",
-    "liveClaimsInWindow": 4,
-    "liveRecipientsInWindow": 4,
+    "liveClaimsInWindow": 3,
+    "liveRecipientsInWindow": 3,
     "botStats": {
       "humanShareOfWindowPct": 100,
-      "humanClaimsInWindow": 4,
+      "humanClaimsInWindow": 3,
       "botClaimsInWindow": 0,
-      "humanWpondInWindow": 1119750000,
+      "humanWpondInWindow": 702350000,
       "botWpondInWindow": 0,
       "suspectedBotWalletsInWindow": 0,
       "knownBotRegistrySize": 4
@@ -56,30 +56,9 @@
       "kind": "normal",
       "botSuspected": false,
       "botReason": null
-    },
-    {
-      "wallet": "97hSoC4at9wiCfyg2VRRv9BZSNmtLydjyxqzoaoKGEXy",
-      "amount": 417400000,
-      "claimCount": 1,
-      "date": "2026-08-19",
-      "timestamp": 1787126305,
-      "signature": "3563ChzizaDLaLq1KDpvqQpQhEN78m5VuyZtumVXfMynzbshwoiXEiER49C2VVsSnsaJAGcXMYti3U3Zj8pZ26PF",
-      "from": "AYg4dKoZJudVkD7Eu3ZaJjkzfoaATUqfiv8w8pS53opT",
-      "kind": "normal",
-      "botSuspected": false,
-      "botReason": null
     }
   ],
   "allRecipients": [
-    {
-      "wallet": "97hSoC4at9wiCfyg2VRRv9BZSNmtLydjyxqzoaoKGEXy",
-      "amount": 417400000,
-      "claimCount": 1,
-      "date": "2026-08-19",
-      "timestamp": 1787126305,
-      "signature": "3563ChzizaDLaLq1KDpvqQpQhEN78m5VuyZtumVXfMynzbshwoiXEiER49C2VVsSnsaJAGcXMYti3U3Zj8pZ26PF",
-      "botSuspected": false
-    },
     {
       "wallet": "86cV9BCHVhB4Yyh5dGhu1pt1rP2npvD32ZvRcLaRVXPo",
       "amount": 309250000,
