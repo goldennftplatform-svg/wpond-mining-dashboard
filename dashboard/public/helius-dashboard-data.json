@@ -1,16 +1,16 @@
 {
   "summary": {
     "totalClaims": 91,
-    "totalWpond": 905165514951,
+    "totalWpond": 909916424468,
     "totalRecipients": 12,
     "biggestWinner": "CQyCQLsQ4FapKXjnk4gML8b8LSXsVmBHtjwFeoV5CihQ",
-    "biggestAmount": 99429400000,
-    "averageAmount": 9946873790.67033
+    "biggestAmount": 99919200000,
+    "averageAmount": 9999081587.56044
   },
   "allRecipients": [
     {
       "wallet": "CQyCQLsQ4FapKXjnk4gML8b8LSXsVmBHtjwFeoV5CihQ",
-      "amount": 99429400000,
+      "amount": 99919200000,
       "claimCount": 2,
       "date": "2026-08-11",
       "signature": "5TwKvVbQLRhZDm3D6G8wga6JkREfb4YJLtTXX1HBLPW9wqxmMqh8ZoXJZgmtmD1JjB1CWuRdE9ZZeZroiVkZPLVp",
@@ -18,7 +18,7 @@
     },
     {
       "wallet": "CRjjs8ZSpCgauxYecawaiNV1hBfSz8yZVQVfYngT9ioK",
-      "amount": 98272300000,
+      "amount": 98756400000,
       "claimCount": 2,
       "date": "2026-08-11",
       "signature": "4zMbnpX5Qvk249SqQ86BqYxvDK1ExUGkXhnuCybm3wYbq7aEk6DayC73yh1ama2EV6cfxhfc2poYxni8yn58FhEV",
@@ -26,7 +26,7 @@
     },
     {
       "wallet": "6zYFq23973wqcFt2pNjaWJyCWAtUG7A4q9RgPJm8UQ8D",
-      "amount": 98272300000,
+      "amount": 98756400000,
       "claimCount": 2,
       "date": "2026-08-11",
       "signature": "2hEQtX3PgCJQrrCh1fEYcyPzHfusxkpy3KTAuXxKTaUznEkfeMXR7B6tkSYCtLfsrt2gQPwM5TnJjQrnZ31xZ9qR",
@@ -34,7 +34,7 @@
     },
     {
       "wallet": "HFf5iD6XYztH3J5CXvQr9SwdwRAebmAVZccj1kPHuic7",
-      "amount": 96851300000,
+      "amount": 97328400000,
       "claimCount": 2,
       "date": "2026-08-11",
       "signature": "oJMtkkNn2YMbqiDAGLt2yDLeZGapqekGk7wm4tdPu39g1GRe6aU6VSoTE4uBFGgbMA8bJEodkxeeT9SeoMxWFMJ",
@@ -42,7 +42,7 @@
     },
     {
       "wallet": "CQAbNPbakByfJfy8rxkJkMAZYNAzAdDDnV6D9hejyGjj",
-      "amount": 91451500000,
+      "amount": 91902000000,
       "claimCount": 2,
       "date": "2026-08-11",
       "signature": "3fqucLVfJJiKyUDQu4bFBLPx49ZEQUZiMj7jzmggBrK7KM6sidbLoDCbGBD7KviA9jfkTp9AG23jjUvXqdRkue11",
@@ -50,7 +50,7 @@
     },
     {
       "wallet": "DPqev3FsSueQd4A8Fsb4jx9UCAwrWqYo9hGj9Bq9uWne",
-      "amount": 91451499999.99998,
+      "amount": 91901999999.99998,
       "claimCount": 2,
       "date": "2026-08-11",
       "signature": "5Umb8y2tuuwscZVPb9Uus3tesY3Ha1T4SE7qbGD2YYrUFZQMVZa2Ppen5xY6uRkeLKXQYDY58TrVZ2P1UdUCMbA8",
@@ -58,7 +58,7 @@
     },
     {
       "wallet": "3QJobKZneYhdBemkP76FutzhwUPFa8a7DRDWZNYxiSom",
-      "amount": 89949300000,
+      "amount": 90392400000,
       "claimCount": 2,
       "date": "2026-08-11",
       "signature": "5KhUCq8eEuMs3gZT1Uu1YMr1KuiPAogVvZ44NLVYJg21c2AZut7BbQx7pK2KGwmQXJcoihsjG9GDtZMDZhL5BRut",
@@ -66,7 +66,7 @@
     },
     {
       "wallet": "7e8iccUQ37cB1KUvcLx56N82X7jH4qXToKhCREBGP4Jf",
-      "amount": 84732200000,
+      "amount": 85149600000,
       "claimCount": 2,
       "date": "2026-08-19",
       "signature": "3563ChzizaDLaLq1KDpvqQpQhEN78m5VuyZtumVXfMynzbshwoiXEiER49C2VVsSnsaJAGcXMYti3U3Zj8pZ26PF",
@@ -74,7 +74,7 @@
     },
     {
       "wallet": "HwyJtiPXQ5ZosJQRpUmcmV6E2J9ffKfhqjNcY1R8Gt29",
-      "amount": 73109164951,
+      "amount": 73461124468,
       "claimCount": 69,
       "date": "2026-08-11",
       "signature": "3CuFAwfAswQvBoMa6CSqfPUb9zVCsjCAZNF1qncxWXLZY3ok8o52JmMNQEPkbY9hfkk3pZWmywxsrajrHASVhrw6",
@@ -82,7 +82,7 @@
     },
     {
       "wallet": "2t2Sym1AztESa6RbCntdSkMqiGLhKvkFzYBpukuGxgcJ",
-      "amount": 62777750000,
+      "amount": 63087000000,
       "claimCount": 2,
       "date": "2026-08-21",
       "signature": "3Nf5cmx4f6hGviLyUAPoGBmjj7fnXhVLpoXe4KzP8GKAi9LVZfNah9NQxJuzzNMLnNkChtGi5XdhurFKTYgRPffA",
@@ -90,7 +90,7 @@
     },
     {
       "wallet": "H5JMsV84Q9PMTx5jKQaHQAND7gtneJg7ovHU9hy8Aqjn",
-      "amount": 10154400000,
+      "amount": 10365950000,
       "claimCount": 2,
       "date": "2026-08-27",
       "signature": "5xcVor4KE1W8yNvYKhoGYq1i7Fq1x6FFcgFZD4rBNMNR9eLgsZgXT8WffGuKcpQ7TtWuvuNckFyAnDWxjcaMJWxy",
@@ -98,7 +98,7 @@
     },
     {
       "wallet": "BJMrWyMd1jYe3b7SjxNjkjjcxqDtcKWQDNbEMmckxuUe",
-      "amount": 8714400000,
+      "amount": 8895950000,
       "claimCount": 2,
       "date": "2026-08-27",
       "signature": "2hfiDbQCqp8rSZ8ZU1Kbufn7Ss4TL5b9hRikTk2MUJQVhJSoec7E3zwpwP7o7LLAkbauN7rs6ixvtmpM58N8DtpE",
